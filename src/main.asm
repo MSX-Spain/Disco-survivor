@@ -44,29 +44,29 @@ load_tileset:
     call  LDIRVM 
 	;banco 1
 	ld hl, tileset_definition 
-    ld de, 2048  ; la rutina LDIRVM necesita haber cargado previamente con de la dirección de inicio de la VRAM.https://sites.google.com/site/multivac7/files-images/TMS9918_VRAMmap_G2_300dpi.png,así es como está formado el VDP en screen 2          
-    ld bc, 56  ; son los 8 bytes por 7 tiles que hemos dibujado=56 bytes
+    ld de, 2048  
+    ld bc, 56 
     call  LDIRVM 
 	;banco 2
 	ld hl, tileset_definition 
-    ld de, 4096  ; la rutina LDIRVM necesita haber cargado previamente con de la dirección de inicio de la VRAM.https://sites.google.com/site/multivac7/files-images/TMS9918_VRAMmap_G2_300dpi.png,así es como está formado el VDP en screen 2          
-    ld bc, 56  ; son los 8 bytes por 7 tiles que hemos dibujado=56 bytes
+    ld de, 4096  
+    ld bc, 56  
     call  LDIRVM 
 
 	;banco 0
 	ld hl, tileset_color
-    ld de, 8192  ; la rutina LDIRVM necesita haber cargado previamente con de la dirección de inicio de la VRAM.https://sites.google.com/site/multivac7/files-images/TMS9918_VRAMmap_G2_300dpi.png,así es como está formado el VDP en screen 2          
-    ld bc, 56  ; son los 8 bytes por 7 tiles que hemos dibujado=56 bytes
+    ld de, 8192  
+    ld bc, 56  
     call  LDIRVM 
 	;banco 1
 	ld hl, tileset_color
-    ld de, 10240  ; la rutina LDIRVM necesita haber cargado previamente con de la dirección de inicio de la VRAM.https://sites.google.com/site/multivac7/files-images/TMS9918_VRAMmap_G2_300dpi.png,así es como está formado el VDP en screen 2          
-    ld bc, 56  ; son los 8 bytes por 7 tiles que hemos dibujado=56 bytes
+    ld de, 10240  
+    ld bc, 56  
     call  LDIRVM 
 	;banco 2
 	ld hl, tileset_color
-    ld de, 12288  ; la rutina LDIRVM necesita haber cargado previamente con de la dirección de inicio de la VRAM.https://sites.google.com/site/multivac7/files-images/TMS9918_VRAMmap_G2_300dpi.png,así es como está formado el VDP en screen 2          
-    ld bc, 56  ; son los 8 bytes por 7 tiles que hemos dibujado=56 bytes
+    ld de, 12288  
+    ld bc, 56  
     call  LDIRVM 
 	ret
 
@@ -98,7 +98,7 @@ screen2x16:
 	;sprites no ampliados de 16x16
 	ld b,0xe2
 	ld c,1
-	call 0x47
+	call WRTVDP
 
 	ret
 

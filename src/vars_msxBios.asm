@@ -23,7 +23,7 @@ INIFNK equ 0x003E ; Initialises the contents of the function keys
 ; VDP routines
 DISSCR equ 0x0041 ; inhibits the screen display
 ENASCR equ 0x0044 ; displays the screen
-WRTVDP equ 0x0047 ; write data in the VDP-register
+WRTVDP equ 0x0047 ; write data in the VDP-register, B  - Data to write, C  - Number of the register
 RDVRM  equ 0x004A ; Reads the content of VRAM
 WRTVRM equ 0x004D ; Writes data in VRAM
 SETRD  equ 0x0050 ; Enable VDP to read
@@ -128,6 +128,7 @@ NWRVRM equ 0x0177 ;Writes to VRAM like in WRTVRM.(with full 16 bits VRAM-address
 
                      
 ; Misc routines
+CLIKSW equ 0xF3DB; para que no se oiga el click que hace al pulsar las teclas
 CHGCAP equ 0x0132 ; Alternates the CAP lamp status
 CHGSND equ 0x0135 ; Alternates the 1-bit sound port status
 RSLREG equ 0x0138 ; Reads the primary slot register

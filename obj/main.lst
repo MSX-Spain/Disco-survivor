@@ -44,29 +44,29 @@
 044   C02D CD 5C 00        call  LDIRVM 
 045   C030             	;banco 1
 046   C030 21 99 C0    	ld hl, tileset_definition 
-047   C033 11 00 08        ld de, 2048  ; la rutina LDIRVM necesita haber cargado previamente con de la dirección de inicio de la VRAM.https://sites.google.com/site/multivac7/files-images/TMS9918_VRAMmap_G2_300dpi.png,así es como está formado el VDP en screen 2          
-048   C036 01 38 00        ld bc, 56  ; son los 8 bytes por 7 tiles que hemos dibujado=56 bytes
+047   C033 11 00 08        ld de, 2048  
+048   C036 01 38 00        ld bc, 56 
 049   C039 CD 5C 00        call  LDIRVM 
 050   C03C             	;banco 2
 051   C03C 21 99 C0    	ld hl, tileset_definition 
-052   C03F 11 00 10        ld de, 4096  ; la rutina LDIRVM necesita haber cargado previamente con de la dirección de inicio de la VRAM.https://sites.google.com/site/multivac7/files-images/TMS9918_VRAMmap_G2_300dpi.png,así es como está formado el VDP en screen 2          
-053   C042 01 38 00        ld bc, 56  ; son los 8 bytes por 7 tiles que hemos dibujado=56 bytes
+052   C03F 11 00 10        ld de, 4096  
+053   C042 01 38 00        ld bc, 56  
 054   C045 CD 5C 00        call  LDIRVM 
 055   C048             
 056   C048             	;banco 0
 057   C048 21 41 C1    	ld hl, tileset_color
-058   C04B 11 00 20        ld de, 8192  ; la rutina LDIRVM necesita haber cargado previamente con de la dirección de inicio de la VRAM.https://sites.google.com/site/multivac7/files-images/TMS9918_VRAMmap_G2_300dpi.png,así es como está formado el VDP en screen 2          
-059   C04E 01 38 00        ld bc, 56  ; son los 8 bytes por 7 tiles que hemos dibujado=56 bytes
+058   C04B 11 00 20        ld de, 8192  
+059   C04E 01 38 00        ld bc, 56  
 060   C051 CD 5C 00        call  LDIRVM 
 061   C054             	;banco 1
 062   C054 21 41 C1    	ld hl, tileset_color
-063   C057 11 00 28        ld de, 10240  ; la rutina LDIRVM necesita haber cargado previamente con de la dirección de inicio de la VRAM.https://sites.google.com/site/multivac7/files-images/TMS9918_VRAMmap_G2_300dpi.png,así es como está formado el VDP en screen 2          
-064   C05A 01 38 00        ld bc, 56  ; son los 8 bytes por 7 tiles que hemos dibujado=56 bytes
+063   C057 11 00 28        ld de, 10240  
+064   C05A 01 38 00        ld bc, 56  
 065   C05D CD 5C 00        call  LDIRVM 
 066   C060             	;banco 2
 067   C060 21 41 C1    	ld hl, tileset_color
-068   C063 11 00 30        ld de, 12288  ; la rutina LDIRVM necesita haber cargado previamente con de la dirección de inicio de la VRAM.https://sites.google.com/site/multivac7/files-images/TMS9918_VRAMmap_G2_300dpi.png,así es como está formado el VDP en screen 2          
-069   C066 01 38 00        ld bc, 56  ; son los 8 bytes por 7 tiles que hemos dibujado=56 bytes
+068   C063 11 00 30        ld de, 12288  
+069   C066 01 38 00        ld bc, 56  
 070   C069 CD 5C 00        call  LDIRVM 
 071   C06C C9          	ret
 072   C06D             
@@ -89,8 +89,7 @@
 089   C088             
 090   C088             	;click off	
 091   C088 AF          	xor	a		
-src/main.asm(92): error: Label not found: CLIKSW
-092   C089 32 00 00    	ld	[CLIKSW],a
+092   C089 32 DB F3    	ld	[CLIKSW],a
 093   C08C             		
 094   C08C             	;screen 2
 095   C08C 3E 02       	ld a,2
@@ -99,7 +98,7 @@ src/main.asm(92): error: Label not found: CLIKSW
 098   C091             	;sprites no ampliados de 16x16
 099   C091 06 E2       	ld b,0xe2
 100   C093 0E 01       	ld c,1
-101   C095 CD 47 00    	call 0x47
+101   C095 CD 47 00    	call WRTVDP
 102   C098             
 103   C098 C9          	ret
 104   C099             
@@ -132,7 +131,7 @@ src/main.asm(92): error: Label not found: CLIKSW
 023+  C099             ; VDP routines
 024+  C099             DISSCR equ 0x0041 ; inhibits the screen display
 025+  C099             ENASCR equ 0x0044 ; displays the screen
-026+  C099             WRTVDP equ 0x0047 ; write data in the VDP-register
+026+  C099             WRTVDP equ 0x0047 ; write data in the VDP-register, B  - Data to write, C  - Number of the register
 027+  C099             RDVRM  equ 0x004A ; Reads the content of VRAM
 028+  C099             WRTVRM equ 0x004D ; Writes data in VRAM
 029+  C099             SETRD  equ 0x0050 ; Enable VDP to read
@@ -237,32 +236,33 @@ src/main.asm(92): error: Label not found: CLIKSW
 128+  C099             
 129+  C099                                  
 130+  C099             ; Misc routines
-131+  C099             CHGCAP equ 0x0132 ; Alternates the CAP lamp status
-132+  C099             CHGSND equ 0x0135 ; Alternates the 1-bit sound port status
-133+  C099             RSLREG equ 0x0138 ; Reads the primary slot register
-134+  C099             WSLREG equ 0x013B ; Writes value to the primary slot register
-135+  C099             RDVDP  equ 0x013E ; Reads VDP status register
-136+  C099             SNSMAT equ 0x0141 ; Returns the value of the specified line from the keyboard matrix
-137+  C099             ; 0   1          2           3           4           5           6           7           8       9       10
-138+  C099             ;0    1          2                      4           5           6
-139+  C099             ;1   ; fin grabr ' grabar                                                    Ñ
-140+  C099             ;2                                      \grabar2  DEADfingrabar2 A           B
-141+  C099             ;3 C                        F           G           H
-142+  C099             ;4                          N
-143+  C099             ;5 S                        V                       X                       Z
-144+  C099             ;6SHIFtONTROL    GRAPH      CAPS        CODE
-145+  C099             ;7              ESCAPE                              BS                      RET
-146+  C099             ;8                                               Cursor ^    Cursor v
-147+  C099             PHYDIO equ 0x0144 ; Executes I/O for mass-storage media like diskettes
-148+  C099             FORMAT equ 0x0147 ; Initialises mass-storage media like formatting of diskettes
-149+  C099             ISFLIO equ 0x014A ; Tests if I/O to device is taking place
-150+  C099             OUTDLP equ 0x014E ; Printer output
-151+  C099             GETVCP equ 0x0150 ; Returns pointer to play queue
-152+  C099             GETVC2 equ 0x0153 ; Returns pointer to variable in queue number VOICEN (byte op #FB38)
-153+  C099             KILBUF equ 0x0156 ; Clear keyboard buffer
-154+  C099             CALBAS equ 0x0159 ; Executes inter-slot call to the routine in BASIC interpreter
-155+  C099                     
-156+  C099             
+131+  C099             CLIKSW equ 0xF3DB; para que no se oiga el click que hace al pulsar las teclas
+132+  C099             CHGCAP equ 0x0132 ; Alternates the CAP lamp status
+133+  C099             CHGSND equ 0x0135 ; Alternates the 1-bit sound port status
+134+  C099             RSLREG equ 0x0138 ; Reads the primary slot register
+135+  C099             WSLREG equ 0x013B ; Writes value to the primary slot register
+136+  C099             RDVDP  equ 0x013E ; Reads VDP status register
+137+  C099             SNSMAT equ 0x0141 ; Returns the value of the specified line from the keyboard matrix
+138+  C099             ; 0   1          2           3           4           5           6           7           8       9       10
+139+  C099             ;0    1          2                      4           5           6
+140+  C099             ;1   ; fin grabr ' grabar                                                    Ñ
+141+  C099             ;2                                      \grabar2  DEADfingrabar2 A           B
+142+  C099             ;3 C                        F           G           H
+143+  C099             ;4                          N
+144+  C099             ;5 S                        V                       X                       Z
+145+  C099             ;6SHIFtONTROL    GRAPH      CAPS        CODE
+146+  C099             ;7              ESCAPE                              BS                      RET
+147+  C099             ;8                                               Cursor ^    Cursor v
+148+  C099             PHYDIO equ 0x0144 ; Executes I/O for mass-storage media like diskettes
+149+  C099             FORMAT equ 0x0147 ; Initialises mass-storage media like formatting of diskettes
+150+  C099             ISFLIO equ 0x014A ; Tests if I/O to device is taking place
+151+  C099             OUTDLP equ 0x014E ; Printer output
+152+  C099             GETVCP equ 0x0150 ; Returns pointer to play queue
+153+  C099             GETVC2 equ 0x0153 ; Returns pointer to variable in queue number VOICEN (byte op #FB38)
+154+  C099             KILBUF equ 0x0156 ; Clear keyboard buffer
+155+  C099             CALBAS equ 0x0159 ; Executes inter-slot call to the routine in BASIC interpreter
+156+  C099                     
+157+  C099             
 109   C099             tileset_definition: 
 110   C099             	include "src/tileset-definition.asm"
 001+  C099             BANK_PATTERN_0: 
