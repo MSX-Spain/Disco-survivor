@@ -1,12 +1,12 @@
-
+@echo off
 rem https://github.com/S0urceror/DeZog/releases
-rem Instalar: code --install-extension tools\dezog\dezog-1.3.2.vsix --force
-rem desistalar:  code --uninstall-extension tools/dezog/dezog-1.3.5.vsix
+rem Instalar: code --install-extension tools\dezog\dezog-1.3.5.vsix --force
+rem desistalar:  code --uninstall-extension tools\dezog\dezog-1.3.5.vsix
 rem Ver extensiones instaladas: code --list-extensions --show-versions
 rem Escribe: netstat -a -o -n -b
 rem En Windows, -b es para mostrar el ejecutable involucrado en la creación de cada conexión o puerto de escucha.
 rem Complemento vscode DeZog
-@echo off
+
 rem /********Estructura proyecto***********************************/
 rem src=archivos .bas y .asm con el código fuente
 rem obj=archivos generados por los archivos del código fuente y procesados
@@ -53,6 +53,6 @@ rem /***********Abriendo el emulador***********/
 
 rem/************openMSX******************/
 rem presiona f9 al arrancar para que vaya rápido
-start /wait tools\emulators\openmsx\openmsx.exe -machine Philips_NMS_8255 -diska dsk/
+start /wait tools\emulators\openmsx\openmsx.exe -script tools/emulators/openmsx/emul_start_config.txt
 rem Abriendo con FMSX https://fms.komkon.org/fMSX/fMSX.html
 rem start /wait emulators/fMSX/fMSX.exe -diska main.dsk

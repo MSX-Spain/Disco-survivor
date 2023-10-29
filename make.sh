@@ -1,6 +1,6 @@
 #!/bin/bash
 #https://github.com/S0urceror/DeZog/releases
-#Instalar: code --install-extension tools\dezog\dezog-1.3.5.vsix
+#Instalar: code --install-extension tools/dezog/dezog-1.3.5.vsix
 #desistalar:  code --uninstall-extension tools/dezog/dezog-1.3.5.vsix
 #Ver extensiones instaladas: code --list-extensions --show-versions
 #Escribe: netstat -a -o -n -b
