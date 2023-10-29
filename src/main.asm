@@ -39,19 +39,19 @@ bucle:
 load_tileset:
 	;banco 0
 	ld hl, tileset_definition 
-    ld de, 0  ; la rutina LDIRVM necesita haber cargado previamente con de la dirección de inicio de la VRAM.https://sites.google.com/site/multivac7/files-images/TMS9918_VRAMmap_G2_300dpi.png,así es como está formado el VDP en screen 2          
-    ld bc, 56  ; son los 8 bytes por 7 tiles que hemos dibujado=56 bytes
-    call  LDIRVM 
+	ld de, 0  ; la rutina LDIRVM necesita haber cargado previamente con de la dirección de inicio de la VRAM.https://sites.google.com/site/multivac7/files-images/TMS9918_VRAMmap_G2_300dpi.png,así es como está formado el VDP en screen 2          
+	ld bc, 56  ; son los 8 bytes por 7 tiles que hemos dibujado=56 bytes
+	call  LDIRVM 
 	;banco 1
 	ld hl, tileset_definition 
-    ld de, 2048  
-    ld bc, 56 
-    call  LDIRVM 
+	ld de, 2048  
+	ld bc, 56 
+	call  LDIRVM 
 	;banco 2
 	ld hl, tileset_definition 
-    ld de, 4096  
-    ld bc, 56  
-    call  LDIRVM 
+	ld de, 4096  
+	ld bc, 56  
+	call  LDIRVM 
 
 	;banco 0
 	ld hl, tileset_color
