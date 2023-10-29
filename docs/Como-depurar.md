@@ -4,10 +4,14 @@
 <img src="1.PNG" width="400px" />
 
 
-
 <img src="1-5.PNG" width="400px" />
 
-2.Instalamos el prorgrama de sourceror que está en tools/dezog/dezog-1.3.5.vsix o lo descargamos de aquí: https://github.com/S0urceror/DeZog/releases/tag/v1.3.5
+
+Importante, en la versión del complemento dezog debe aparecer 2.0.1, ignora las actualizaciones, si aparece otra te dirá que openmsx no existe:
+
+<img src="9.PNG" width="400px" />
+
+2.Instalamos el prorgrama de sourceror que está en tools\dezog\dezog-1.3.5.vsix o lo descargamos de aquí: https://github.com/S0urceror/DeZog/releases/tag/v1.3.5
 
 Con este comando: code --install-extension tools\dezog\dezog-1.3.5.vsix
 
@@ -19,7 +23,7 @@ Con este comando: code --install-extension tools\dezog\dezog-1.3.5.vsix
 <img src="3.PNG" width="400px" />
 
 
-5.pincha en run and debug o Ctrl+Shift+D, depués en el selecciona Debug openmsx y después en play:
+4.Pincha en run and debug o Ctrl+Shift+D, depués en el selecciona Debug openmsx y después en play:
 
 
 <img src="4.PNG" width="400px" />
@@ -61,14 +65,18 @@ Si se queda esperando pincha en restart:
 <img src="5.PNG" width="400px" />
 
 
-6.Pone el archivo obj/main.lst a la vista y abre el terminal de openmsx con f10 y pon los puntos de depuración (breakpoints) donde kieras:
+5.Pon el archivo obj/main.lst a la vista y abre el terminal de openmsx con f10 y pon los puntos de depuración (breakpoints) donde kieras:
+
 
 debug set_bp 0xdirección: para establecer un breakpoint
-Debug cont: continuar hasta el proximo breakpoint
+
+debug cont: continuar hasta el proximo breakpoint
+
 debug list_bp: ver todos los breakpoint
+
 debug remove_bp bp#numero
 
-En mi caso pondré debug set_bp 0xc00c ya que quiero poner un punto de interrupción en la "O":
+En mi caso pondré debug set_bp 0xc00c ya que quiero poner un punto de interrupción en la "o":
 
 <img src="6.PNG" width="400px" />
 

@@ -11,6 +11,7 @@
         
 INICIO:
 
+;esta es la entrada principal
 MAIN:
 	call mensaje
 	call bucle

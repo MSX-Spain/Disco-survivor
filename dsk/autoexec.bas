@@ -1,1 +1,1 @@
-10 bload"main.bin",r
+10 bload"main.bin",r 
