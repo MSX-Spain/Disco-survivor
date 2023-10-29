@@ -1,0 +1,4 @@
+debug set_bp 0xdirección: para establecer un breakpoint
+Debug cont: continuar hasta el proximo breakpoint
+debug list_bp: ver todos los breakpoint
+debug remove_bp bp#numero

@@ -1,0 +1,33 @@
+{
+    //https://github.com/S0urceror/DeZog/releases
+    //Instalar: code --install-extension tools\dezog\dezog-1.3.5.vsix
+    //desistalar:  code --uninstall-extension tools/dezog/dezog-1.3.5.vsix
+    //Ver extensiones instaladas: code --list-extensions --show-versions
+    //Escribe: netstat -a -o -n -b
+    //En Windows, -b es para mostrar el ejecutable involucrado en la creación de cada conexión o puerto de escucha.
+    //Complemento vscode DeZog
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "dezog",
+            "request": "launch",
+            "name": "Debug OpenMSX",
+            "remoteType": "openMSX",
+            "listFiles": [
+                {
+                    "path": "obj/main.lst",
+                    "useFiles": true,
+                    "asm": "sjasmplus",
+                    "mainFile": "src/main.asm"
+                }
+            ],
+            "startAutomatically": false,
+            "commandsAfterLaunch": [
+                "-e openmsx_info version"
+            ],
+            "resetOnLaunch": false,
+            "rootFolder": "${workspaceFolder}",
+            "tmpDir": ".tmp"
+        }
+    ]
+}
