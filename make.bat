@@ -18,10 +18,10 @@ rem dsk=simula una unidad de disco
     echo MSX Spain 2023
     rem Ckequeando parámetros
     if [%1]==[] (call :create)
-    if [%1]==[all] (call :create_all)
-    if [%1]==[dsk] (call :create_dsk)
-    if [%1]==[rom] (call :create_rom)
-    if [%1]==[cas] (call :create_cas)
+    if [%1]==[all] (call :createAll)
+    if [%1]==[dsk] (call :createDsk)
+    if [%1]==[rom] (call :createRom)
+    if [%1]==[cas] (call :createCas)
     if [%1]==[clean] (call :clean)
     rem Si el argumento no está vacío, ni es dsk, ni es cas, etc
     rem If the argument is not empty, neither is it dsk, nor is it cas, etc.
@@ -45,25 +45,26 @@ goto:eof
     call :preparedFiles
     call :openEmulator
 goto:eof
-:create_all
+:createAll
         echo Spanish: Escogiste crear dsk, rom y cas
         echo English: You chose to create dsk,rom, cas
 goto:eof
 
-:create_dsk
+:createDSK
         echo Spanish: Escogiste crear dsk
-        echo English: You chose to create cas
+        echo English: You chose to create dsk
+        call :createMainDSK
 goto:eof
 
 
-:create_rom
+:createRom
         echo Spanish: Escogiste crear rom
         echo English: You chose to create rom
 goto:eof
 
 
 
-:create_cas
+:createCas
         echo Spanish: Escogiste crear cas
         echo English: You chose to create cas
 goto:eof
@@ -112,16 +113,12 @@ goto:eof
                 copy "%%a" dsk)   
 goto:eof
 
-:createDSK
+:createMainDSK
         rem /************Creando el .dsk******************/
-
-        rem /************Diskmanager******************/
-        rem Añadiendo archivos al .dsk, tenemos que crear antes el archivo disco.dsk con el programa disk manager
-        rem para ver los comandos abrir archivo DISKMGR.chm
-        rem AUTOEXEC.BAS es un archivo basic con el comando bload que hará que se autoejecute el main.bas
-        rem start /wait tools\Disk-Manager\DISKMGR.exe -A -F -C main.dsk src/autoexec.bas 
-        rem main.bas contiene mi código fuente
-        rem start /wait tools\Disk-Manager\DISKMGR.exe -A -F -C main.dsk src/main.bas
+        if not exist main.dsk copy tools\Disk-Manager\main.dsk
+        for /R dsk/ %%a in (*.*) do (
+           start /wait tools\Disk-Manager\DISKMGR.exe -A -F -C main.dsk "%%a" )   
+        move /Y main.dsk ./docs
 goto:eof
 
 

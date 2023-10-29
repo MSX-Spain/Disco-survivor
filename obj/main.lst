@@ -1,163 +1,8 @@
 001   0000                 output "main.bin"
-002   0000             	include "src/vars_msxBios.asm"   
-001+  0000             
-002+  0000             ;http://map.grauw.nl/resources/msxbios.php
-003+  0000             ; use RST assembler mnemonic to call
-004+  0000             CHKRAM equ 0x00 ; RST 0x00 > Check RAM and sets slot for command area.
-005+  0000             SYNCHR equ 0x08 ; RST	0x08 > Checks if then current character pointed by HL is one desired.
-006+  0000             CHRGTR equ 0x10 ; RST	0x10 > Gets the next character (or token) of the Basic-text
-007+  0000             OUTDO  equ 0x18 ; RST	0x18 > Output to current outputchannel (printer, diskfile, etc.)
-008+  0000             DCOMPR equ 0x20 ; RST	0x20 > Compares HL with DE
-009+  0000             GETYPR equ 0x28 ; RST	0x28 > Returns Type of DAC
-010+  0000             CALLF  equ 0x30 ; RST	0x30 > Executes an interslot call
-011+  0000             KEYINT equ 0x38 ; RST	0x38 > Executes the timer interrupt process routine
-012+  0000             
-013+  0000             ; use CALL assembler mnemonic
-014+  0000             RDSLT  equ 0x000C ; Reads the value of an address in another slot
-015+  0000             WRSLT  equ 0x0014 ; Writes a value to an address in another slot
-016+  0000             CALSLT equ 0x001C ; Executes inter-slot call
-017+  0000             ENASLT equ 0x0024 ; Switches indicated slot at indicated page on perpetual
-018+  0000             
-019+  0000             ; Initialization-routines
-020+  0000             INITIO equ 0x003B ; Initialises the device
-021+  0000             INIFNK equ 0x003E ; Initialises the contents of the function keys
-022+  0000             
-023+  0000             ; VDP routines
-024+  0000             DISSCR equ 0x0041 ; inhibits the screen display
-025+  0000             ENASCR equ 0x0044 ; displays the screen
-026+  0000             WRTVDP equ 0x0047 ; write data in the VDP-register
-027+  0000             RDVRM  equ 0x004A ; Reads the content of VRAM
-028+  0000             WRTVRM equ 0x004D ; Writes data in VRAM
-029+  0000             SETRD  equ 0x0050 ; Enable VDP to read
-030+  0000             SETWRT equ 0x0053 ; Enable VDP to write
-031+  0000             FILVRM equ 0x0056 ; fill VRAM with value
-032+  0000             LDIRMV equ 0x0059 ; Block transfer to memory from VRAM
-033+  0000             LDIRVM equ 0x005C ; Block transfer to VRAM from memory
-034+  0000             CHGMOD equ 0x005F ; Switches to given screenmode
-035+  0000             CHGCLR equ 0x0062 ; Changes the screencolors
-036+  0000             CLRSPR equ 0x0069 ; Initialises all sprites
-037+  0000             INITXT equ 0x006C ; Switches to SCREEN 0 (text screen with 40 * 24 characters)
-038+  0000             INIT32 equ 0x006F ; Switches to SCREEN 1 (text screen with 32*24 characters)
-039+  0000             INIGRP equ 0x0072 ; Switches to SCREEN 2 (high resolution screen with 256*192 pixels)
-040+  0000             INIMLT equ 0x0075 ; Switches to SCREEN 3 (multi-color screen 64*48 pixels)
-041+  0000             SETTXT equ 0x0078 ; Switches to VDP in SCREEN 0 mode
-042+  0000             SETT32 equ 0x007B ; Switches VDP in SCREEN mode 1
-043+  0000             SETGRP equ 0x007E ; Switches VDP to SCREEN 2 mode
-044+  0000             SETMLT equ 0x0081 ; Switches VDP to SCREEN 3 mode
-045+  0000             CALPAT equ 0x0084 ; Returns the address of the sprite pattern table
-046+  0000             CALATR equ 0x0087 ; Returns the address of the sprite attribute table
-047+  0000             GSPSIZ equ 0x008A ; Returns current sprite size
-048+  0000             GRPPRT equ 0x008D ; Displays a character on the graphic screen
-049+  0000                     
-050+  0000             ; PSG routines
-051+  0000             GICINI equ 0x0090 ; Initialises PSG and sets initial value for the PLAY statement
-052+  0000             WRTPSG equ 0x0093 ; Writes data to PSG-register
-053+  0000             ;Input    : A  - PSG register number
-054+  0000             ;           E  - Data write
-055+  0000             RDPSG  equ 0x0096 ; Reads value from PSG-register
-056+  0000             STRTMS equ 0x0099 ; Tests whether the PLAY statement is being executed as a background task. If not, begins to execute the PLAY statement  */
-057+  0000             
-058+  0000             ; Console routines, rutinas de consola
-059+  0000             CHSNS  equ 0x009C ; Tests the status of the keyboard buffer
-060+  0000             CHGET  equ 0x009F ; One character input (waiting)
-061+  0000             CHPUT  equ 0x00A2 ; Displays one character
-062+  0000             LPTOUT equ 0x00A5 ; Sends one character to printer
-063+  0000             LPTSTT equ 0x00A8 ; Tests printer status
-064+  0000             CNVCHR equ 0x00AB ; tests for the graphic header and transforms the code
-065+  0000             PINLIN equ 0x00AE ; Stores in the specified buffer the character codes input until the return key or STOP key is pressed     */
-066+  0000             INLIN  equ 0x00B1 ; Same as PINLIN except that AUGFLG (#F6AA) is set
-067+  0000             QINLIN equ 0x00B4 ; Prints a questionmark andone space
-068+  0000             BREAKX equ 0x00B7 ; Tests status of CTRL-STOP 
-069+  0000             ISCNTC equ 0x00BA ; Tests status of SHIFT-STOP 
-070+  0000             CKCNTC equ 0x00BD ; Same as ISCNTC. used in Basic
-071+  0000             BEEP   equ 0x00C0 ; generates beep
-072+  0000             BCLS   equ 0x00C3 ; Clears the screen
-073+  0000             POSIT  equ 0x00C6 ; Places the cursor at the specified location
-074+  0000             FNKSB  equ 0x00C9 ; Tests whether the function key display is active (FNKFLG)If so, displays them, otherwise erase them */
-075+  0000             ERAFNK equ 0x00CC ; Erase functionkey display
-076+  0000             DSPFNK equ 0x00CF ; Displays the function keys
-077+  0000             TOTEXT equ 0x00D2 ; Forces the screen to be in the text mode
-078+  0000             
-079+  0000             ; Controller routines                      
-080+  0000             GTSTCK equ 0x00D5 ; Returns the joystick status
-081+  0000             GTTRIG equ 0x00D8 ; Returns current trigger status
-082+  0000             GTPAD  equ 0x00DB ; Returns current touch pad status
-083+  0000             GTPDL  equ 0x00DE ; Returns currenct value of paddle
-084+  0000             
-085+  0000             ; Tape device routines                      
-086+  0000             TAPION equ 0x00E1 ; Reads the header block after turning the cassette motor on
-087+  0000             TAPIN  equ 0x00E4 ; Read data from the tape
-088+  0000             TAPIOF equ 0x00E7 ; Stops reading from the tape
-089+  0000             TAPOON equ 0x00EA ; Turns on the cassette motor and writes the header
-090+  0000             TAPOUT equ 0x00ED ; Writes data on the tape
-091+  0000             TAPOOF equ 0x00F0 ; Stops writing on the tape
-092+  0000             STMOTR equ 0x00F3 ; Sets the cassette motor action
-093+  0000             
-094+  0000             ; Queue routines                      
-095+  0000             LFTQ equ 0x00F6 ; Gives number of bytes in queue
-096+  0000             PUTQ equ 0x00F9 ; Put byte in queue
-097+  0000             
-098+  0000             ; Graphic routines
-099+  0000             ;More info (MSX Assembly Page): http:;map.grauw.nl/resources/msxbios.php                      
-100+  0000             RIGHTC equ 0x00FC ; Shifts screenpixel to the right
-101+  0000             LEFTC  equ 0x00FF ; Shifts screenpixel to the left
-102+  0000             UPC    equ 0x0102 ; Shifts screenpixel up
-103+  0000             TUPC   equ 0x0105 ; Tests whether UPC is possible, if possible, execute UPC
-104+  0000             DOWNC  equ 0x0108 ; Shifts screenpixel down
-105+  0000             TDOWNC equ 0x010B ; Tests whether DOWNC is possible, if possible, execute DOWNC
-106+  0000             SCALXY equ 0x010E ; Scales X and Y coordinates
-107+  0000             MAPXY  equ 0x0111 ; Places cursor at current cursor address
-108+  0000             FETCHC equ 0x0114 ; Gets current cursor addresses mask pattern
-109+  0000             STOREC equ 0x0117 ; Record current cursor addresses mask pattern
-110+  0000             SETATR equ 0x011A ; Set attribute byte
-111+  0000             READC  equ 0x011E ; Reads attribute byte of current screenpixel
-112+  0000             SETC   equ 0x0120 ; Returns currenct screenpixel of specificed attribute byte
-113+  0000             NSETCX equ 0x0123 ; Set horizontal screenpixels
-114+  0000             GTASPC equ 0x0126 ; Gets screen relations
-115+  0000             PNTINI equ 0x0129 ; Initalises the PAINT instruction
-116+  0000             SCANR  equ 0x012C ; Scans screenpixels to the right
-117+  0000             SCANL  equ 0x012F ; Scans screenpixels to the left
-118+  0000             
-119+  0000             ; Graphic routines MSX2 
-120+  0000             ;More info (MSX Assembly Page): http:;map.grauw.nl/resources/msxbios.php#msx2bios
-121+  0000             CHKNEW equ 0x0165 ;Tests screen mode > C-flag set if screenmode = 5, 6, 7 or 8
-122+  0000             BIGFIL equ 0x016B ;fill VRAM with value (total VRAM can be reached) HL address, BC length, A data
-123+  0000             NSETRD equ 0x016E ;Enable VDP to read.(with full 16 bits VRAM-address)
-124+  0000             NSTWRT equ 0x0171 ;Enable VDP to write.(with full 16 bits VRAM-address) 
-125+  0000             NRDVRM equ 0x0174 ;Reads VRAM like in RDVRM.(with full 16 bits VRAM-address)
-126+  0000             NWRVRM equ 0x0177 ;Writes to VRAM like in WRTVRM.(with full 16 bits VRAM-address)
-127+  0000             
-128+  0000                                  
-129+  0000             ; Misc routines
-130+  0000             CHGCAP equ 0x0132 ; Alternates the CAP lamp status
-131+  0000             CHGSND equ 0x0135 ; Alternates the 1-bit sound port status
-132+  0000             RSLREG equ 0x0138 ; Reads the primary slot register
-133+  0000             WSLREG equ 0x013B ; Writes value to the primary slot register
-134+  0000             RDVDP  equ 0x013E ; Reads VDP status register
-135+  0000             SNSMAT equ 0x0141 ; Returns the value of the specified line from the keyboard matrix
-136+  0000             ; 0   1          2           3           4           5           6           7           8       9       10
-137+  0000             ;0    1          2                      4           5           6
-138+  0000             ;1   ; fin grabr ' grabar                                                    Ñ
-139+  0000             ;2                                      \grabar2  DEADfingrabar2 A           B
-140+  0000             ;3 C                        F           G           H
-141+  0000             ;4                          N
-142+  0000             ;5 S                        V                       X                       Z
-143+  0000             ;6SHIFtONTROL    GRAPH      CAPS        CODE
-144+  0000             ;7              ESCAPE                              BS                      RET
-145+  0000             ;8                                               Cursor ^    Cursor v
-146+  0000             PHYDIO equ 0x0144 ; Executes I/O for mass-storage media like diskettes
-147+  0000             FORMAT equ 0x0147 ; Initialises mass-storage media like formatting of diskettes
-148+  0000             ISFLIO equ 0x014A ; Tests if I/O to device is taking place
-149+  0000             OUTDLP equ 0x014E ; Printer output
-150+  0000             GETVCP equ 0x0150 ; Returns pointer to play queue
-151+  0000             GETVC2 equ 0x0153 ; Returns pointer to variable in queue number VOICEN (byte op #FB38)
-152+  0000             KILBUF equ 0x0156 ; Clear keyboard buffer
-153+  0000             CALBAS equ 0x0159 ; Executes inter-slot call to the routine in BASIC interpreter
-154+  0000                     
-155+  0000             
+002   0000             
 003   0000 FE              db   0FEh               ; ID archivo binario, siempre hay que poner el mismo 0FEh
 004   0001 00 C0           dw   INICIO             ; dirección de inicio
-005   0003 1D C0           dw   FINAL - 1          ; dirección final
+005   0003 E8 C4           dw   FINAL - 1          ; dirección final
 006   0005 00 C0           dw   MAIN               ; dircción del programa de ejecución (para cuando pongas r en bload"nombre_programa", r)
 007   0007                 
 008   0007                  
@@ -168,29 +13,413 @@
 013   C000             
 014   C000             ;esta es la entrada principal
 015   C000             MAIN: 
-016   C000 CD 07 C0    	call mensaje
-017   C003 CD 1C C0    	call bucle
-018   C006 C9          	ret
-019   C007             
-020   C007             mensaje: 
-021   C007 3E 68       	ld a,'h'
-022   C009 CD A2 00    	call CHPUT 
-023   C00C 3E 6F       	ld a,'o'
-024   C00E CD A2 00    	call CHPUT 
-025   C011 3E 6C       	ld a,'l'
-026   C013 CD A2 00    	call CHPUT 
-027   C016 3E 61       	ld a,'a'
-028   C018 CD A2 00    	call CHPUT 
-029   C01B C9          	ret
-030   C01C             
-031   C01C             bucle: 
-032   C01C 18 FE       	jr bucle
-033   C01E             
-034   C01E             
-035   C01E                 
-036   C01E                 
-037   C01E                 
-038   C01E                
-039   C01E                  
-040   C01E              
-041   C01E             FINAL: 
+016   C000 CD 7A C0     	call screen2x16
+017   C003 CD 24 C0    	call load_tileset
+018   C006 CD 6D C0    	call load_screen_0
+019   C009 CD 22 C0    	call bucle
+020   C00C C9          	ret
+021   C00D             
+022   C00D             
+023   C00D             mensaje: 
+024   C00D 3E 68       	ld a,'h'
+025   C00F CD A2 00    	call CHPUT 
+026   C012 3E 6F       	ld a,'o'
+027   C014 CD A2 00    	call CHPUT 
+028   C017 3E 6C       	ld a,'l'
+029   C019 CD A2 00    	call CHPUT 
+030   C01C 3E 61       	ld a,'a'
+031   C01E CD A2 00    	call CHPUT 
+032   C021 C9          	ret
+033   C022             
+034   C022             
+035   C022             bucle: 
+036   C022 18 FE       	jr bucle
+037   C024             
+038   C024             	
+039   C024             load_tileset: 
+040   C024             	;banco 0
+041   C024 21 99 C0    	ld hl, tileset_definition 
+042   C027 11 00 00        ld de, 0  ; la rutina LDIRVM necesita haber cargado previamente con de la dirección de inicio de la VRAM.https://sites.google.com/site/multivac7/files-images/TMS9918_VRAMmap_G2_300dpi.png,así es como está formado el VDP en screen 2          
+043   C02A 01 38 00        ld bc, 56  ; son los 8 bytes por 7 tiles que hemos dibujado=56 bytes
+044   C02D CD 5C 00        call  LDIRVM 
+045   C030             	;banco 1
+046   C030 21 99 C0    	ld hl, tileset_definition 
+047   C033 11 00 08        ld de, 2048  ; la rutina LDIRVM necesita haber cargado previamente con de la dirección de inicio de la VRAM.https://sites.google.com/site/multivac7/files-images/TMS9918_VRAMmap_G2_300dpi.png,así es como está formado el VDP en screen 2          
+048   C036 01 38 00        ld bc, 56  ; son los 8 bytes por 7 tiles que hemos dibujado=56 bytes
+049   C039 CD 5C 00        call  LDIRVM 
+050   C03C             	;banco 2
+051   C03C 21 99 C0    	ld hl, tileset_definition 
+052   C03F 11 00 10        ld de, 4096  ; la rutina LDIRVM necesita haber cargado previamente con de la dirección de inicio de la VRAM.https://sites.google.com/site/multivac7/files-images/TMS9918_VRAMmap_G2_300dpi.png,así es como está formado el VDP en screen 2          
+053   C042 01 38 00        ld bc, 56  ; son los 8 bytes por 7 tiles que hemos dibujado=56 bytes
+054   C045 CD 5C 00        call  LDIRVM 
+055   C048             
+056   C048             	;banco 0
+057   C048 21 41 C1    	ld hl, tileset_color
+058   C04B 11 00 20        ld de, 8192  ; la rutina LDIRVM necesita haber cargado previamente con de la dirección de inicio de la VRAM.https://sites.google.com/site/multivac7/files-images/TMS9918_VRAMmap_G2_300dpi.png,así es como está formado el VDP en screen 2          
+059   C04E 01 38 00        ld bc, 56  ; son los 8 bytes por 7 tiles que hemos dibujado=56 bytes
+060   C051 CD 5C 00        call  LDIRVM 
+061   C054             	;banco 1
+062   C054 21 41 C1    	ld hl, tileset_color
+063   C057 11 00 28        ld de, 10240  ; la rutina LDIRVM necesita haber cargado previamente con de la dirección de inicio de la VRAM.https://sites.google.com/site/multivac7/files-images/TMS9918_VRAMmap_G2_300dpi.png,así es como está formado el VDP en screen 2          
+064   C05A 01 38 00        ld bc, 56  ; son los 8 bytes por 7 tiles que hemos dibujado=56 bytes
+065   C05D CD 5C 00        call  LDIRVM 
+066   C060             	;banco 2
+067   C060 21 41 C1    	ld hl, tileset_color
+068   C063 11 00 30        ld de, 12288  ; la rutina LDIRVM necesita haber cargado previamente con de la dirección de inicio de la VRAM.https://sites.google.com/site/multivac7/files-images/TMS9918_VRAMmap_G2_300dpi.png,así es como está formado el VDP en screen 2          
+069   C066 01 38 00        ld bc, 56  ; son los 8 bytes por 7 tiles que hemos dibujado=56 bytes
+070   C069 CD 5C 00        call  LDIRVM 
+071   C06C C9          	ret
+072   C06D             
+073   C06D             load_screen_0: 
+074   C06D 21 E9 C1        ld hl, map_screen0
+075   C070 11 00 18        ld de, 6144 
+076   C073 01 00 03        ld bc, 768
+077   C076 CD 5C 00        call  LDIRVM
+078   C079 C9              ret
+079   C07A             
+080   C07A             screen2x16: 
+081   C07A                 ;poner los colores de tinta, fondo y borde
+082   C07A 21 E9 F3    	ld      hl,FORCLR
+083   C07D 36 0F       	ld      [hl],15 ;le poneos el 15 en tinta que es el blanco
+084   C07F 23          	inc     hl
+085   C080 36 01       	ld      [hl],1 ;le metemos 1 en fondo que es el negro
+086   C082 23          	inc		hl
+087   C083 36 01       	ld		[hl],1 ;en borde también el negro
+088   C085 CD 62 00    	call    CHGCLR
+089   C088             
+090   C088             	;click off	
+091   C088 AF          	xor	a		
+src/main.asm(92): error: Label not found: CLIKSW
+092   C089 32 00 00    	ld	[CLIKSW],a
+093   C08C             		
+094   C08C             	;screen 2
+095   C08C 3E 02       	ld a,2
+096   C08E CD 5F 00    	call CHGMOD ;rutina de la bios que cambia el modo de screen
+097   C091             
+098   C091             	;sprites no ampliados de 16x16
+099   C091 06 E2       	ld b,0xe2
+100   C093 0E 01       	ld c,1
+101   C095 CD 47 00    	call 0x47
+102   C098             
+103   C098 C9          	ret
+104   C099             
+105   C099             
+106   C099                 
+107   C099                 
+108   C099             	include "src/vars_msxBios.asm"    
+001+  C099             
+002+  C099             ;http://map.grauw.nl/resources/msxbios.php
+003+  C099             ; use RST assembler mnemonic to call
+004+  C099             CHKRAM equ 0x00 ; RST 0x00 > Check RAM and sets slot for command area.
+005+  C099             SYNCHR equ 0x08 ; RST	0x08 > Checks if then current character pointed by HL is one desired.
+006+  C099             CHRGTR equ 0x10 ; RST	0x10 > Gets the next character (or token) of the Basic-text
+007+  C099             OUTDO  equ 0x18 ; RST	0x18 > Output to current outputchannel (printer, diskfile, etc.)
+008+  C099             DCOMPR equ 0x20 ; RST	0x20 > Compares HL with DE
+009+  C099             GETYPR equ 0x28 ; RST	0x28 > Returns Type of DAC
+010+  C099             CALLF  equ 0x30 ; RST	0x30 > Executes an interslot call
+011+  C099             KEYINT equ 0x38 ; RST	0x38 > Executes the timer interrupt process routine
+012+  C099             
+013+  C099             ; use CALL assembler mnemonic
+014+  C099             RDSLT  equ 0x000C ; Reads the value of an address in another slot
+015+  C099             WRSLT  equ 0x0014 ; Writes a value to an address in another slot
+016+  C099             CALSLT equ 0x001C ; Executes inter-slot call
+017+  C099             ENASLT equ 0x0024 ; Switches indicated slot at indicated page on perpetual
+018+  C099             
+019+  C099             ; Initialization-routines
+020+  C099             INITIO equ 0x003B ; Initialises the device
+021+  C099             INIFNK equ 0x003E ; Initialises the contents of the function keys
+022+  C099             
+023+  C099             ; VDP routines
+024+  C099             DISSCR equ 0x0041 ; inhibits the screen display
+025+  C099             ENASCR equ 0x0044 ; displays the screen
+026+  C099             WRTVDP equ 0x0047 ; write data in the VDP-register
+027+  C099             RDVRM  equ 0x004A ; Reads the content of VRAM
+028+  C099             WRTVRM equ 0x004D ; Writes data in VRAM
+029+  C099             SETRD  equ 0x0050 ; Enable VDP to read
+030+  C099             SETWRT equ 0x0053 ; Enable VDP to write
+031+  C099             FILVRM equ 0x0056 ; fill VRAM with value
+032+  C099             LDIRMV equ 0x0059 ; Block transfer to memory from VRAM
+033+  C099             LDIRVM equ 0x005C ; Block transfer to VRAM from memory
+034+  C099             CHGMOD equ 0x005F ; Switches to given screenmode
+035+  C099             CHGCLR equ 0x0062 ; Changes the screencolors
+036+  C099             CLRSPR equ 0x0069 ; Initialises all sprites
+037+  C099             INITXT equ 0x006C ; Switches to SCREEN 0 (text screen with 40 * 24 characters)
+038+  C099             INIT32 equ 0x006F ; Switches to SCREEN 1 (text screen with 32*24 characters)
+039+  C099             INIGRP equ 0x0072 ; Switches to SCREEN 2 (high resolution screen with 256*192 pixels)
+040+  C099             INIMLT equ 0x0075 ; Switches to SCREEN 3 (multi-color screen 64*48 pixels)
+041+  C099             SETTXT equ 0x0078 ; Switches to VDP in SCREEN 0 mode
+042+  C099             SETT32 equ 0x007B ; Switches VDP in SCREEN mode 1
+043+  C099             SETGRP equ 0x007E ; Switches VDP to SCREEN 2 mode
+044+  C099             SETMLT equ 0x0081 ; Switches VDP to SCREEN 3 mode
+045+  C099             CALPAT equ 0x0084 ; Returns the address of the sprite pattern table
+046+  C099             CALATR equ 0x0087 ; Returns the address of the sprite attribute table
+047+  C099             GSPSIZ equ 0x008A ; Returns current sprite size
+048+  C099             GRPPRT equ 0x008D ; Displays a character on the graphic screen
+049+  C099             FORCLR equ 0xF3E9 ;color de tinta (+1=color del fondo, +1 color del borde)
+050+  C099                     
+051+  C099             ; PSG routines
+052+  C099             GICINI equ 0x0090 ; Initialises PSG and sets initial value for the PLAY statement
+053+  C099             WRTPSG equ 0x0093 ; Writes data to PSG-register
+054+  C099             ;Input    : A  - PSG register number
+055+  C099             ;           E  - Data write
+056+  C099             RDPSG  equ 0x0096 ; Reads value from PSG-register
+057+  C099             STRTMS equ 0x0099 ; Tests whether the PLAY statement is being executed as a background task. If not, begins to execute the PLAY statement  */
+058+  C099             
+059+  C099             ; Console routines, rutinas de consola
+060+  C099             CHSNS  equ 0x009C ; Tests the status of the keyboard buffer
+061+  C099             CHGET  equ 0x009F ; One character input (waiting)
+062+  C099             CHPUT  equ 0x00A2 ; Displays one character
+063+  C099             LPTOUT equ 0x00A5 ; Sends one character to printer
+064+  C099             LPTSTT equ 0x00A8 ; Tests printer status
+065+  C099             CNVCHR equ 0x00AB ; tests for the graphic header and transforms the code
+066+  C099             PINLIN equ 0x00AE ; Stores in the specified buffer the character codes input until the return key or STOP key is pressed     */
+067+  C099             INLIN  equ 0x00B1 ; Same as PINLIN except that AUGFLG (#F6AA) is set
+068+  C099             QINLIN equ 0x00B4 ; Prints a questionmark andone space
+069+  C099             BREAKX equ 0x00B7 ; Tests status of CTRL-STOP 
+070+  C099             ISCNTC equ 0x00BA ; Tests status of SHIFT-STOP 
+071+  C099             CKCNTC equ 0x00BD ; Same as ISCNTC. used in Basic
+072+  C099             BEEP   equ 0x00C0 ; generates beep
+073+  C099             BCLS   equ 0x00C3 ; Clears the screen
+074+  C099             POSIT  equ 0x00C6 ; Places the cursor at the specified location
+075+  C099             FNKSB  equ 0x00C9 ; Tests whether the function key display is active (FNKFLG)If so, displays them, otherwise erase them */
+076+  C099             ERAFNK equ 0x00CC ; Erase functionkey display
+077+  C099             DSPFNK equ 0x00CF ; Displays the function keys
+078+  C099             TOTEXT equ 0x00D2 ; Forces the screen to be in the text mode
+079+  C099             
+080+  C099             ; Controller routines                      
+081+  C099             GTSTCK equ 0x00D5 ; Returns the joystick status
+082+  C099             GTTRIG equ 0x00D8 ; Returns current trigger status
+083+  C099             GTPAD  equ 0x00DB ; Returns current touch pad status
+084+  C099             GTPDL  equ 0x00DE ; Returns currenct value of paddle
+085+  C099             
+086+  C099             ; Tape device routines                      
+087+  C099             TAPION equ 0x00E1 ; Reads the header block after turning the cassette motor on
+088+  C099             TAPIN  equ 0x00E4 ; Read data from the tape
+089+  C099             TAPIOF equ 0x00E7 ; Stops reading from the tape
+090+  C099             TAPOON equ 0x00EA ; Turns on the cassette motor and writes the header
+091+  C099             TAPOUT equ 0x00ED ; Writes data on the tape
+092+  C099             TAPOOF equ 0x00F0 ; Stops writing on the tape
+093+  C099             STMOTR equ 0x00F3 ; Sets the cassette motor action
+094+  C099             
+095+  C099             ; Queue routines                      
+096+  C099             LFTQ equ 0x00F6 ; Gives number of bytes in queue
+097+  C099             PUTQ equ 0x00F9 ; Put byte in queue
+098+  C099             
+099+  C099             ; Graphic routines
+100+  C099             ;More info (MSX Assembly Page): http:;map.grauw.nl/resources/msxbios.php                      
+101+  C099             RIGHTC equ 0x00FC ; Shifts screenpixel to the right
+102+  C099             LEFTC  equ 0x00FF ; Shifts screenpixel to the left
+103+  C099             UPC    equ 0x0102 ; Shifts screenpixel up
+104+  C099             TUPC   equ 0x0105 ; Tests whether UPC is possible, if possible, execute UPC
+105+  C099             DOWNC  equ 0x0108 ; Shifts screenpixel down
+106+  C099             TDOWNC equ 0x010B ; Tests whether DOWNC is possible, if possible, execute DOWNC
+107+  C099             SCALXY equ 0x010E ; Scales X and Y coordinates
+108+  C099             MAPXY  equ 0x0111 ; Places cursor at current cursor address
+109+  C099             FETCHC equ 0x0114 ; Gets current cursor addresses mask pattern
+110+  C099             STOREC equ 0x0117 ; Record current cursor addresses mask pattern
+111+  C099             SETATR equ 0x011A ; Set attribute byte
+112+  C099             READC  equ 0x011E ; Reads attribute byte of current screenpixel
+113+  C099             SETC   equ 0x0120 ; Returns currenct screenpixel of specificed attribute byte
+114+  C099             NSETCX equ 0x0123 ; Set horizontal screenpixels
+115+  C099             GTASPC equ 0x0126 ; Gets screen relations
+116+  C099             PNTINI equ 0x0129 ; Initalises the PAINT instruction
+117+  C099             SCANR  equ 0x012C ; Scans screenpixels to the right
+118+  C099             SCANL  equ 0x012F ; Scans screenpixels to the left
+119+  C099             
+120+  C099             ; Graphic routines MSX2 
+121+  C099             ;More info (MSX Assembly Page): http:;map.grauw.nl/resources/msxbios.php#msx2bios
+122+  C099             CHKNEW equ 0x0165 ;Tests screen mode > C-flag set if screenmode = 5, 6, 7 or 8
+123+  C099             BIGFIL equ 0x016B ;fill VRAM with value (total VRAM can be reached) HL address, BC length, A data
+124+  C099             NSETRD equ 0x016E ;Enable VDP to read.(with full 16 bits VRAM-address)
+125+  C099             NSTWRT equ 0x0171 ;Enable VDP to write.(with full 16 bits VRAM-address) 
+126+  C099             NRDVRM equ 0x0174 ;Reads VRAM like in RDVRM.(with full 16 bits VRAM-address)
+127+  C099             NWRVRM equ 0x0177 ;Writes to VRAM like in WRTVRM.(with full 16 bits VRAM-address)
+128+  C099             
+129+  C099                                  
+130+  C099             ; Misc routines
+131+  C099             CHGCAP equ 0x0132 ; Alternates the CAP lamp status
+132+  C099             CHGSND equ 0x0135 ; Alternates the 1-bit sound port status
+133+  C099             RSLREG equ 0x0138 ; Reads the primary slot register
+134+  C099             WSLREG equ 0x013B ; Writes value to the primary slot register
+135+  C099             RDVDP  equ 0x013E ; Reads VDP status register
+136+  C099             SNSMAT equ 0x0141 ; Returns the value of the specified line from the keyboard matrix
+137+  C099             ; 0   1          2           3           4           5           6           7           8       9       10
+138+  C099             ;0    1          2                      4           5           6
+139+  C099             ;1   ; fin grabr ' grabar                                                    Ñ
+140+  C099             ;2                                      \grabar2  DEADfingrabar2 A           B
+141+  C099             ;3 C                        F           G           H
+142+  C099             ;4                          N
+143+  C099             ;5 S                        V                       X                       Z
+144+  C099             ;6SHIFtONTROL    GRAPH      CAPS        CODE
+145+  C099             ;7              ESCAPE                              BS                      RET
+146+  C099             ;8                                               Cursor ^    Cursor v
+147+  C099             PHYDIO equ 0x0144 ; Executes I/O for mass-storage media like diskettes
+148+  C099             FORMAT equ 0x0147 ; Initialises mass-storage media like formatting of diskettes
+149+  C099             ISFLIO equ 0x014A ; Tests if I/O to device is taking place
+150+  C099             OUTDLP equ 0x014E ; Printer output
+151+  C099             GETVCP equ 0x0150 ; Returns pointer to play queue
+152+  C099             GETVC2 equ 0x0153 ; Returns pointer to variable in queue number VOICEN (byte op #FB38)
+153+  C099             KILBUF equ 0x0156 ; Clear keyboard buffer
+154+  C099             CALBAS equ 0x0159 ; Executes inter-slot call to the routine in BASIC interpreter
+155+  C099                     
+156+  C099             
+109   C099             tileset_definition: 
+110   C099             	include "src/tileset-definition.asm"
+001+  C099             BANK_PATTERN_0: 
+002+  C099             	DB 255, 255, 255, 255, 255, 255, 255, 255
+002+  C099 FFFFFFFFFFFFFFFF
+003+  C0A1             	DB 255, 255, 255, 255, 255, 255, 255, 255
+003+  C0A1 FFFFFFFFFFFFFFFF
+004+  C0A9             	DB 255, 255, 255, 255, 255, 255, 255, 255
+004+  C0A9 FFFFFFFFFFFFFFFF
+005+  C0B1             	DB 0, 126, 126, 126, 126, 126, 126, 0
+005+  C0B1 007E7E7E7E7E7E00
+006+  C0B9             	DB 255, 255, 255, 255, 255, 255, 255, 255
+006+  C0B9 FFFFFFFFFFFFFFFF
+007+  C0C1             	DB 255, 255, 255, 255, 255, 255, 255, 255
+007+  C0C1 FFFFFFFFFFFFFFFF
+008+  C0C9             	DB 255, 231, 231, 255, 195, 129, 129, 219
+008+  C0C9 FFE7E7FFC38181DB
+009+  C0D1             	
+010+  C0D1             BANK_PATTERN_1: 
+011+  C0D1             	DB 255, 255, 255, 255, 255, 255, 255, 255
+011+  C0D1 FFFFFFFFFFFFFFFF
+012+  C0D9             	DB 255, 255, 255, 255, 255, 255, 255, 255
+012+  C0D9 FFFFFFFFFFFFFFFF
+013+  C0E1             	DB 255, 255, 255, 255, 255, 255, 255, 255
+013+  C0E1 FFFFFFFFFFFFFFFF
+014+  C0E9             	DB 0, 126, 126, 126, 126, 126, 126, 0
+014+  C0E9 007E7E7E7E7E7E00
+015+  C0F1             	DB 255, 255, 255, 255, 255, 255, 255, 255
+015+  C0F1 FFFFFFFFFFFFFFFF
+016+  C0F9             	DB 255, 255, 255, 255, 255, 255, 255, 255
+016+  C0F9 FFFFFFFFFFFFFFFF
+017+  C101             	DB 255, 231, 231, 255, 195, 129, 129, 219
+017+  C101 FFE7E7FFC38181DB
+018+  C109             	
+019+  C109             BANK_PATTERN_2: 
+020+  C109             	DB 255, 255, 255, 255, 255, 255, 255, 255
+020+  C109 FFFFFFFFFFFFFFFF
+021+  C111             	DB 255, 255, 255, 255, 255, 255, 255, 255
+021+  C111 FFFFFFFFFFFFFFFF
+022+  C119             	DB 255, 255, 255, 255, 255, 255, 255, 255
+022+  C119 FFFFFFFFFFFFFFFF
+023+  C121             	DB 0, 126, 126, 126, 126, 126, 126, 0
+023+  C121 007E7E7E7E7E7E00
+024+  C129             	DB 255, 255, 255, 255, 255, 255, 255, 255
+024+  C129 FFFFFFFFFFFFFFFF
+025+  C131             	DB 255, 255, 255, 255, 255, 255, 255, 255
+025+  C131 FFFFFFFFFFFFFFFF
+026+  C139             	DB 255, 231, 231, 255, 195, 129, 129, 219
+026+  C139 FFE7E7FFC38181DB
+027+  C141             	
+028+  C141             
+111   C141             tileset_color: 
+112   C141             	include "src/tileset-color.asm"
+001+  C141             BANK_COLOR_0: 
+002+  C141             	DB 16, 16, 16, 16, 16, 16, 16, 16
+002+  C141 1010101010101010
+003+  C149             	DB 128, 128, 128, 128, 128, 128, 128, 128
+003+  C149 8080808080808080
+004+  C151             	DB 208, 208, 208, 208, 208, 208, 208, 208
+004+  C151 D0D0D0D0D0D0D0D0
+005+  C159             	DB 185, 185, 185, 185, 185, 185, 185, 185
+005+  C159 B9B9B9B9B9B9B9B9
+006+  C161             	DB 240, 240, 240, 240, 240, 240, 240, 241
+006+  C161 F0F0F0F0F0F0F0F1
+007+  C169             	DB 160, 160, 160, 160, 160, 160, 160, 160
+007+  C169 A0A0A0A0A0A0A0A0
+008+  C171             	DB 240, 240, 240, 240, 240, 240, 240, 240
+008+  C171 F0F0F0F0F0F0F0F0
+009+  C179             	
+010+  C179             BANK_COLOR_1: 
+011+  C179             	DB 16, 16, 16, 16, 16, 16, 16, 16
+011+  C179 1010101010101010
+012+  C181             	DB 128, 128, 128, 128, 128, 128, 128, 128
+012+  C181 8080808080808080
+013+  C189             	DB 208, 208, 208, 208, 208, 208, 208, 208
+013+  C189 D0D0D0D0D0D0D0D0
+014+  C191             	DB 185, 185, 185, 185, 185, 185, 185, 185
+014+  C191 B9B9B9B9B9B9B9B9
+015+  C199             	DB 240, 240, 240, 240, 240, 240, 240, 241
+015+  C199 F0F0F0F0F0F0F0F1
+016+  C1A1             	DB 160, 160, 160, 160, 160, 160, 160, 160
+016+  C1A1 A0A0A0A0A0A0A0A0
+017+  C1A9             	DB 240, 240, 240, 240, 240, 240, 240, 240
+017+  C1A9 F0F0F0F0F0F0F0F0
+018+  C1B1             	
+019+  C1B1             BANK_COLOR_2: 
+020+  C1B1             	DB 16, 16, 16, 16, 16, 16, 16, 16
+020+  C1B1 1010101010101010
+021+  C1B9             	DB 128, 128, 128, 128, 128, 128, 128, 128
+021+  C1B9 8080808080808080
+022+  C1C1             	DB 208, 208, 208, 208, 208, 208, 208, 208
+022+  C1C1 D0D0D0D0D0D0D0D0
+023+  C1C9             	DB 185, 185, 185, 185, 185, 185, 185, 185
+023+  C1C9 B9B9B9B9B9B9B9B9
+024+  C1D1             	DB 240, 240, 240, 240, 240, 240, 240, 241
+024+  C1D1 F0F0F0F0F0F0F0F1
+025+  C1D9             	DB 160, 160, 160, 160, 160, 160, 160, 160
+025+  C1D9 A0A0A0A0A0A0A0A0
+026+  C1E1             	DB 240, 240, 240, 240, 240, 240, 240, 240
+026+  C1E1 F0F0F0F0F0F0F0F0
+027+  C1E9             	
+113   C1E9             
+114   C1E9             ;			mapas
+115   C1E9             ;-----------------------------
+116   C1E9             map_screen0: 
+117   C1E9             	include "src/map-screen0.asm"
+001+  C1E9             
+002+  C1E9             SCREEN_0_0: 
+003+  C1E9             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+003+  C1E9 0000000000000000000000000000000000000000000000000000000000000000
+004+  C209             	DB   0,  4,  4,  4,  4,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+004+  C209 0004040404000000000000000000000000000000000000000000000000000000
+005+  C229             	DB   0,  4,  4,  4,  4,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  3,  3,  3,  3,  3,  3,  0
+005+  C229 0004040404000000000000000000000000000000000000000003030303030300
+006+  C249             	DB   0,  4,  6,  4,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  3,  3,  3,  3,  3,  3,  0
+006+  C249 0004060405000000000000000000000000000000000000000003030303030300
+007+  C269             	DB   0,  4,  4,  4,  4,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+007+  C269 0004040404000000000000000000000000000000000000000000000000000000
+008+  C289             	DB   0,  4,  4,  4,  4,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+008+  C289 0004040404000000000000000000000000000000000000000000000000000000
+009+  C2A9             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+009+  C2A9 0000000000000000000000000000000000000000000000000000000000000000
+010+  C2C9             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+010+  C2C9 0000000000000000000000000000000000000000000000000000000000000000
+011+  C2E9             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+011+  C2E9 0000000000000000000000000000000000000000000000000000000000000000
+012+  C309             	DB   0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0
+012+  C309 0000010000000000000001000000000000000000000000020000000000000000
+013+  C329             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0
+013+  C329 0000000000000000000000000000000200000100000000000000010000000000
+014+  C349             	DB   0,  0,  0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+014+  C349 0000000000000200000000000000000000000000000000000000000000000000
+015+  C369             	DB   0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+015+  C369 0001000000000000000000000100000000000000000000000000000000000000
+016+  C389             	DB   0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,  0,  0,  2,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0
+016+  C389 0000000002000000000002000000020000000000020000010000000000000000
+017+  C3A9             	DB   0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0
+017+  C3A9 0000000000000001000000000000000000010000000000000000000000000100
+018+  C3C9             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  0,  0,  0
+018+  C3C9 0000000000000000000000000000000000000000000000000000000002000000
+019+  C3E9             	DB   0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+019+  C3E9 0000010000000000000000000000000000000000000000000000000000000000
+020+  C409             	DB   0,  0,  0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+020+  C409 0000000000000200000000000000000000000200000000000000000000000000
+021+  C429             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0
+021+  C429 0000000000000000000200000001000000000000010000000000000001000000
+022+  C449             	DB   0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  2,  0
+022+  C449 0000010000000000000000000000000000000000000000000100000000000200
+023+  C469             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+023+  C469 0000000000000000000000000000000000000000000000000000000000000000
+024+  C489             	DB   0,  0,  0,  0,  0,  2,  0,  0,  0,  1,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+024+  C489 0000000000020000000100000002000000000000000200000000000000000000
+025+  C4A9             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  2,  0,  0,  1,  0,  0,  0
+025+  C4A9 0000000000000000000000000000000000000100000000000002000001000000
+026+  C4C9             	DB   0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+026+  C4C9 0001000000000000000000000000000000000000000000000000000000000000
+027+  C4E9             
+028+  C4E9             
+118   C4E9              
+119   C4E9             FINAL: 
