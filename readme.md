@@ -1,12 +1,8 @@
-# develop
+# Develop
 
 Escribe en un cmd de windows make.bat
 
 
+# Test sjasmplus + dezod debugger
 
-
-# test sjasmplus + dezod debugger
-
-type make.sh in terminal
-
-Escribe make.sh en el terminal
+En vscode pincha en run and debug, depués en start debug o f5
