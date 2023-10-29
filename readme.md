@@ -11,7 +11,7 @@ En la 4 una chica le ha pedido ir a los reservados
 
 # Play online
 
-https://msx-spain.github.io/disco-survivor/?disk=main.dsk
+https://msx-spain.github.io/Disco-survivor/?disk=main.dsk
 
 
 
