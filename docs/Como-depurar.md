@@ -28,30 +28,55 @@ Con este comando: code --install-extension tools\dezog\dezog-1.3.5.vsix
 El launch.json tiene que tener esto:
 
 {
+
     "version": "0.2.0",
+
     "configurations": [
+
         {
+
             "type": "dezog",
+
             "request": "launch",
+
             "name": "Debug OpenMSX",
+
             "remoteType": "openmsx",
+
             "listFiles": [
+
                 {
+
                     "path": "obj/main.lst",
+
                     "useFiles": true,
+
                     "asm": "sjasmplus",
+
                     "mainFile": "src/main.asm"
+
                 }
+
             ],
+
             "startAutomatically": false,
+
             "commandsAfterLaunch": [
+
                 "-e openmsx_info version"
+
             ],
+
             "resetOnLaunch": false,
+
             "rootFolder": "${workspaceFolder}",
+
             "tmpDir": ".tmp"
+
         }
+
     ]
+    
 }
 
 Si se queda esperando pincha en restart:
