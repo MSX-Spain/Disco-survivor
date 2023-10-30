@@ -62,7 +62,7 @@ El launch.json tiene que tener esto:
 
 Si se queda esperando pincha en restart:
 
-<img src="5.PNG" width="400px" />
+<img src="5.PNG" width="400px" /> 
 
 
 5.Pon el archivo obj/main.lst a la vista y abre el terminal de openmsx con f10 y pon los puntos de depuración (breakpoints) donde kieras:

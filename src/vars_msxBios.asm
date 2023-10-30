@@ -117,7 +117,7 @@ PNTINI equ 0x0129 ; Initalises the PAINT instruction
 SCANR  equ 0x012C ; Scans screenpixels to the right
 SCANL  equ 0x012F ; Scans screenpixels to the left
 
-; Graphic routines MSX2 
+; Graphic routines MSX2
 ;More info (MSX Assembly Page): http:;map.grauw.nl/resources/msxbios.php#msx2bios
 CHKNEW equ 0x0165 ;Tests screen mode > C-flag set if screenmode = 5, 6, 7 or 8
 BIGFIL equ 0x016B ;fill VRAM with value (total VRAM can be reached) HL address, BC length, A data
@@ -125,6 +125,11 @@ NSETRD equ 0x016E ;Enable VDP to read.(with full 16 bits VRAM-address)
 NSTWRT equ 0x0171 ;Enable VDP to write.(with full 16 bits VRAM-address) 
 NRDVRM equ 0x0174 ;Reads VRAM like in RDVRM.(with full 16 bits VRAM-address)
 NWRVRM equ 0x0177 ;Writes to VRAM like in WRTVRM.(with full 16 bits VRAM-address)
+
+
+
+
+
 
                      
 ; Misc routines

@@ -1,0 +1,650 @@
+001   0000                 output "loader.bin"
+002   0000             
+003   0000 FE              db   0FEh               ; ID archivo binario, siempre hay que poner el mismo 0FEh
+004   0001 00 C0           dw   INICIO             ; dirección de inicio
+005   0003 9E C7           dw   FINAL - 1          ; dirección final
+006   0005 00 C0           dw   MAIN               ; dircción del programa de ejecución (para cuando pongas r en bload"nombre_programa", r)
+007   0007                 
+008   0007                  
+009   0007              
+010   0007                 org #c000              ; org se utiliza para decirle al z80 en que posición de memoria empieza nuestro programa (es la 33280 en decimal), en hezadecimal sería #8200
+011   C000                     
+012   C000             INICIO: 
+013   C000             
+014   C000             ;esta es la entrada principal
+015   C000             MAIN: 
+016   C000 CD 63 C0     	call set_screen2x16
+017   C003 CD 82 C0    	call load_sprites
+018   C006 CD 0D C0    	call load_tileset
+019   C009 CD 56 C0    	call load_screen_0
+020   C00C             	
+021   C00C C9          	ret
+022   C00D             
+023   C00D             
+024   C00D             
+025   C00D             
+026   C00D             
+027   C00D             
+028   C00D             	
+029   C00D             load_tileset: 
+030   C00D             	;banco 0
+031   C00D 21 8F C0    	ld hl, tileset_definition 
+032   C010 11 00 00    	ld de, 0  ; la rutina LDIRVM necesita haber cargado previamente con de la dirección de inicio de la VRAM.https://sites.google.com/site/multivac7/files-images/TMS9918_VRAMmap_G2_300dpi.png,así es como está formado el VDP en screen 2          
+033   C013 01 38 00    	ld bc, 56  ; son los 8 bytes por 7 tiles que hemos dibujado=56 bytes
+034   C016 CD 5C 00    	call  LDIRVM 
+035   C019             	;banco 1
+036   C019 21 8F C0    	ld hl, tileset_definition 
+037   C01C 11 00 08    	ld de, 2048  
+038   C01F 01 38 00    	ld bc, 56 
+039   C022 CD 5C 00    	call  LDIRVM 
+040   C025             	;banco 2
+041   C025 21 8F C0    	ld hl, tileset_definition 
+042   C028 11 00 10    	ld de, 4096  
+043   C02B 01 38 00    	ld bc, 56  
+044   C02E CD 5C 00    	call  LDIRVM 
+045   C031             
+046   C031             	;banco 0
+047   C031 21 37 C1    	ld hl, tileset_color
+048   C034 11 00 20        ld de, 8192  
+049   C037 01 38 00        ld bc, 56  
+050   C03A CD 5C 00        call  LDIRVM 
+051   C03D             	;banco 1
+052   C03D 21 37 C1    	ld hl, tileset_color
+053   C040 11 00 28        ld de, 10240  
+054   C043 01 38 00        ld bc, 56  
+055   C046 CD 5C 00        call  LDIRVM 
+056   C049             	;banco 2
+057   C049 21 37 C1    	ld hl, tileset_color
+058   C04C 11 00 30        ld de, 12288  
+059   C04F 01 38 00        ld bc, 56  
+060   C052 CD 5C 00        call  LDIRVM 
+061   C055 C9          	ret
+062   C056             
+063   C056             load_screen_0: 
+064   C056 21 DF C4        ld hl, map_screen0
+065   C059 11 00 18        ld de, 6144 
+066   C05C             	;Le quitamos 64 ya que keremos pintar el HUD en las últimas 2 líneas de la pantalla
+067   C05C 01 C0 02        ld bc, 768-64
+068   C05F CD 5C 00        call  LDIRVM
+069   C062 C9              ret
+070   C063             
+071   C063             set_screen2x16: 
+072   C063                 ;poner los colores de tinta, fondo y borde
+073   C063 21 E9 F3    	ld      hl,FORCLR
+074   C066 36 0F       	ld      [hl],15 ;le poneos el 15 en tinta que es el blanco
+075   C068 23          	inc     hl
+076   C069 36 01       	ld      [hl],1 ;le metemos 1 en fondo que es el negro
+077   C06B 23          	inc		hl
+078   C06C 36 09       	ld		[hl],9 ;en borde también el negro
+079   C06E CD 62 00    	call    CHGCLR
+080   C071             
+081   C071             	;click off	
+082   C071 AF          	xor	a		
+083   C072 32 DB F3    	ld	[CLIKSW],a
+084   C075             		
+085   C075             	;screen 2
+086   C075 3E 02       	ld a,2
+087   C077 CD 5F 00    	call CHGMOD ;rutina de la bios que cambia el modo de screen
+088   C07A             
+089   C07A             	;sprites no ampliados de 16x16
+090   C07A 06 E2       	ld b,0xe2
+091   C07C 0E 01       	ld c,1
+092   C07E CD 47 00    	call WRTVDP
+093   C081             
+094   C081 C9          	ret
+095   C082             
+096   C082             load_sprites: 
+097   C082                 ;hemos dibujado 20 sprites
+098   C082 21 DF C1        ld hl, sprites_definition
+099   C085 11 00 38        ld de, 14336; #3800
+100   C088 01 80 02        ld bc, 32*20
+101   C08B CD 5C 00        call  LDIRVM 
+102   C08E C9          	ret
+103   C08F             
+104   C08F             
+105   C08F             
+106   C08F                 
+107   C08F                 
+108   C08F             	include "src/vars_msxBios.asm"    
+001+  C08F             
+002+  C08F             ;http://map.grauw.nl/resources/msxbios.php
+003+  C08F             ; use RST assembler mnemonic to call
+004+  C08F             CHKRAM equ 0x00 ; RST 0x00 > Check RAM and sets slot for command area.
+005+  C08F             SYNCHR equ 0x08 ; RST	0x08 > Checks if then current character pointed by HL is one desired.
+006+  C08F             CHRGTR equ 0x10 ; RST	0x10 > Gets the next character (or token) of the Basic-text
+007+  C08F             OUTDO  equ 0x18 ; RST	0x18 > Output to current outputchannel (printer, diskfile, etc.)
+008+  C08F             DCOMPR equ 0x20 ; RST	0x20 > Compares HL with DE
+009+  C08F             GETYPR equ 0x28 ; RST	0x28 > Returns Type of DAC
+010+  C08F             CALLF  equ 0x30 ; RST	0x30 > Executes an interslot call
+011+  C08F             KEYINT equ 0x38 ; RST	0x38 > Executes the timer interrupt process routine
+012+  C08F             
+013+  C08F             ; use CALL assembler mnemonic
+014+  C08F             RDSLT  equ 0x000C ; Reads the value of an address in another slot
+015+  C08F             WRSLT  equ 0x0014 ; Writes a value to an address in another slot
+016+  C08F             CALSLT equ 0x001C ; Executes inter-slot call
+017+  C08F             ENASLT equ 0x0024 ; Switches indicated slot at indicated page on perpetual
+018+  C08F             
+019+  C08F             ; Initialization-routines
+020+  C08F             INITIO equ 0x003B ; Initialises the device
+021+  C08F             INIFNK equ 0x003E ; Initialises the contents of the function keys
+022+  C08F             
+023+  C08F             ; VDP routines
+024+  C08F             DISSCR equ 0x0041 ; inhibits the screen display
+025+  C08F             ENASCR equ 0x0044 ; displays the screen
+026+  C08F             WRTVDP equ 0x0047 ; write data in the VDP-register, B  - Data to write, C  - Number of the register
+027+  C08F             RDVRM  equ 0x004A ; Reads the content of VRAM
+028+  C08F             WRTVRM equ 0x004D ; Writes data in VRAM
+029+  C08F             SETRD  equ 0x0050 ; Enable VDP to read
+030+  C08F             SETWRT equ 0x0053 ; Enable VDP to write
+031+  C08F             FILVRM equ 0x0056 ; fill VRAM with value
+032+  C08F             LDIRMV equ 0x0059 ; Block transfer to memory from VRAM
+033+  C08F             LDIRVM equ 0x005C ; Block transfer to VRAM from memory
+034+  C08F             CHGMOD equ 0x005F ; Switches to given screenmode
+035+  C08F             CHGCLR equ 0x0062 ; Changes the screencolors
+036+  C08F             CLRSPR equ 0x0069 ; Initialises all sprites
+037+  C08F             INITXT equ 0x006C ; Switches to SCREEN 0 (text screen with 40 * 24 characters)
+038+  C08F             INIT32 equ 0x006F ; Switches to SCREEN 1 (text screen with 32*24 characters)
+039+  C08F             INIGRP equ 0x0072 ; Switches to SCREEN 2 (high resolution screen with 256*192 pixels)
+040+  C08F             INIMLT equ 0x0075 ; Switches to SCREEN 3 (multi-color screen 64*48 pixels)
+041+  C08F             SETTXT equ 0x0078 ; Switches to VDP in SCREEN 0 mode
+042+  C08F             SETT32 equ 0x007B ; Switches VDP in SCREEN mode 1
+043+  C08F             SETGRP equ 0x007E ; Switches VDP to SCREEN 2 mode
+044+  C08F             SETMLT equ 0x0081 ; Switches VDP to SCREEN 3 mode
+045+  C08F             CALPAT equ 0x0084 ; Returns the address of the sprite pattern table
+046+  C08F             CALATR equ 0x0087 ; Returns the address of the sprite attribute table
+047+  C08F             GSPSIZ equ 0x008A ; Returns current sprite size
+048+  C08F             GRPPRT equ 0x008D ; Displays a character on the graphic screen
+049+  C08F             FORCLR equ 0xF3E9 ;color de tinta (+1=color del fondo, +1 color del borde)
+050+  C08F                     
+051+  C08F             ; PSG routines
+052+  C08F             GICINI equ 0x0090 ; Initialises PSG and sets initial value for the PLAY statement
+053+  C08F             WRTPSG equ 0x0093 ; Writes data to PSG-register
+054+  C08F             ;Input    : A  - PSG register number
+055+  C08F             ;           E  - Data write
+056+  C08F             RDPSG  equ 0x0096 ; Reads value from PSG-register
+057+  C08F             STRTMS equ 0x0099 ; Tests whether the PLAY statement is being executed as a background task. If not, begins to execute the PLAY statement  */
+058+  C08F             
+059+  C08F             ; Console routines, rutinas de consola
+060+  C08F             CHSNS  equ 0x009C ; Tests the status of the keyboard buffer
+061+  C08F             CHGET  equ 0x009F ; One character input (waiting)
+062+  C08F             CHPUT  equ 0x00A2 ; Displays one character
+063+  C08F             LPTOUT equ 0x00A5 ; Sends one character to printer
+064+  C08F             LPTSTT equ 0x00A8 ; Tests printer status
+065+  C08F             CNVCHR equ 0x00AB ; tests for the graphic header and transforms the code
+066+  C08F             PINLIN equ 0x00AE ; Stores in the specified buffer the character codes input until the return key or STOP key is pressed     */
+067+  C08F             INLIN  equ 0x00B1 ; Same as PINLIN except that AUGFLG (#F6AA) is set
+068+  C08F             QINLIN equ 0x00B4 ; Prints a questionmark andone space
+069+  C08F             BREAKX equ 0x00B7 ; Tests status of CTRL-STOP 
+070+  C08F             ISCNTC equ 0x00BA ; Tests status of SHIFT-STOP 
+071+  C08F             CKCNTC equ 0x00BD ; Same as ISCNTC. used in Basic
+072+  C08F             BEEP   equ 0x00C0 ; generates beep
+073+  C08F             BCLS   equ 0x00C3 ; Clears the screen
+074+  C08F             POSIT  equ 0x00C6 ; Places the cursor at the specified location
+075+  C08F             FNKSB  equ 0x00C9 ; Tests whether the function key display is active (FNKFLG)If so, displays them, otherwise erase them */
+076+  C08F             ERAFNK equ 0x00CC ; Erase functionkey display
+077+  C08F             DSPFNK equ 0x00CF ; Displays the function keys
+078+  C08F             TOTEXT equ 0x00D2 ; Forces the screen to be in the text mode
+079+  C08F             
+080+  C08F             ; Controller routines                      
+081+  C08F             GTSTCK equ 0x00D5 ; Returns the joystick status
+082+  C08F             GTTRIG equ 0x00D8 ; Returns current trigger status
+083+  C08F             GTPAD  equ 0x00DB ; Returns current touch pad status
+084+  C08F             GTPDL  equ 0x00DE ; Returns currenct value of paddle
+085+  C08F             
+086+  C08F             ; Tape device routines                      
+087+  C08F             TAPION equ 0x00E1 ; Reads the header block after turning the cassette motor on
+088+  C08F             TAPIN  equ 0x00E4 ; Read data from the tape
+089+  C08F             TAPIOF equ 0x00E7 ; Stops reading from the tape
+090+  C08F             TAPOON equ 0x00EA ; Turns on the cassette motor and writes the header
+091+  C08F             TAPOUT equ 0x00ED ; Writes data on the tape
+092+  C08F             TAPOOF equ 0x00F0 ; Stops writing on the tape
+093+  C08F             STMOTR equ 0x00F3 ; Sets the cassette motor action
+094+  C08F             
+095+  C08F             ; Queue routines                      
+096+  C08F             LFTQ equ 0x00F6 ; Gives number of bytes in queue
+097+  C08F             PUTQ equ 0x00F9 ; Put byte in queue
+098+  C08F             
+099+  C08F             ; Graphic routines
+100+  C08F             ;More info (MSX Assembly Page): http:;map.grauw.nl/resources/msxbios.php                      
+101+  C08F             RIGHTC equ 0x00FC ; Shifts screenpixel to the right
+102+  C08F             LEFTC  equ 0x00FF ; Shifts screenpixel to the left
+103+  C08F             UPC    equ 0x0102 ; Shifts screenpixel up
+104+  C08F             TUPC   equ 0x0105 ; Tests whether UPC is possible, if possible, execute UPC
+105+  C08F             DOWNC  equ 0x0108 ; Shifts screenpixel down
+106+  C08F             TDOWNC equ 0x010B ; Tests whether DOWNC is possible, if possible, execute DOWNC
+107+  C08F             SCALXY equ 0x010E ; Scales X and Y coordinates
+108+  C08F             MAPXY  equ 0x0111 ; Places cursor at current cursor address
+109+  C08F             FETCHC equ 0x0114 ; Gets current cursor addresses mask pattern
+110+  C08F             STOREC equ 0x0117 ; Record current cursor addresses mask pattern
+111+  C08F             SETATR equ 0x011A ; Set attribute byte
+112+  C08F             READC  equ 0x011E ; Reads attribute byte of current screenpixel
+113+  C08F             SETC   equ 0x0120 ; Returns currenct screenpixel of specificed attribute byte
+114+  C08F             NSETCX equ 0x0123 ; Set horizontal screenpixels
+115+  C08F             GTASPC equ 0x0126 ; Gets screen relations
+116+  C08F             PNTINI equ 0x0129 ; Initalises the PAINT instruction
+117+  C08F             SCANR  equ 0x012C ; Scans screenpixels to the right
+118+  C08F             SCANL  equ 0x012F ; Scans screenpixels to the left
+119+  C08F             
+120+  C08F             ; Graphic routines MSX2
+121+  C08F             ;More info (MSX Assembly Page): http:;map.grauw.nl/resources/msxbios.php#msx2bios
+122+  C08F             CHKNEW equ 0x0165 ;Tests screen mode > C-flag set if screenmode = 5, 6, 7 or 8
+123+  C08F             BIGFIL equ 0x016B ;fill VRAM with value (total VRAM can be reached) HL address, BC length, A data
+124+  C08F             NSETRD equ 0x016E ;Enable VDP to read.(with full 16 bits VRAM-address)
+125+  C08F             NSTWRT equ 0x0171 ;Enable VDP to write.(with full 16 bits VRAM-address) 
+126+  C08F             NRDVRM equ 0x0174 ;Reads VRAM like in RDVRM.(with full 16 bits VRAM-address)
+127+  C08F             NWRVRM equ 0x0177 ;Writes to VRAM like in WRTVRM.(with full 16 bits VRAM-address)
+128+  C08F             
+129+  C08F             
+130+  C08F             
+131+  C08F             
+132+  C08F             
+133+  C08F             
+134+  C08F                                  
+135+  C08F             ; Misc routines
+136+  C08F             CLIKSW equ 0xF3DB; para que no se oiga el click que hace al pulsar las teclas
+137+  C08F             CHGCAP equ 0x0132 ; Alternates the CAP lamp status
+138+  C08F             CHGSND equ 0x0135 ; Alternates the 1-bit sound port status
+139+  C08F             RSLREG equ 0x0138 ; Reads the primary slot register
+140+  C08F             WSLREG equ 0x013B ; Writes value to the primary slot register
+141+  C08F             RDVDP  equ 0x013E ; Reads VDP status register
+142+  C08F             SNSMAT equ 0x0141 ; Returns the value of the specified line from the keyboard matrix
+143+  C08F             ; 0   1          2           3           4           5           6           7           8       9       10
+144+  C08F             ;0    1          2                      4           5           6
+145+  C08F             ;1   ; fin grabr ' grabar                                                    Ñ
+146+  C08F             ;2                                      \grabar2  DEADfingrabar2 A           B
+147+  C08F             ;3 C                        F           G           H
+148+  C08F             ;4                          N
+149+  C08F             ;5 S                        V                       X                       Z
+150+  C08F             ;6SHIFtONTROL    GRAPH      CAPS        CODE
+151+  C08F             ;7              ESCAPE                              BS                      RET
+152+  C08F             ;8                                               Cursor ^    Cursor v
+153+  C08F             PHYDIO equ 0x0144 ; Executes I/O for mass-storage media like diskettes
+154+  C08F             FORMAT equ 0x0147 ; Initialises mass-storage media like formatting of diskettes
+155+  C08F             ISFLIO equ 0x014A ; Tests if I/O to device is taking place
+156+  C08F             OUTDLP equ 0x014E ; Printer output
+157+  C08F             GETVCP equ 0x0150 ; Returns pointer to play queue
+158+  C08F             GETVC2 equ 0x0153 ; Returns pointer to variable in queue number VOICEN (byte op #FB38)
+159+  C08F             KILBUF equ 0x0156 ; Clear keyboard buffer
+160+  C08F             CALBAS equ 0x0159 ; Executes inter-slot call to the routine in BASIC interpreter
+161+  C08F                     
+162+  C08F             
+109   C08F             tileset_definition: 
+110   C08F             	include "src/tileset-definition.asm"
+001+  C08F             BANK_PATTERN_0: 
+002+  C08F             	DB 255, 255, 255, 255, 255, 255, 255, 255
+002+  C08F FFFFFFFFFFFFFFFF
+003+  C097             	DB 255, 255, 255, 255, 255, 255, 255, 255
+003+  C097 FFFFFFFFFFFFFFFF
+004+  C09F             	DB 255, 255, 255, 255, 255, 255, 255, 255
+004+  C09F FFFFFFFFFFFFFFFF
+005+  C0A7             	DB 0, 126, 126, 126, 126, 126, 126, 0
+005+  C0A7 007E7E7E7E7E7E00
+006+  C0AF             	DB 255, 255, 255, 255, 255, 255, 255, 255
+006+  C0AF FFFFFFFFFFFFFFFF
+007+  C0B7             	DB 255, 255, 255, 255, 255, 255, 255, 255
+007+  C0B7 FFFFFFFFFFFFFFFF
+008+  C0BF             	DB 255, 231, 231, 255, 195, 129, 129, 219
+008+  C0BF FFE7E7FFC38181DB
+009+  C0C7             	
+010+  C0C7             BANK_PATTERN_1: 
+011+  C0C7             	DB 255, 255, 255, 255, 255, 255, 255, 255
+011+  C0C7 FFFFFFFFFFFFFFFF
+012+  C0CF             	DB 255, 255, 255, 255, 255, 255, 255, 255
+012+  C0CF FFFFFFFFFFFFFFFF
+013+  C0D7             	DB 255, 255, 255, 255, 255, 255, 255, 255
+013+  C0D7 FFFFFFFFFFFFFFFF
+014+  C0DF             	DB 0, 126, 126, 126, 126, 126, 126, 0
+014+  C0DF 007E7E7E7E7E7E00
+015+  C0E7             	DB 255, 255, 255, 255, 255, 255, 255, 255
+015+  C0E7 FFFFFFFFFFFFFFFF
+016+  C0EF             	DB 255, 255, 255, 255, 255, 255, 255, 255
+016+  C0EF FFFFFFFFFFFFFFFF
+017+  C0F7             	DB 255, 231, 231, 255, 195, 129, 129, 219
+017+  C0F7 FFE7E7FFC38181DB
+018+  C0FF             	
+019+  C0FF             BANK_PATTERN_2: 
+020+  C0FF             	DB 255, 255, 255, 255, 255, 255, 255, 255
+020+  C0FF FFFFFFFFFFFFFFFF
+021+  C107             	DB 255, 255, 255, 255, 255, 255, 255, 255
+021+  C107 FFFFFFFFFFFFFFFF
+022+  C10F             	DB 255, 255, 255, 255, 255, 255, 255, 255
+022+  C10F FFFFFFFFFFFFFFFF
+023+  C117             	DB 0, 126, 126, 126, 126, 126, 126, 0
+023+  C117 007E7E7E7E7E7E00
+024+  C11F             	DB 255, 255, 255, 255, 255, 255, 255, 255
+024+  C11F FFFFFFFFFFFFFFFF
+025+  C127             	DB 255, 255, 255, 255, 255, 255, 255, 255
+025+  C127 FFFFFFFFFFFFFFFF
+026+  C12F             	DB 255, 231, 231, 255, 195, 129, 129, 219
+026+  C12F FFE7E7FFC38181DB
+027+  C137             	
+028+  C137             
+111   C137             tileset_color: 
+112   C137             	include "src/tileset-color.asm"
+001+  C137             BANK_COLOR_0: 
+002+  C137             	DB 16, 16, 16, 16, 16, 16, 16, 16
+002+  C137 1010101010101010
+003+  C13F             	DB 128, 128, 128, 128, 128, 128, 128, 128
+003+  C13F 8080808080808080
+004+  C147             	DB 208, 208, 208, 208, 208, 208, 208, 208
+004+  C147 D0D0D0D0D0D0D0D0
+005+  C14F             	DB 185, 185, 185, 185, 185, 185, 185, 185
+005+  C14F B9B9B9B9B9B9B9B9
+006+  C157             	DB 240, 240, 240, 240, 240, 240, 240, 241
+006+  C157 F0F0F0F0F0F0F0F1
+007+  C15F             	DB 160, 160, 160, 160, 160, 160, 160, 160
+007+  C15F A0A0A0A0A0A0A0A0
+008+  C167             	DB 240, 240, 240, 240, 240, 240, 240, 240
+008+  C167 F0F0F0F0F0F0F0F0
+009+  C16F             	
+010+  C16F             BANK_COLOR_1: 
+011+  C16F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+011+  C16F 1010101010101010
+012+  C177             	DB 128, 128, 128, 128, 128, 128, 128, 128
+012+  C177 8080808080808080
+013+  C17F             	DB 208, 208, 208, 208, 208, 208, 208, 208
+013+  C17F D0D0D0D0D0D0D0D0
+014+  C187             	DB 185, 185, 185, 185, 185, 185, 185, 185
+014+  C187 B9B9B9B9B9B9B9B9
+015+  C18F             	DB 240, 240, 240, 240, 240, 240, 240, 241
+015+  C18F F0F0F0F0F0F0F0F1
+016+  C197             	DB 160, 160, 160, 160, 160, 160, 160, 160
+016+  C197 A0A0A0A0A0A0A0A0
+017+  C19F             	DB 240, 240, 240, 240, 240, 240, 240, 240
+017+  C19F F0F0F0F0F0F0F0F0
+018+  C1A7             	
+019+  C1A7             BANK_COLOR_2: 
+020+  C1A7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+020+  C1A7 1010101010101010
+021+  C1AF             	DB 128, 128, 128, 128, 128, 128, 128, 128
+021+  C1AF 8080808080808080
+022+  C1B7             	DB 208, 208, 208, 208, 208, 208, 208, 208
+022+  C1B7 D0D0D0D0D0D0D0D0
+023+  C1BF             	DB 185, 185, 185, 185, 185, 185, 185, 185
+023+  C1BF B9B9B9B9B9B9B9B9
+024+  C1C7             	DB 240, 240, 240, 240, 240, 240, 240, 241
+024+  C1C7 F0F0F0F0F0F0F0F1
+025+  C1CF             	DB 160, 160, 160, 160, 160, 160, 160, 160
+025+  C1CF A0A0A0A0A0A0A0A0
+026+  C1D7             	DB 240, 240, 240, 240, 240, 240, 240, 240
+026+  C1D7 F0F0F0F0F0F0F0F0
+027+  C1DF             	
+113   C1DF             sprites_definition: 
+114   C1DF             	include "src/spriteset.asm"
+001+  C1DF             BANK_SPRITES: 
+002+  C1DF             ;Definition sprite 0, name: Sprite-2
+003+  C1DF             	db 1,3,7,3,6,7,3,1
+003+  C1DF 0103070306070301
+004+  C1E7             	db 1,3,2,2,3,1,1,1
+004+  C1E7 0103020203010101
+005+  C1EF             	db 240,240,224,224,208,240,176,224
+005+  C1EF F0F0E0E0D0F0B0E0
+006+  C1F7             	db 224,240,208,208,240,224,32,176
+006+  C1F7 E0F0D0D0F0E020B0
+007+  C1FF             ;Definition sprite 1, name: Sprite-3
+008+  C1FF             	db 1,1,1,1,3,3,1,0
+008+  C1FF 0101010103030100
+009+  C207             	db 0,1,1,1,1,0,0,0
+009+  C207 0001010101000000
+010+  C20F             	db 240,240,240,240,104,248,232,240
+010+  C20F F0F0F0F068F8E8F0
+011+  C217             	db 240,248,168,208,248,240,160,112
+011+  C217 F0F8A8D0F8F0A070
+012+  C21F             ;Definition sprite 2, name: Sprite-0
+013+  C21F             	db 15,15,7,7,11,15,13,7
+013+  C21F 0F0F07070B0F0D07
+014+  C227             	db 7,15,11,11,15,7,4,13
+014+  C227 070F0B0B0F07040D
+015+  C22F             	db 128,192,224,192,96,224,192,128
+015+  C22F 80C0E0C060E0C080
+016+  C237             	db 128,192,64,64,192,128,128,128
+016+  C237 80C04040C0808080
+017+  C23F             ;Definition sprite 3, name: Sprite-1
+018+  C23F             	db 15,15,15,15,22,31,23,15
+018+  C23F 0F0F0F0F161F170F
+019+  C247             	db 15,31,21,11,31,15,5,14
+019+  C247 0F1F150B1F0F050E
+020+  C24F             	db 128,128,128,128,192,192,128,0
+020+  C24F 80808080C0C08000
+021+  C257             	db 0,128,128,128,128,0,0,0
+021+  C257 0080808080000000
+022+  C25F             ;Definition sprite 4, name: Sprite-4
+023+  C25F             	db 7,7,7,7,15,15,7,3
+023+  C25F 070707070F0F0703
+024+  C267             	db 7,15,11,9,15,7,2,6
+024+  C267 070F0B090F070206
+025+  C26F             	db 192,192,192,192,224,224,192,128
+025+  C26F C0C0C0C0E0E0C080
+026+  C277             	db 192,224,160,32,224,224,64,96
+026+  C277 C0E0A020E0E04060
+027+  C27F             ;Definition sprite 5, name: Sprite-4
+028+  C27F             	db 3,7,7,7,15,15,7,3
+028+  C27F 030707070F0F0703
+029+  C287             	db 7,15,13,9,15,7,2,2
+029+  C287 070F0D090F070202
+030+  C28F             	db 128,192,192,192,224,224,192,128
+030+  C28F 80C0C0C0E0E0C080
+031+  C297             	db 192,224,96,32,224,224,96,0
+031+  C297 C0E06020E0E06000
+032+  C29F             ;Definition sprite 6, name: Sprite-4
+033+  C29F             	db 7,7,7,7,13,15,6,3
+033+  C29F 070707070D0F0603
+034+  C2A7             	db 7,15,11,13,7,3,2,6
+034+  C2A7 070F0B0D07030206
+035+  C2AF             	db 192,192,192,192,96,224,192,128
+035+  C2AF C0C0C0C060E0C080
+036+  C2B7             	db 192,224,160,96,192,192,64,96
+036+  C2B7 C0E0A060C0C04060
+037+  C2BF             ;Definition sprite 7, name: Sprite-4
+038+  C2BF             	db 7,7,7,7,13,15,6,3
+038+  C2BF 070707070D0F0603
+039+  C2C7             	db 7,15,13,11,7,7,2,2
+039+  C2C7 070F0D0B07070202
+040+  C2CF             	db 192,192,192,192,96,224,192,128
+040+  C2CF C0C0C0C060E0C080
+041+  C2D7             	db 192,224,96,160,192,192,96,0
+041+  C2D7 C0E060A0C0C06000
+042+  C2DF             ;Definition sprite 8, name: Sprite-2
+043+  C2DF             	db 0,24,31,3,3,3,3,1
+043+  C2DF 00181F0303030301
+044+  C2E7             	db 0,0,1,1,1,1,0,0
+044+  C2E7 0000010101010000
+045+  C2EF             	db 0,0,224,224,240,80,240,176
+045+  C2EF 0000E0E0F050F0B0
+046+  C2F7             	db 224,240,208,184,240,240,248,64
+046+  C2F7 E0F0D0B8F0F0F840
+047+  C2FF             ;Definition sprite 9, name: Sprite-2
+048+  C2FF             	db 24,24,15,7,7,6,7,3
+048+  C2FF 18180F0707060703
+049+  C307             	db 1,1,2,2,3,3,1,1
+049+  C307 0101020203030101
+050+  C30F             	db 0,0,192,192,224,160,224,96
+050+  C30F 0000C0C0E0A0E060
+051+  C317             	db 192,224,160,160,224,224,192,64
+051+  C317 C0E0A0A0E0E0C040
+052+  C31F             ;Definition sprite 10, name: Sprite-2
+053+  C31F             	db 0,0,7,7,15,10,15,13
+053+  C31F 000007070F0A0F0D
+054+  C327             	db 7,15,11,29,15,15,31,2
+054+  C327 070F0B1D0F0F1F02
+055+  C32F             	db 0,24,248,192,192,192,192,128
+055+  C32F 0018F8C0C0C0C080
+056+  C337             	db 0,0,128,128,128,128,0,0
+056+  C337 0000808080800000
+057+  C33F             ;Definition sprite 11, name: Sprite-2
+058+  C33F             	db 0,0,3,3,7,5,7,6
+058+  C33F 0000030307050706
+059+  C347             	db 3,7,5,5,7,7,3,2
+059+  C347 0307050507070302
+060+  C34F             	db 24,24,240,224,224,96,224,192
+060+  C34F 1818F0E0E060E0C0
+061+  C357             	db 128,128,64,64,192,192,128,128
+061+  C357 80804040C0C08080
+062+  C35F             ;Definition sprite 12, name: Sprite-4
+063+  C35F             	db 0,0,0,3,3,7,7,5
+063+  C35F 0000000303070705
+064+  C367             	db 7,7,19,15,3,3,2,2
+064+  C367 0707130F03030202
+065+  C36F             	db 0,0,0,192,192,224,224,160
+065+  C36F 000000C0C0E0E0A0
+066+  C377             	db 224,96,200,240,192,192,64,64
+066+  C377 E060C8F0C0C04040
+067+  C37F             ;Definition sprite 13, name: Sprite-4
+068+  C37F             	db 0,0,0,3,3,7,7,5
+068+  C37F 0000000303070705
+069+  C387             	db 7,7,3,7,7,11,2,3
+069+  C387 07070307070B0203
+070+  C38F             	db 0,0,0,192,192,224,224,160
+070+  C38F 000000C0C0E0E0A0
+071+  C397             	db 224,96,192,224,224,208,64,96
+071+  C397 E060C0E0E0D04060
+072+  C39F             ;Definition sprite 14, name: Sprite-4
+073+  C39F             	db 0,0,0,3,3,7,7,5
+073+  C39F 0000000303070705
+074+  C3A7             	db 7,6,19,15,3,3,2,2
+074+  C3A7 0706130F03030202
+075+  C3AF             	db 0,0,0,192,192,224,224,160
+075+  C3AF 000000C0C0E0E0A0
+076+  C3B7             	db 224,224,200,240,192,192,64,64
+076+  C3B7 E0E0C8F0C0C04040
+077+  C3BF             ;Definition sprite 15, name: Sprite-4
+078+  C3BF             	db 0,0,0,3,3,7,7,5
+078+  C3BF 0000000303070705
+079+  C3C7             	db 7,6,3,7,7,11,2,6
+079+  C3C7 07060307070B0206
+080+  C3CF             	db 0,0,0,192,192,224,224,160
+080+  C3CF 000000C0C0E0E0A0
+081+  C3D7             	db 224,224,192,224,224,208,64,192
+081+  C3D7 E0E0C0E0E0D040C0
+082+  C3DF             ;Definition sprite 16, name: Sprite-4
+083+  C3DF             	db 0,7,7,7,7,7,7,1
+083+  C3DF 0007070707070701
+084+  C3E7             	db 7,14,14,15,15,7,2,3
+084+  C3E7 070E0E0F0F070203
+085+  C3EF             	db 0,224,240,240,176,224,224,128
+085+  C3EF 00E0F0F0B0E0E080
+086+  C3F7             	db 224,240,56,248,240,224,64,96
+086+  C3F7 E0F038F8F0E04060
+087+  C3FF             ;Definition sprite 17, name: Sprite-4
+088+  C3FF             	db 0,7,7,7,7,7,7,1
+088+  C3FF 0007070707070701
+089+  C407             	db 3,7,6,5,7,3,0,0
+089+  C407 0307060507030000
+090+  C40F             	db 0,224,240,240,176,224,224,192
+090+  C40F 00E0F0F0B0E0E0C0
+091+  C417             	db 240,120,252,252,248,240,160,144
+091+  C417 F078FCFCF8F0A090
+092+  C41F             ;Definition sprite 18, name: Sprite-4
+093+  C41F             	db 0,7,15,15,13,7,7,1
+093+  C41F 00070F0F0D070701
+094+  C427             	db 7,15,28,31,15,7,2,6
+094+  C427 070F1C1F0F070206
+095+  C42F             	db 0,224,224,224,224,224,224,128
+095+  C42F 00E0E0E0E0E0E080
+096+  C437             	db 224,112,112,240,240,224,64,192
+096+  C437 E07070F0F0E040C0
+097+  C43F             ;Definition sprite 19, name: Sprite-4
+098+  C43F             	db 0,7,15,15,13,7,7,3
+098+  C43F 00070F0F0D070703
+099+  C447             	db 15,30,63,63,31,15,5,9
+099+  C447 0F1E3F3F1F0F0509
+100+  C44F             	db 0,224,224,224,224,224,224,128
+100+  C44F 00E0E0E0E0E0E080
+101+  C457             	db 192,224,96,160,224,192,0,0
+101+  C457 C0E060A0E0C00000
+102+  C45F             ;Definition sprite 20, name: Sprite-20
+103+  C45F             	db 0,0,4,2,1,35,23,13
+103+  C45F 000004020123170D
+104+  C467             	db 15,22,35,1,2,4,0,0
+104+  C467 0F16230102040000
+105+  C46F             	db 0,0,32,64,128,196,232,176
+105+  C46F 0000204080C4E8B0
+106+  C477             	db 240,168,196,128,64,32,0,0
+106+  C477 F0A8C48040200000
+107+  C47F             ;Definition sprite 21, name: Sprite-21
+108+  C47F             	db 0,1,3,3,0,0,0,0
+108+  C47F 0001030300000000
+109+  C487             	db 0,48,11,7,15,20,2,0
+109+  C487 00300B070F140200
+110+  C48F             	db 0,192,224,240,112,120,56,56
+110+  C48F 00C0E0F070783838
+111+  C497             	db 120,240,240,224,0,0,0,0
+111+  C497 78F0F0E000000000
+112+  C49F             ;Definition sprite 22, name: Sprite-22
+113+  C49F             	db 0,1,13,28,24,1,1,13
+113+  C49F 00010D1C1801010D
+114+  C4A7             	db 14,6,0,7,7,0,0,0
+114+  C4A7 0E06000707000000
+115+  C4AF             	db 0,128,192,192,0,184,184,128
+115+  C4AF 0080C0C000B8B880
+116+  C4B7             	db 0,96,96,128,0,0,0,0
+116+  C4B7 0060608000000000
+117+  C4BF             ;Definition sprite 23, name: Sprite-23
+118+  C4BF             	db 0,0,3,3,14,14,56,56
+118+  C4BF 000003030E0E3838
+119+  C4C7             	db 14,14,3,3,0,0,0,0
+119+  C4C7 0E0E030300000000
+120+  C4CF             	db 0,0,192,192,112,120,56,0
+120+  C4CF 0000C0C070783800
+121+  C4D7             	db 0,112,240,128,0,0,0,0
+121+  C4D7 0070F08000000000
+122+  C4DF             
+123+  C4DF             
+124+  C4DF             
+115   C4DF             
+116   C4DF             ;			mapas
+117   C4DF             ;-----------------------------
+118   C4DF             map_screen0: 
+119   C4DF             	include "src/map-screen0.asm"
+001+  C4DF             
+002+  C4DF             SCREEN_0_0: 
+003+  C4DF             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+003+  C4DF 0000000000000000000000000000000000000000000000000000000000000000
+004+  C4FF             	DB   0,  4,  4,  4,  4,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+004+  C4FF 0004040404000000000000000000000000000000000000000000000000000000
+005+  C51F             	DB   0,  4,  4,  4,  4,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  3,  3,  3,  3,  3,  3,  0
+005+  C51F 0004040404000000000000000000000000000000000000000003030303030300
+006+  C53F             	DB   0,  4,  6,  4,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  3,  3,  3,  3,  3,  3,  0
+006+  C53F 0004060405000000000000000000000000000000000000000003030303030300
+007+  C55F             	DB   0,  4,  4,  4,  4,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+007+  C55F 0004040404000000000000000000000000000000000000000000000000000000
+008+  C57F             	DB   0,  4,  4,  4,  4,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+008+  C57F 0004040404000000000000000000000000000000000000000000000000000000
+009+  C59F             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+009+  C59F 0000000000000000000000000000000000000000000000000000000000000000
+010+  C5BF             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+010+  C5BF 0000000000000000000000000000000000000000000000000000000000000000
+011+  C5DF             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+011+  C5DF 0000000000000000000000000000000000000000000000000000000000000000
+012+  C5FF             	DB   0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0
+012+  C5FF 0000010000000000000001000000000000000000000000020000000000000000
+013+  C61F             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0
+013+  C61F 0000000000000000000000000000000200000100000000000000010000000000
+014+  C63F             	DB   0,  0,  0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+014+  C63F 0000000000000200000000000000000000000000000000000000000000000000
+015+  C65F             	DB   0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+015+  C65F 0001000000000000000000000100000000000000000000000000000000000000
+016+  C67F             	DB   0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  2,  0,  0,  0,  2,  0,  0,  0,  0,  0,  2,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0
+016+  C67F 0000000002000000000002000000020000000000020000010000000000000000
+017+  C69F             	DB   0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0
+017+  C69F 0000000000000001000000000000000000010000000000000000000000000100
+018+  C6BF             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  0,  0,  0
+018+  C6BF 0000000000000000000000000000000000000000000000000000000002000000
+019+  C6DF             	DB   0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+019+  C6DF 0000010000000000000000000000000000000000000000000000000000000000
+020+  C6FF             	DB   0,  0,  0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+020+  C6FF 0000000000000200000000000000000000000200000000000000000000000000
+021+  C71F             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0
+021+  C71F 0000000000000000000200000001000000000000010000000000000001000000
+022+  C73F             	DB   0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  2,  0
+022+  C73F 0000010000000000000000000000000000000000000000000100000000000200
+023+  C75F             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+023+  C75F 0000000000000000000000000000000000000000000000000000000000000000
+024+  C77F             	DB   0,  0,  0,  0,  0,  2,  0,  0,  0,  1,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+024+  C77F 0000000000020000000100000002000000000000000200000000000000000000
+025+  C79F             	;DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  2,  0,  0,  1,  0,  0,  0
+026+  C79F             	;DB   0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+027+  C79F             
+028+  C79F             
+120   C79F              
+121   C79F             FINAL: 

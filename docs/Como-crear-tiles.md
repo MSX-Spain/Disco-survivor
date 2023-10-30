@@ -1,7 +1,4 @@
-1.Nos descargamos el programa nMSXTiles de aquí: https://github.com/pipagerardo/nMSXtiles
-
-
-
+1.Comprendemos como se estructura la VRAM y donde van los bytes para definir los tiles, el color de los tiles y la posición de los tiles:
 
 ---------------------------------------------------------------------------------------------------
 14336 / h3800 -> 16383 / 3fff
@@ -85,3 +82,6 @@ Aquíse definen los bloques de 8 bytes que definen 1 tile para la parte superior
 pantalla de las 3 partes que tiene la pantalla (ejemplo 1) Este tile estará relacionado con
 los 8 bytes del “Color tiles banco 0” y con la “tabla mapa” 
 ---------------------------------------------------------------------------------------------------
+
+
+1. Nos descargamos el programa nMSXTiles de aquí: https://github.com/pipagerardo/nMSXtiles

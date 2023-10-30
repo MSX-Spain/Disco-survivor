@@ -11,109 +11,121 @@
         
 INICIO:
 
-;esta es la entrada principal
+
+screen: db 0
+message_lives: db "Lives",0
+message_score: db "Score",0
+message_msx_spain: db "MSX spain",0
+
 MAIN:
- 	call screen2x16
-	call load_tileset
-	call load_screen_0
-	call bucle
+	call initialize_player
+	call initialize_enemy
+    call hud
+	call main_loop
 	ret
 
-
-mensaje:
-	ld a,'h'
-	call CHPUT 
-	ld a,'o'
-	call CHPUT 
-	ld a,'l'
-	call CHPUT 
-	ld a,'a'
-	call CHPUT 
-	ret
+main_loop:
+	halt
+	call cursors
+	call update_player
+    push ix
+    call update_enemy
+    pop ix
+	jr main_loop
 
 
-bucle:
-	jr bucle
-
-	
-load_tileset:
-	;banco 0
-	ld hl, tileset_definition 
-	ld de, 0  ; la rutina LDIRVM necesita haber cargado previamente con de la dirección de inicio de la VRAM.https://sites.google.com/site/multivac7/files-images/TMS9918_VRAMmap_G2_300dpi.png,así es como está formado el VDP en screen 2          
-	ld bc, 56  ; son los 8 bytes por 7 tiles que hemos dibujado=56 bytes
-	call  LDIRVM 
-	;banco 1
-	ld hl, tileset_definition 
-	ld de, 2048  
-	ld bc, 56 
-	call  LDIRVM 
-	;banco 2
-	ld hl, tileset_definition 
-	ld de, 4096  
-	ld bc, 56  
-	call  LDIRVM 
-
-	;banco 0
-	ld hl, tileset_color
-    ld de, 8192  
-    ld bc, 56  
-    call  LDIRVM 
-	;banco 1
-	ld hl, tileset_color
-    ld de, 10240  
-    ld bc, 56  
-    call  LDIRVM 
-	;banco 2
-	ld hl, tileset_color
-    ld de, 12288  
-    ld bc, 56  
-    call  LDIRVM 
-	ret
-
-load_screen_0:
-    ld hl, map_screen0
+load_screen:
+    ld a,(screen)
+    cp 1
+	jp z, load_screen_1
+    ret
+load_screen_1:
+    ld hl, map_screen1
     ld de, 6144 
     ld bc, 768
     call  LDIRVM
     ret
 
-screen2x16:
-    ;poner los colores de tinta, fondo y borde
-	ld      hl,FORCLR
-	ld      [hl],15 ;le poneos el 15 en tinta que es el blanco
-	inc     hl
-	ld      [hl],1 ;le metemos 1 en fondo que es el negro
-	inc		hl
-	ld		[hl],1 ;en borde también el negro
-	call    CHGCLR
 
-	;click off	
-	xor	a		
-	ld	[CLIKSW],a
-		
-	;screen 2
-	ld a,2
-	call CHGMOD ;rutina de la bios que cambia el modo de screen
-
-	;sprites no ampliados de 16x16
-	ld b,0xe2
-	ld c,1
-	call WRTVDP
-
-	ret
-
-
+cursors:
+    ld a,0
+    call GTSTCK
     
+    cp 1
+    jp z, move_player_up
+    ;cp 2
+    ;jp z, move_player_up_right
+    cp 3
+    jp z, move_player_right
+    ;cp 4
+    ;jp z, move_player_down_right
+    cp 5
+    jp z, move_player_down
+    ;cp 6
+    ;jp z, move_player_down_left
+    cp 7
+    jp z, move_player_left
+    ;cp 8
+    ;jp z, move_player_up_left
+
+    ret
+
+
+hud:
+    ld a,10
+    ld (GRPACX),a ;GRPACX contiene la posición X del cursor en modo gráfico
+    ld a,180
+    ld (GRPACY),a
+    ld hl, message_lives
+    call print
+    ld a,80
+    ld (GRPACX),a
+    ld hl, message_score
+    call print
+    ld a,180
+    ld (GRPACX),a
+    ld hl, message_msx_spain
+    call print
+    ret
+
+print:
+    ld  a,(hl)          ; Lee el 1 byte de la dirección de la memoria indicada y lo almacena en el registro a del z80.
+    and a               ; Actualiza la bandera z del registro F del z80 y la pone en 0 si no hay valor, and a también actualiza el flag c, p, v y s.
+    ret z               ; Devuelve el cotrol al Main si la bandera z del registro F del z80 es 0
+    call GRPPRT         ; Llama a la subrutina 0042h de la Bios la cual imprime el caracter almacenado en el registro a del z80
+    inc hl              ; incrementa el puntero de los registros hl para que señale al siguiente byte
+    jr print            ; Llama al métdo print para que lo vuelva a ejecutar
+     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     
 	include "src/vars_msxBios.asm"    
+	include "src/vars_msxSystem.asm"    
+	include "src/player.asm"    
+	include "src/enemies.asm"    
 tileset_definition:
 	include "src/tileset-definition.asm"
 tileset_color:
 	include "src/tileset-color.asm"
+sprites_definition:
+	include "src/spriteset.asm"
 
 ;			mapas
 ;-----------------------------
-map_screen0:
-	include "src/map-screen0.asm"
+map_screen1:
+	include "src/map-screen1.asm"
  
 FINAL:

@@ -20,8 +20,19 @@ https://msx-spain.github.io/Disco-survivor/?disk=main.dsk
 
 # Develop
 
-Escribe en un cmd de windows make.bat
+Escribe en un cmd o terminal:
 
+## Windows:
+
+"make.bat" para compilar el proyecto utilizando dir as disk
+
+"make.bat dsk" para crear el dsk y ponerlo en la carpeta docs
+
+## Unix:
+
+"chmod +x make.sh" para dar permisos de ejecución
+
+"./make.sh" para compilar
 
 
 # Test sjasmplus + dezod debugger
