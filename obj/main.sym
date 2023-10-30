@@ -1,5 +1,5 @@
 INICIO: equ 0x0000C000
-FINAL: equ 0x0000C901
+FINAL: equ 0x0000D9B1
 MAIN: equ 0x0000C017
 screen: equ 0x0000C000
 message_lives: equ 0x0000C001
@@ -14,7 +14,7 @@ update_player: equ 0x0000C0AD
 update_enemy: equ 0x0000C13B
 load_screen: equ 0x0000C034
 load_screen_1: equ 0x0000C03D
-map_screen1: equ 0x0000C601
+map_screen1: equ 0x0000D6B1
 LDIRVM: equ 0x0000005C
 GTSTCK: equ 0x000000D5
 move_player_up: equ 0x0000C0EC
@@ -164,12 +164,12 @@ enemy_left_es_impar: equ 0x0000C194
 rand16.end: equ 0x0000C1AD
 tileset_definition: equ 0x0000C1B1
 BANK_PATTERN_0: equ 0x0000C1B1
-BANK_PATTERN_1: equ 0x0000C1E9
-BANK_PATTERN_2: equ 0x0000C221
-tileset_color: equ 0x0000C259
-BANK_COLOR_0: equ 0x0000C259
-BANK_COLOR_1: equ 0x0000C291
-BANK_COLOR_2: equ 0x0000C2C9
-sprites_definition: equ 0x0000C301
-BANK_SPRITES: equ 0x0000C301
-SCREEN_0_0: equ 0x0000C601
+BANK_PATTERN_1: equ 0x0000C4B1
+BANK_PATTERN_2: equ 0x0000C7B1
+tileset_color: equ 0x0000CAB1
+BANK_COLOR_0: equ 0x0000CAB1
+BANK_COLOR_1: equ 0x0000CDB1
+BANK_COLOR_2: equ 0x0000D0B1
+sprites_definition: equ 0x0000D3B1
+BANK_SPRITES: equ 0x0000D3B1
+SCREEN_0_0: equ 0x0000D6B1
