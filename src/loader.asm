@@ -16,8 +16,7 @@ MAIN:
  	call set_screen2x16
 	call load_sprites
 	call load_tileset
-	call load_screen_0
-	
+	;call load_screen_0
 	ret
 
 
@@ -30,43 +29,43 @@ load_tileset:
 	;banco 0
 	ld hl, tileset_definition 
 	ld de, 0  ; la rutina LDIRVM necesita haber cargado previamente con de la dirección de inicio de la VRAM.https://sites.google.com/site/multivac7/files-images/TMS9918_VRAMmap_G2_300dpi.png,así es como está formado el VDP en screen 2          
-	ld bc, 768  ; son los 8 bytes por 96 tiles que hemos dibujado=56 bytes
+	ld bc, 1024  ; son los 8 bytes por 128 tiles que hemos dibujado=1024 bytes
 	call  LDIRVM 
 	;banco 1
 	ld hl, tileset_definition 
 	ld de, 2048  
-	ld bc, 768 
+	ld bc, 1024 
 	call  LDIRVM 
 	;banco 2
 	ld hl, tileset_definition 
 	ld de, 4096  
-	ld bc, 768  
+	ld bc, 1024  
 	call  LDIRVM 
 
 	;banco 0
 	ld hl, tileset_color
     ld de, 8192  
-    ld bc, 768  
+    ld bc, 1024  
     call  LDIRVM 
 	;banco 1
 	ld hl, tileset_color
     ld de, 10240  
-    ld bc, 768  
+    ld bc, 1024  
     call  LDIRVM 
 	;banco 2
 	ld hl, tileset_color
     ld de, 12288  
-    ld bc, 768  
+    ld bc, 1024  
     call  LDIRVM 
 	ret
 
-load_screen_0:
-    ld hl, map_screen0
-    ld de, 6144 
-	;Le quitamos 64 ya que keremos pintar el HUD en las últimas 2 líneas de la pantalla
-    ld bc, 768-64
-    call  LDIRVM
-    ret
+;load_screen_0:
+;    ld hl, map_screen0
+;    ld de, 6144 
+;	;Le quitamos 64 ya que keremos pintar el HUD en las últimas 2 líneas de la pantalla
+;    ld bc, 768-64
+;    call  LDIRVM
+;    ret
 
 set_screen2x16:
     ;poner los colores de tinta, fondo y borde
@@ -115,7 +114,7 @@ sprites_definition:
 
 ;			mapas
 ;-----------------------------
-map_screen0:
-	include "src/map-screen0.asm"
+;map_screen0:
+;	include "src/map-screen0.asm"
  
 FINAL:

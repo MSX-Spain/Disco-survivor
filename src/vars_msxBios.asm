@@ -1,5 +1,7 @@
+;ver las instruciones del z80: http://clrhome.org/table/
+;ver las instrucciones de la bios: https://map.grauw.nl/resources/msxbios.php
+;ver las instrucciones: https://www.msx.org/wiki/Z80_Assembler_for_Dummies
 
-;http://map.grauw.nl/resources/msxbios.php
 ; use RST assembler mnemonic to call
 CHKRAM equ 0x00 ; RST 0x00 > Check RAM and sets slot for command area.
 SYNCHR equ 0x08 ; RST	0x08 > Checks if then current character pointed by HL is one desired.

@@ -13,14 +13,18 @@ INICIO:
 
 
 screen: db 0
+message_level: db "Level",0
 message_lives: db "Lives",0
 message_score: db "Score",0
-message_msx_spain: db "MSX spain",0
+message_msx_spain: db "MSX spain",0 
+map_buffer: ds 704 ;768-64 es el mapa o tabla de nombres de VRAM copiada aquí
+
 
 MAIN:
 	call initialize_player
 	call initialize_enemy
     call hud
+    call load_screen_0
 	call main_loop
 	ret
 
@@ -34,17 +38,7 @@ main_loop:
 	jr main_loop
 
 
-load_screen:
-    ld a,(screen)
-    cp 1
-	jp z, load_screen_1
-    ret
-load_screen_1:
-    ld hl, map_screen1
-    ld de, 6144 
-    ld bc, 768
-    call  LDIRVM
-    ret
+
 
 
 cursors:
@@ -67,7 +61,6 @@ cursors:
     jp z, move_player_left
     ;cp 8
     ;jp z, move_player_up_left
-
     ret
 
 
@@ -76,12 +69,24 @@ hud:
     ld (GRPACX),a ;GRPACX contiene la posición X del cursor en modo gráfico
     ld a,180
     ld (GRPACY),a
-    ld hl, message_lives
+    ld hl, message_level
     call print
+
+    ld a,58; posicionamos el cursor en la posición x 58
+    ld (GRPACX),a
+    ;metemos en b el valor correspondiente al 0 en la tabla ascii
+    ld b,48
+    ;para sumar a y b tendremos que echar mano de ld a
+    ld a,(screen)
+    add b
+    call GRPPRT 
+
     ld a,80
     ld (GRPACX),a
     ld hl, message_score
     call print
+
+
     ld a,180
     ld (GRPACX),a
     ld hl, message_msx_spain
@@ -111,20 +116,71 @@ print:
 
 
 
+increase_screen:
+    ld a,150
+    ld (ix+player.y),a
+    ld a,0
+    ld (ix+player.x),a
+    ld a,(screen)
+    add 1
+    ld (screen),a
+    
+    call BCLS
+    
+
+
+    cp 0
+	jp z, load_screen_0
+    cp 1
+	jp z, load_screen_1
+
+       
+    ret
+load_screen_0:
+    ;ponemos el mapa en el byffer para hacer las colisiones
+    ld hl, map_screen0
+    ld de, map_buffer 
+    ld bc, 768-64
+    LDIR
+    ;ponemos el mapa en la VRAM
+    ld hl, map_buffer
+    ld de, 6144 
+	;Le quitamos 64 ya que keremos pintar el HUD en las últimas 2 líneas de la pantalla
+    ld bc, 768-64
+    call  LDIRVM
+    ret
+load_screen_1:
+    ld hl, map_screen1
+    ld de, map_buffer 
+    ld bc, 768-64
+    LDIR
+    ld hl, map_buffer
+    ld de, 6144 
+    ld bc, 768-64
+    call  LDIRVM
+    call hud
+    ret
+
+
+
+
+
+
+
+ 
+
+
+
+
     
 	include "src/vars_msxBios.asm"    
 	include "src/vars_msxSystem.asm"    
 	include "src/player.asm"    
 	include "src/enemies.asm"    
-tileset_definition:
-	include "src/tileset-definition.asm"
-tileset_color:
-	include "src/tileset-color.asm"
-sprites_definition:
-	include "src/spriteset.asm"
-
 ;			mapas
 ;-----------------------------
+map_screen0:
+	include "src/map-screen0.asm"
 map_screen1:
 	include "src/map-screen1.asm"
  

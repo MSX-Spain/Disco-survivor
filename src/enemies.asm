@@ -5,8 +5,8 @@ x       db      0
 plane   db      0
 color   db      0
     ends
-;enmey_y_positions: db 100,50,150,40,70,170,60,30
-SEED: equ rand16 + 1
+randData: db 14,10
+
 
 initialize_enemy:
     push ix
@@ -30,8 +30,10 @@ update_enemy:
     jp z, recolocar_enemy
     jp nz, pintar_enemy
 recolocar_enemy:
-    call rand16
-    ld a,(SEED)
+    ;call rand16
+    call random
+    ;ld a,(SEED)
+    ld a,(randData)
     ld (ix+enemy.y),a
     ld a,250
     ld (ix+enemy.x),a
@@ -47,10 +49,10 @@ pintar_enemy:
 
 
 move_enemy_right:
-    ld a,(ix+enemy.x); obetenemos el valor actual de la posicion x
-    add 1; incrementamos en 1 el valor
+    ld a,(ix+enemy.x); obetenemos el valor actual de la posicion x y lo almacenamos en el a-cumulador
+    add 1; incrementamos el valor que hay en a en 1
     ld (ix+enemy.x), a ; se lo metemos al atributo posicion X
-    and 1
+    and 1 ;con 0000 0001 obtenemos en a un 0 si es par ...00,...10 o un 1 si es ...01,...11, es decir, activa el flag z con los impares
     jp z, enemy_right_es_impar
     ld a, 8*4
     ld (ix+enemy.plane),a ;le metemos el sprite que mira hacia la derecha 2
@@ -73,18 +75,26 @@ enemy_left_es_impar:
     ld (ix+enemy.plane),a ;le metemos el sprite que mira hacia la derecha 2
     ret
 
-rand16:
-   ld	BC,0
-   ld	HL,253
-   xor A
-   sbc HL,BC
-   sbc A,B
-   sbc HL,BC
-   sbc A,B
-   ld	C,A
-   sbc HL,BC
-   jr	nc,.end
-   inc HL
-.end
-   ld	(SEED),HL ; self modifying code (seed is hardcoded in opcode)
-   ret
+
+
+;https://gist.github.com/JohnConnolly0/25c65425cf4f84954585
+; El registro de refresco (R) en el Z80 es muy impredecible ya que se incrementa en cada ciclo.
+; Debido a que puede tener cualquier valor cuando se llama a esta rutina, es muy bueno para números aleatorios.
+; Esta rutina aumenta la aleatoriedad del número ya que forma una dirección basada en el
+; actualiza el estado actual del contador y accede a la memoria en esa dirección.
+random:
+    LD A,R			; Cargo el registro A con el registro r
+    LD L,A			; Copia el valor del registro a en l
+    AND %00111111	; 63,#3f,Este enmascaramiento impide que la dirección que estamos formando acceda a la RAM
+    LD H,A			; Copy register A into register H
+    LD A,(HL)		; Load the pseudo-random value into A
+    ;and %01111111  ; al hacer el 7 bit a 0 no puede tomar valores mayor de 127
+    cp 80           ;le hacemos la resta con 100 si el resultado es menor que 0 se activará el flag de carry
+    jr c, random    
+    cp 160
+    jr nc, random
+    ld (randData),a
+    ret
+
+
+
