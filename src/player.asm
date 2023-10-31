@@ -11,7 +11,7 @@ tile0: db 0
 
 initialize_player:
     ld ix, player_atributes
-    ld a,160
+    ld a,150
     ld (ix+player.y),a ;le ponemos a la posición y un 160
     ld a,0 
     ld (ix+player.x),a ;le ponemos a la posición x 120
