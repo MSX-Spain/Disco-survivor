@@ -108,6 +108,7 @@ goto:eof
 
         rem sjasmplus: https://github.com/z00m128/sjasmplus
         rem Documentation: https://z00m128.github.io/sjasmplus/documentation.html
+        if not exist obj mkdir obj
         tools\assemblers\sjasmplus\windows\sjasmplus.exe --sym=obj\loader.sym --lst=obj\loader.lst src\loader.asm 
         rem tools\assemblers\sjasmplus\windows\sjasmplus.exe --raw=obj\main.bin --sym=obj\main.sym --lst=obj\main.lst src\main.asm 
         tools\assemblers\sjasmplus\windows\sjasmplus.exe --sym=obj\main.sym --lst=obj\main.lst src\main.asm 

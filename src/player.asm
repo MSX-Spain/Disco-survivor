@@ -9,7 +9,7 @@ color   db      0
 tile0: db 0
 
 
-initialize_player:
+create_player:
     ld ix, player_atributes
     ld a,150
     ld (ix+player.y),a ;le ponemos a la posición y un 160

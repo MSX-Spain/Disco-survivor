@@ -21,8 +21,11 @@ map_buffer: ds 704 ;768-64 es el mapa o tabla de nombres de VRAM copiada aquí
 
 
 MAIN:
-	call initialize_player
-	call initialize_enemy
+	call create_player
+
+    ;create_enemy va aumentando el contador de enemigos
+	call create_enemy
+
     call hud
     call load_screen_0
 	call main_loop
@@ -32,9 +35,10 @@ main_loop:
 	halt
 	call cursors
 	call update_player
-    push ix
-    call update_enemy
-    pop ix
+  
+    call update_enemies
+    call draw_enemies
+
 	jr main_loop
 
 
@@ -124,11 +128,7 @@ increase_screen:
     ld a,(screen)
     add 1
     ld (screen),a
-    
-    call BCLS
-    
-
-
+    call BCLS   ;borramos la pantalla
     cp 0
 	jp z, load_screen_0
     cp 1
@@ -180,8 +180,8 @@ load_screen_1:
 ;			mapas
 ;-----------------------------
 map_screen0:
-	include "src/map-screen0.asm"
+	include "src/maps/map-screen0.asm"
 map_screen1:
-	include "src/map-screen1.asm"
+	include "src/maps/map-screen1.asm"
  
 FINAL:

@@ -1,0 +1,2049 @@
+001   0000                 output "loader.bin"
+002   0000             
+003   0000 FE              db   0FEh               ; ID archivo binario, siempre hay que poner el mismo 0FEh
+004   0001 00 C0           dw   INICIO             ; dirección de inicio
+005   0003 7E DB           dw   FINAL - 1          ; dirección final
+006   0005 00 C0           dw   MAIN               ; dircción del programa de ejecución (para cuando pongas r en bload"nombre_programa", r)
+007   0007                 
+008   0007                  
+009   0007              
+010   0007                 org #c000              ; org se utiliza para decirle al z80 en que posición de memoria empieza nuestro programa (es la 33280 en decimal), en hezadecimal sería #8200
+011   C000                     
+012   C000             INICIO: 
+013   C000             
+014   C000             ;esta es la entrada principal
+015   C000             MAIN: 
+016   C000 CD 53 C0     	call set_screen2x16
+017   C003 CD 72 C0    	call load_sprites
+018   C006 CD 0A C0    	call load_tileset
+019   C009             	;call load_screen_0
+020   C009 C9          	ret
+021   C00A             
+022   C00A             
+023   C00A             
+024   C00A             
+025   C00A             
+026   C00A             
+027   C00A             	
+028   C00A             load_tileset: 
+029   C00A             	;banco 0
+030   C00A 21 7F C0    	ld hl, tileset_definition 
+031   C00D 11 00 00    	ld de, 0  ; la rutina LDIRVM necesita haber cargado previamente con de la dirección de inicio de la VRAM.https://sites.google.com/site/multivac7/files-images/TMS9918_VRAMmap_G2_300dpi.png,así es como está formado el VDP en screen 2          
+032   C010 01 00 04    	ld bc, 1024  ; son los 8 bytes por 128 tiles que hemos dibujado=1024 bytes
+033   C013 CD 5C 00    	call  LDIRVM 
+034   C016             	;banco 1
+035   C016 21 7F C0    	ld hl, tileset_definition 
+036   C019 11 00 08    	ld de, 2048  
+037   C01C 01 00 04    	ld bc, 1024 
+038   C01F CD 5C 00    	call  LDIRVM 
+039   C022             	;banco 2
+040   C022 21 7F C0    	ld hl, tileset_definition 
+041   C025 11 00 10    	ld de, 4096  
+042   C028 01 00 04    	ld bc, 1024  
+043   C02B CD 5C 00    	call  LDIRVM 
+044   C02E             
+045   C02E             	;banco 0
+046   C02E 21 7F CC    	ld hl, tileset_color
+047   C031 11 00 20        ld de, 8192  
+048   C034 01 00 04        ld bc, 1024  
+049   C037 CD 5C 00        call  LDIRVM 
+050   C03A             	;banco 1
+051   C03A 21 7F CC    	ld hl, tileset_color
+052   C03D 11 00 28        ld de, 10240  
+053   C040 01 00 04        ld bc, 1024  
+054   C043 CD 5C 00        call  LDIRVM 
+055   C046             	;banco 2
+056   C046 21 7F CC    	ld hl, tileset_color
+057   C049 11 00 30        ld de, 12288  
+058   C04C 01 00 04        ld bc, 1024  
+059   C04F CD 5C 00        call  LDIRVM 
+060   C052 C9          	ret
+061   C053             
+062   C053             ;load_screen_0:
+063   C053             ;    ld hl, map_screen0
+064   C053             ;    ld de, 6144 
+065   C053             ;	;Le quitamos 64 ya que keremos pintar el HUD en las últimas 2 líneas de la pantalla
+066   C053             ;    ld bc, 768-64
+067   C053             ;    call  LDIRVM
+068   C053             ;    ret
+069   C053             
+070   C053             set_screen2x16: 
+071   C053                 ;poner los colores de tinta, fondo y borde
+072   C053 21 E9 F3    	ld      hl,FORCLR
+073   C056 36 0F       	ld      [hl],15 ;le poneos el 15 en tinta que es el blanco
+074   C058 23          	inc     hl
+075   C059 36 01       	ld      [hl],1 ;le metemos 1 en fondo que es el negro
+076   C05B 23          	inc		hl
+077   C05C 36 01       	ld		[hl],1 ;en borde también el negro
+078   C05E CD 62 00    	call    CHGCLR
+079   C061             
+080   C061             	;click off	
+081   C061 AF          	xor	a		
+082   C062 32 DB F3    	ld	[CLIKSW],a
+083   C065             		
+084   C065             	;screen 2
+085   C065 3E 02       	ld a,2
+086   C067 CD 5F 00    	call CHGMOD ;rutina de la bios que cambia el modo de screen
+087   C06A             
+088   C06A             	;sprites no ampliados de 16x16
+089   C06A 06 E2       	ld b,0xe2
+090   C06C 0E 01       	ld c,1
+091   C06E CD 47 00    	call WRTVDP
+092   C071             
+093   C071 C9          	ret
+094   C072             
+095   C072             load_sprites: 
+096   C072                 ;hemos dibujado 20 sprites
+097   C072 21 7F D8        ld hl, sprites_definition
+098   C075 11 00 38        ld de, 14336; #3800
+099   C078 01 80 02        ld bc, 32*20
+100   C07B CD 5C 00        call  LDIRVM 
+101   C07E C9          	ret
+102   C07F             
+103   C07F             
+104   C07F             
+105   C07F                 
+106   C07F                 
+107   C07F             	include "src/vars_msxBios.asm"    
+001+  C07F             ;ver las instruciones del z80: http://clrhome.org/table/
+002+  C07F             ;ver las instrucciones de la bios: https://map.grauw.nl/resources/msxbios.php
+003+  C07F             ;ver las instrucciones: https://www.msx.org/wiki/Z80_Assembler_for_Dummies
+004+  C07F             
+005+  C07F             ; use RST assembler mnemonic to call
+006+  C07F             CHKRAM equ 0x00 ; RST 0x00 > Check RAM and sets slot for command area.
+007+  C07F             SYNCHR equ 0x08 ; RST	0x08 > Checks if then current character pointed by HL is one desired.
+008+  C07F             CHRGTR equ 0x10 ; RST	0x10 > Gets the next character (or token) of the Basic-text
+009+  C07F             OUTDO  equ 0x18 ; RST	0x18 > Output to current outputchannel (printer, diskfile, etc.)
+010+  C07F             DCOMPR equ 0x20 ; RST	0x20 > Compares HL with DE
+011+  C07F             GETYPR equ 0x28 ; RST	0x28 > Returns Type of DAC
+012+  C07F             CALLF  equ 0x30 ; RST	0x30 > Executes an interslot call
+013+  C07F             KEYINT equ 0x38 ; RST	0x38 > Executes the timer interrupt process routine
+014+  C07F             
+015+  C07F             ; use CALL assembler mnemonic
+016+  C07F             RDSLT  equ 0x000C ; Reads the value of an address in another slot
+017+  C07F             WRSLT  equ 0x0014 ; Writes a value to an address in another slot
+018+  C07F             CALSLT equ 0x001C ; Executes inter-slot call
+019+  C07F             ENASLT equ 0x0024 ; Switches indicated slot at indicated page on perpetual
+020+  C07F             
+021+  C07F             ; Initialization-routines
+022+  C07F             INITIO equ 0x003B ; Initialises the device
+023+  C07F             INIFNK equ 0x003E ; Initialises the contents of the function keys
+024+  C07F             
+025+  C07F             ; VDP routines
+026+  C07F             DISSCR equ 0x0041 ; inhibits the screen display
+027+  C07F             ENASCR equ 0x0044 ; displays the screen
+028+  C07F             WRTVDP equ 0x0047 ; write data in the VDP-register, B  - Data to write, C  - Number of the register
+029+  C07F             RDVRM  equ 0x004A ; Reads the content of VRAM
+030+  C07F             WRTVRM equ 0x004D ; Writes data in VRAM
+031+  C07F             SETRD  equ 0x0050 ; Enable VDP to read
+032+  C07F             SETWRT equ 0x0053 ; Enable VDP to write
+033+  C07F             FILVRM equ 0x0056 ; fill VRAM with value
+034+  C07F             LDIRMV equ 0x0059 ; Block transfer to memory from VRAM
+035+  C07F             LDIRVM equ 0x005C ; Block transfer to VRAM from memory
+036+  C07F             CHGMOD equ 0x005F ; Switches to given screenmode
+037+  C07F             CHGCLR equ 0x0062 ; Changes the screencolors
+038+  C07F             CLRSPR equ 0x0069 ; Initialises all sprites
+039+  C07F             INITXT equ 0x006C ; Switches to SCREEN 0 (text screen with 40 * 24 characters)
+040+  C07F             INIT32 equ 0x006F ; Switches to SCREEN 1 (text screen with 32*24 characters)
+041+  C07F             INIGRP equ 0x0072 ; Switches to SCREEN 2 (high resolution screen with 256*192 pixels)
+042+  C07F             INIMLT equ 0x0075 ; Switches to SCREEN 3 (multi-color screen 64*48 pixels)
+043+  C07F             SETTXT equ 0x0078 ; Switches to VDP in SCREEN 0 mode
+044+  C07F             SETT32 equ 0x007B ; Switches VDP in SCREEN mode 1
+045+  C07F             SETGRP equ 0x007E ; Switches VDP to SCREEN 2 mode
+046+  C07F             SETMLT equ 0x0081 ; Switches VDP to SCREEN 3 mode
+047+  C07F             CALPAT equ 0x0084 ; Returns the address of the sprite pattern table
+048+  C07F             CALATR equ 0x0087 ; Returns the address of the sprite attribute table
+049+  C07F             GSPSIZ equ 0x008A ; Returns current sprite size
+050+  C07F             GRPPRT equ 0x008D ; Displays a character on the graphic screen
+051+  C07F             FORCLR equ 0xF3E9 ;color de tinta (+1=color del fondo, +1 color del borde)
+052+  C07F                     
+053+  C07F             ; PSG routines
+054+  C07F             GICINI equ 0x0090 ; Initialises PSG and sets initial value for the PLAY statement
+055+  C07F             WRTPSG equ 0x0093 ; Writes data to PSG-register
+056+  C07F             ;Input    : A  - PSG register number
+057+  C07F             ;           E  - Data write
+058+  C07F             RDPSG  equ 0x0096 ; Reads value from PSG-register
+059+  C07F             STRTMS equ 0x0099 ; Tests whether the PLAY statement is being executed as a background task. If not, begins to execute the PLAY statement  */
+060+  C07F             
+061+  C07F             ; Console routines, rutinas de consola
+062+  C07F             CHSNS  equ 0x009C ; Tests the status of the keyboard buffer
+063+  C07F             CHGET  equ 0x009F ; One character input (waiting)
+064+  C07F             CHPUT  equ 0x00A2 ; Displays one character
+065+  C07F             LPTOUT equ 0x00A5 ; Sends one character to printer
+066+  C07F             LPTSTT equ 0x00A8 ; Tests printer status
+067+  C07F             CNVCHR equ 0x00AB ; tests for the graphic header and transforms the code
+068+  C07F             PINLIN equ 0x00AE ; Stores in the specified buffer the character codes input until the return key or STOP key is pressed     */
+069+  C07F             INLIN  equ 0x00B1 ; Same as PINLIN except that AUGFLG (#F6AA) is set
+070+  C07F             QINLIN equ 0x00B4 ; Prints a questionmark andone space
+071+  C07F             BREAKX equ 0x00B7 ; Tests status of CTRL-STOP 
+072+  C07F             ISCNTC equ 0x00BA ; Tests status of SHIFT-STOP 
+073+  C07F             CKCNTC equ 0x00BD ; Same as ISCNTC. used in Basic
+074+  C07F             BEEP   equ 0x00C0 ; generates beep
+075+  C07F             BCLS   equ 0x00C3 ; Clears the screen
+076+  C07F             POSIT  equ 0x00C6 ; Places the cursor at the specified location
+077+  C07F             FNKSB  equ 0x00C9 ; Tests whether the function key display is active (FNKFLG)If so, displays them, otherwise erase them */
+078+  C07F             ERAFNK equ 0x00CC ; Erase functionkey display
+079+  C07F             DSPFNK equ 0x00CF ; Displays the function keys
+080+  C07F             TOTEXT equ 0x00D2 ; Forces the screen to be in the text mode
+081+  C07F             
+082+  C07F             ; Controller routines                      
+083+  C07F             GTSTCK equ 0x00D5 ; Returns the joystick status
+084+  C07F             GTTRIG equ 0x00D8 ; Returns current trigger status
+085+  C07F             GTPAD  equ 0x00DB ; Returns current touch pad status
+086+  C07F             GTPDL  equ 0x00DE ; Returns currenct value of paddle
+087+  C07F             
+088+  C07F             ; Tape device routines                      
+089+  C07F             TAPION equ 0x00E1 ; Reads the header block after turning the cassette motor on
+090+  C07F             TAPIN  equ 0x00E4 ; Read data from the tape
+091+  C07F             TAPIOF equ 0x00E7 ; Stops reading from the tape
+092+  C07F             TAPOON equ 0x00EA ; Turns on the cassette motor and writes the header
+093+  C07F             TAPOUT equ 0x00ED ; Writes data on the tape
+094+  C07F             TAPOOF equ 0x00F0 ; Stops writing on the tape
+095+  C07F             STMOTR equ 0x00F3 ; Sets the cassette motor action
+096+  C07F             
+097+  C07F             ; Queue routines                      
+098+  C07F             LFTQ equ 0x00F6 ; Gives number of bytes in queue
+099+  C07F             PUTQ equ 0x00F9 ; Put byte in queue
+100+  C07F             
+101+  C07F             ; Graphic routines
+102+  C07F             ;More info (MSX Assembly Page): http:;map.grauw.nl/resources/msxbios.php                      
+103+  C07F             RIGHTC equ 0x00FC ; Shifts screenpixel to the right
+104+  C07F             LEFTC  equ 0x00FF ; Shifts screenpixel to the left
+105+  C07F             UPC    equ 0x0102 ; Shifts screenpixel up
+106+  C07F             TUPC   equ 0x0105 ; Tests whether UPC is possible, if possible, execute UPC
+107+  C07F             DOWNC  equ 0x0108 ; Shifts screenpixel down
+108+  C07F             TDOWNC equ 0x010B ; Tests whether DOWNC is possible, if possible, execute DOWNC
+109+  C07F             SCALXY equ 0x010E ; Scales X and Y coordinates
+110+  C07F             MAPXY  equ 0x0111 ; Places cursor at current cursor address
+111+  C07F             FETCHC equ 0x0114 ; Gets current cursor addresses mask pattern
+112+  C07F             STOREC equ 0x0117 ; Record current cursor addresses mask pattern
+113+  C07F             SETATR equ 0x011A ; Set attribute byte
+114+  C07F             READC  equ 0x011E ; Reads attribute byte of current screenpixel
+115+  C07F             SETC   equ 0x0120 ; Returns currenct screenpixel of specificed attribute byte
+116+  C07F             NSETCX equ 0x0123 ; Set horizontal screenpixels
+117+  C07F             GTASPC equ 0x0126 ; Gets screen relations
+118+  C07F             PNTINI equ 0x0129 ; Initalises the PAINT instruction
+119+  C07F             SCANR  equ 0x012C ; Scans screenpixels to the right
+120+  C07F             SCANL  equ 0x012F ; Scans screenpixels to the left
+121+  C07F             
+122+  C07F             ; Graphic routines MSX2
+123+  C07F             ;More info (MSX Assembly Page): http:;map.grauw.nl/resources/msxbios.php#msx2bios
+124+  C07F             CHKNEW equ 0x0165 ;Tests screen mode > C-flag set if screenmode = 5, 6, 7 or 8
+125+  C07F             BIGFIL equ 0x016B ;fill VRAM with value (total VRAM can be reached) HL address, BC length, A data
+126+  C07F             NSETRD equ 0x016E ;Enable VDP to read.(with full 16 bits VRAM-address)
+127+  C07F             NSTWRT equ 0x0171 ;Enable VDP to write.(with full 16 bits VRAM-address) 
+128+  C07F             NRDVRM equ 0x0174 ;Reads VRAM like in RDVRM.(with full 16 bits VRAM-address)
+129+  C07F             NWRVRM equ 0x0177 ;Writes to VRAM like in WRTVRM.(with full 16 bits VRAM-address)
+130+  C07F             
+131+  C07F             
+132+  C07F             
+133+  C07F             
+134+  C07F             
+135+  C07F             
+136+  C07F                                  
+137+  C07F             ; Misc routines
+138+  C07F             CLIKSW equ 0xF3DB; para que no se oiga el click que hace al pulsar las teclas
+139+  C07F             CHGCAP equ 0x0132 ; Alternates the CAP lamp status
+140+  C07F             CHGSND equ 0x0135 ; Alternates the 1-bit sound port status
+141+  C07F             RSLREG equ 0x0138 ; Reads the primary slot register
+142+  C07F             WSLREG equ 0x013B ; Writes value to the primary slot register
+143+  C07F             RDVDP  equ 0x013E ; Reads VDP status register
+144+  C07F             SNSMAT equ 0x0141 ; Returns the value of the specified line from the keyboard matrix
+145+  C07F             ; 0   1          2           3           4           5           6           7           8       9       10
+146+  C07F             ;0    1          2                      4           5           6
+147+  C07F             ;1   ; fin grabr ' grabar                                                    Ñ
+148+  C07F             ;2                                      \grabar2  DEADfingrabar2 A           B
+149+  C07F             ;3 C                        F           G           H
+150+  C07F             ;4                          N
+151+  C07F             ;5 S                        V                       X                       Z
+152+  C07F             ;6SHIFtONTROL    GRAPH      CAPS        CODE
+153+  C07F             ;7              ESCAPE                              BS                      RET
+154+  C07F             ;8                                               Cursor ^    Cursor v
+155+  C07F             PHYDIO equ 0x0144 ; Executes I/O for mass-storage media like diskettes
+156+  C07F             FORMAT equ 0x0147 ; Initialises mass-storage media like formatting of diskettes
+157+  C07F             ISFLIO equ 0x014A ; Tests if I/O to device is taking place
+158+  C07F             OUTDLP equ 0x014E ; Printer output
+159+  C07F             GETVCP equ 0x0150 ; Returns pointer to play queue
+160+  C07F             GETVC2 equ 0x0153 ; Returns pointer to variable in queue number VOICEN (byte op #FB38)
+161+  C07F             KILBUF equ 0x0156 ; Clear keyboard buffer
+162+  C07F             CALBAS equ 0x0159 ; Executes inter-slot call to the routine in BASIC interpreter
+163+  C07F                     
+164+  C07F             
+108   C07F             tileset_definition: 
+109   C07F             	include "src/tileset-definition.asm"
+001+  C07F             BANK_PATTERN_0: 
+002+  C07F             	DB 255, 255, 255, 255, 255, 255, 255, 255
+002+  C07F FFFFFFFFFFFFFFFF
+003+  C087             	DB 255, 255, 255, 255, 255, 255, 255, 255
+003+  C087 FFFFFFFFFFFFFFFF
+004+  C08F             	DB 0, 0, 0, 0, 255, 255, 255, 255
+004+  C08F 00000000FFFFFFFF
+005+  C097             	DB 0, 0, 0, 0, 0, 0, 255, 255
+005+  C097 000000000000FFFF
+006+  C09F             	DB 1, 3, 7, 15, 31, 63, 127, 255
+006+  C09F 0103070F1F3F7FFF
+007+  C0A7             	DB 128, 192, 224, 240, 248, 252, 254, 255
+007+  C0A7 80C0E0F0F8FCFEFF
+008+  C0AF             	DB 255, 255, 255, 255, 255, 255, 255, 255
+008+  C0AF FFFFFFFFFFFFFFFF
+009+  C0B7             	DB 0, 0, 0, 0, 255, 255, 255, 255
+009+  C0B7 00000000FFFFFFFF
+010+  C0BF             	DB 0, 0, 0, 0, 0, 0, 255, 255
+010+  C0BF 000000000000FFFF
+011+  C0C7             	DB 1, 3, 7, 15, 31, 63, 127, 255
+011+  C0C7 0103070F1F3F7FFF
+012+  C0CF             	DB 128, 192, 224, 240, 248, 252, 254, 255
+012+  C0CF 80C0E0F0F8FCFEFF
+013+  C0D7             	DB 255, 255, 255, 255, 255, 255, 255, 255
+013+  C0D7 FFFFFFFFFFFFFFFF
+014+  C0DF             	DB 0, 0, 0, 0, 255, 255, 255, 255
+014+  C0DF 00000000FFFFFFFF
+015+  C0E7             	DB 0, 0, 0, 0, 0, 0, 255, 255
+015+  C0E7 000000000000FFFF
+016+  C0EF             	DB 1, 3, 7, 15, 31, 63, 127, 255
+016+  C0EF 0103070F1F3F7FFF
+017+  C0F7             	DB 128, 192, 224, 240, 248, 252, 254, 255
+017+  C0F7 80C0E0F0F8FCFEFF
+018+  C0FF             	DB 255, 255, 255, 255, 255, 255, 255, 255
+018+  C0FF FFFFFFFFFFFFFFFF
+019+  C107             	DB 0, 0, 0, 0, 255, 255, 255, 255
+019+  C107 00000000FFFFFFFF
+020+  C10F             	DB 0, 0, 0, 0, 0, 0, 255, 255
+020+  C10F 000000000000FFFF
+021+  C117             	DB 1, 3, 7, 15, 31, 63, 127, 255
+021+  C117 0103070F1F3F7FFF
+022+  C11F             	DB 128, 192, 224, 240, 248, 252, 254, 255
+022+  C11F 80C0E0F0F8FCFEFF
+023+  C127             	DB 255, 255, 255, 255, 255, 255, 255, 255
+023+  C127 FFFFFFFFFFFFFFFF
+024+  C12F             	DB 0, 0, 0, 0, 255, 255, 255, 255
+024+  C12F 00000000FFFFFFFF
+025+  C137             	DB 0, 0, 0, 0, 0, 0, 255, 255
+025+  C137 000000000000FFFF
+026+  C13F             	DB 1, 3, 7, 15, 31, 63, 127, 255
+026+  C13F 0103070F1F3F7FFF
+027+  C147             	DB 128, 192, 224, 240, 248, 252, 254, 255
+027+  C147 80C0E0F0F8FCFEFF
+028+  C14F             	DB 255, 255, 255, 255, 255, 255, 255, 255
+028+  C14F FFFFFFFFFFFFFFFF
+029+  C157             	DB 0, 0, 0, 0, 255, 255, 255, 255
+029+  C157 00000000FFFFFFFF
+030+  C15F             	DB 0, 0, 0, 0, 0, 0, 255, 255
+030+  C15F 000000000000FFFF
+031+  C167             	DB 1, 3, 7, 15, 31, 63, 127, 255
+031+  C167 0103070F1F3F7FFF
+032+  C16F             	DB 128, 192, 224, 240, 248, 252, 254, 255
+032+  C16F 80C0E0F0F8FCFEFF
+033+  C177             	DB 0, 0, 0, 0, 0, 0, 0, 0
+033+  C177 0000000000000000
+034+  C17F             	DB 0, 126, 126, 126, 126, 126, 126, 0
+034+  C17F 007E7E7E7E7E7E00
+035+  C187             	DB 0, 127, 127, 127, 127, 127, 127, 127
+035+  C187 007F7F7F7F7F7F7F
+036+  C18F             	DB 254, 254, 254, 254, 254, 254, 254, 0
+036+  C18F FEFEFEFEFEFEFE00
+037+  C197             	DB 255, 255, 255, 255, 255, 255, 255, 255
+037+  C197 FFFFFFFFFFFFFFFF
+038+  C19F             	DB 255, 255, 255, 255, 255, 255, 255, 255
+038+  C19F FFFFFFFFFFFFFFFF
+039+  C1A7             	DB 0, 127, 127, 127, 127, 127, 127, 127
+039+  C1A7 007F7F7F7F7F7F7F
+040+  C1AF             	DB 254, 254, 254, 254, 254, 254, 254, 0
+040+  C1AF FEFEFEFEFEFEFE00
+041+  C1B7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+041+  C1B7 0000000000000000
+042+  C1BF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+042+  C1BF 0000000000000000
+043+  C1C7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+043+  C1C7 0000000000000000
+044+  C1CF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+044+  C1CF 0000000000000000
+045+  C1D7             	DB 0, 127, 127, 127, 127, 127, 127, 127
+045+  C1D7 007F7F7F7F7F7F7F
+046+  C1DF             	DB 0, 254, 254, 254, 254, 254, 254, 254
+046+  C1DF 00FEFEFEFEFEFEFE
+047+  C1E7             	DB 0, 254, 159, 254, 254, 254, 254, 254
+047+  C1E7 00FE9FFEFEFEFEFE
+048+  C1EF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+048+  C1EF 0000000000000000
+049+  C1F7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+049+  C1F7 0000000000000000
+050+  C1FF             	DB 255, 255, 195, 219, 255, 219, 195, 126
+050+  C1FF FFFFC3DBFFDBC37E
+051+  C207             	DB 24, 24, 0, 24, 60, 126, 195, 255
+051+  C207 181800183C7EC3FF
+052+  C20F             	DB 255, 129, 195, 126, 60, 24, 24, 126
+052+  C20F FF81C37E3C18187E
+053+  C217             	DB 0, 0, 0, 255, 129, 195, 255, 126
+053+  C217 000000FF81C3FF7E
+054+  C21F             	DB 60, 126, 255, 129, 255, 195, 126, 60
+054+  C21F 3C7EFF81FFC37E3C
+055+  C227             	DB 24, 24, 24, 60, 126, 255, 126, 60
+055+  C227 1818183C7EFF7E3C
+056+  C22F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+056+  C22F 0000000000000000
+057+  C237             	DB 0, 0, 0, 0, 0, 0, 0, 0
+057+  C237 0000000000000000
+058+  C23F             	DB 24, 60, 126, 219, 183, 126, 60, 24
+058+  C23F 183C7EDBB77E3C18
+059+  C247             	DB 0, 8, 8, 8, 8, 8, 8, 8
+059+  C247 0008080808080808
+060+  C24F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+060+  C24F 0000000000000000
+061+  C257             	DB 0, 0, 0, 0, 0, 0, 0, 0
+061+  C257 0000000000000000
+062+  C25F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+062+  C25F 0000000000000000
+063+  C267             	DB 0, 0, 0, 0, 0, 0, 0, 0
+063+  C267 0000000000000000
+064+  C26F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+064+  C26F 0000000000000000
+065+  C277             	DB 0, 0, 0, 0, 0, 0, 0, 0
+065+  C277 0000000000000000
+066+  C27F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+066+  C27F 0000000000000000
+067+  C287             	DB 0, 0, 0, 0, 0, 0, 0, 0
+067+  C287 0000000000000000
+068+  C28F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+068+  C28F 0000000000000000
+069+  C297             	DB 0, 0, 0, 0, 0, 0, 0, 0
+069+  C297 0000000000000000
+070+  C29F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+070+  C29F 0000000000000000
+071+  C2A7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+071+  C2A7 0000000000000000
+072+  C2AF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+072+  C2AF 0000000000000000
+073+  C2B7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+073+  C2B7 0000000000000000
+074+  C2BF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+074+  C2BF 0000000000000000
+075+  C2C7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+075+  C2C7 0000000000000000
+076+  C2CF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+076+  C2CF 0000000000000000
+077+  C2D7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+077+  C2D7 0000000000000000
+078+  C2DF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+078+  C2DF 0000000000000000
+079+  C2E7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+079+  C2E7 0000000000000000
+080+  C2EF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+080+  C2EF 0000000000000000
+081+  C2F7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+081+  C2F7 0000000000000000
+082+  C2FF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+082+  C2FF 0000000000000000
+083+  C307             	DB 0, 0, 0, 0, 0, 0, 0, 0
+083+  C307 0000000000000000
+084+  C30F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+084+  C30F 0000000000000000
+085+  C317             	DB 0, 0, 0, 0, 0, 0, 0, 0
+085+  C317 0000000000000000
+086+  C31F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+086+  C31F 0000000000000000
+087+  C327             	DB 0, 0, 0, 0, 0, 0, 0, 0
+087+  C327 0000000000000000
+088+  C32F             	DB 0, 56, 68, 76, 16, 100, 68, 56
+088+  C32F 0038444C10644438
+089+  C337             	DB 0, 12, 4, 4, 0, 4, 4, 4
+089+  C337 000C040400040404
+090+  C33F             	DB 0, 28, 2, 2, 28, 32, 32, 60
+090+  C33F 001C02021C20203C
+091+  C347             	DB 0, 28, 2, 2, 12, 2, 2, 28
+091+  C347 001C02020C02021C
+092+  C34F             	DB 0, 34, 34, 34, 28, 2, 2, 2
+092+  C34F 002222221C020202
+093+  C357             	DB 0, 28, 32, 32, 28, 2, 2, 28
+093+  C357 001C20201C02021C
+094+  C35F             	DB 0, 28, 32, 32, 28, 34, 34, 28
+094+  C35F 001C20201C22221C
+095+  C367             	DB 0, 28, 2, 2, 0, 2, 2, 2
+095+  C367 001C020200020202
+096+  C36F             	DB 0, 28, 34, 34, 28, 34, 34, 28
+096+  C36F 001C22221C22221C
+097+  C377             	DB 0, 28, 34, 34, 28, 2, 2, 28
+097+  C377 001C22221C02021C
+098+  C37F             	DB 0, 60, 66, 66, 60, 66, 66, 66
+098+  C37F 003C42423C424242
+099+  C387             	DB 0, 60, 34, 34, 28, 34, 34, 60
+099+  C387 003C22221C22223C
+100+  C38F             	DB 0, 28, 32, 32, 0, 32, 32, 28
+100+  C38F 001C20200020201C
+101+  C397             	DB 0, 60, 34, 34, 0, 34, 34, 60
+101+  C397 003C22220022223C
+102+  C39F             	DB 0, 28, 32, 32, 28, 32, 32, 28
+102+  C39F 001C20201C20201C
+103+  C3A7             	DB 0, 60, 64, 64, 28, 64, 64, 64
+103+  C3A7 003C40401C404040
+104+  C3AF             	DB 0, 56, 64, 64, 12, 68, 68, 56
+104+  C3AF 003840400C444438
+105+  C3B7             	DB 0, 68, 68, 68, 56, 68, 68, 68
+105+  C3B7 0044444438444444
+106+  C3BF             	DB 0, 16, 16, 16, 0, 16, 16, 16
+106+  C3BF 0010101000101010
+107+  C3C7             	DB 0, 4, 4, 0, 4, 68, 68, 56
+107+  C3C7 0004040004444438
+108+  C3CF             	DB 0, 68, 72, 80, 56, 68, 68, 68
+108+  C3CF 0044485038444444
+109+  C3D7             	DB 0, 64, 64, 64, 0, 64, 64, 60
+109+  C3D7 004040400040403C
+110+  C3DF             	DB 0, 56, 84, 84, 0, 68, 68, 68
+110+  C3DF 0038545400444444
+111+  C3E7             	DB 0, 100, 84, 76, 0, 68, 68, 68
+111+  C3E7 0064544C00444444
+112+  C3EF             	DB 0, 56, 68, 68, 0, 68, 68, 56
+112+  C3EF 0038444400444438
+113+  C3F7             	DB 0, 56, 68, 68, 56, 64, 64, 64
+113+  C3F7 0038444438404040
+114+  C3FF             	DB 0, 56, 68, 68, 0, 68, 72, 52
+114+  C3FF 0038444400444834
+115+  C407             	DB 0, 56, 68, 68, 56, 80, 72, 68
+115+  C407 0038444438504844
+116+  C40F             	DB 0, 60, 64, 64, 56, 4, 4, 120
+116+  C40F 003C404038040478
+117+  C417             	DB 0, 124, 16, 16, 0, 16, 16, 16
+117+  C417 007C101000101010
+118+  C41F             	DB 0, 68, 68, 68, 0, 68, 68, 56
+118+  C41F 0044444400444438
+119+  C427             	DB 0, 68, 68, 68, 8, 80, 96, 64
+119+  C427 0044444408506040
+120+  C42F             	DB 0, 68, 68, 68, 0, 84, 84, 56
+120+  C42F 0044444400545438
+121+  C437             	DB 0, 68, 68, 40, 16, 40, 68, 68
+121+  C437 0044442810284444
+122+  C43F             	DB 0, 68, 68, 68, 56, 4, 4, 56
+122+  C43F 0044444438040438
+123+  C447             	DB 0, 60, 4, 8, 16, 32, 64, 120
+123+  C447 003C040810204078
+124+  C44F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+124+  C44F 0000000000000000
+125+  C457             	DB 0, 0, 0, 0, 0, 0, 0, 0
+125+  C457 0000000000000000
+126+  C45F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+126+  C45F 0000000000000000
+127+  C467             	DB 0, 0, 0, 0, 0, 0, 0, 0
+127+  C467 0000000000000000
+128+  C46F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+128+  C46F 0000000000000000
+129+  C477             	DB 0, 0, 0, 0, 0, 0, 0, 0
+129+  C477 0000000000000000
+130+  C47F             BANK_PATTERN_1: 
+131+  C47F             	DB 255, 255, 255, 255, 255, 255, 255, 255
+131+  C47F FFFFFFFFFFFFFFFF
+132+  C487             	DB 255, 255, 255, 255, 255, 255, 255, 255
+132+  C487 FFFFFFFFFFFFFFFF
+133+  C48F             	DB 0, 0, 0, 0, 255, 255, 255, 255
+133+  C48F 00000000FFFFFFFF
+134+  C497             	DB 0, 0, 0, 0, 0, 0, 255, 255
+134+  C497 000000000000FFFF
+135+  C49F             	DB 1, 3, 7, 15, 31, 63, 127, 255
+135+  C49F 0103070F1F3F7FFF
+136+  C4A7             	DB 128, 192, 224, 240, 248, 252, 254, 255
+136+  C4A7 80C0E0F0F8FCFEFF
+137+  C4AF             	DB 255, 255, 255, 255, 255, 255, 255, 255
+137+  C4AF FFFFFFFFFFFFFFFF
+138+  C4B7             	DB 0, 0, 0, 0, 255, 255, 255, 255
+138+  C4B7 00000000FFFFFFFF
+139+  C4BF             	DB 0, 0, 0, 0, 0, 0, 255, 255
+139+  C4BF 000000000000FFFF
+140+  C4C7             	DB 1, 3, 7, 15, 31, 63, 127, 255
+140+  C4C7 0103070F1F3F7FFF
+141+  C4CF             	DB 128, 192, 224, 240, 248, 252, 254, 255
+141+  C4CF 80C0E0F0F8FCFEFF
+142+  C4D7             	DB 255, 255, 255, 255, 255, 255, 255, 255
+142+  C4D7 FFFFFFFFFFFFFFFF
+143+  C4DF             	DB 0, 0, 0, 0, 255, 255, 255, 255
+143+  C4DF 00000000FFFFFFFF
+144+  C4E7             	DB 0, 0, 0, 0, 0, 0, 255, 255
+144+  C4E7 000000000000FFFF
+145+  C4EF             	DB 1, 3, 7, 15, 31, 63, 127, 255
+145+  C4EF 0103070F1F3F7FFF
+146+  C4F7             	DB 128, 192, 224, 240, 248, 252, 254, 255
+146+  C4F7 80C0E0F0F8FCFEFF
+147+  C4FF             	DB 255, 255, 255, 255, 255, 255, 255, 255
+147+  C4FF FFFFFFFFFFFFFFFF
+148+  C507             	DB 0, 0, 0, 0, 255, 255, 255, 255
+148+  C507 00000000FFFFFFFF
+149+  C50F             	DB 0, 0, 0, 0, 0, 0, 255, 255
+149+  C50F 000000000000FFFF
+150+  C517             	DB 1, 3, 7, 15, 31, 63, 127, 255
+150+  C517 0103070F1F3F7FFF
+151+  C51F             	DB 128, 192, 224, 240, 248, 252, 254, 255
+151+  C51F 80C0E0F0F8FCFEFF
+152+  C527             	DB 255, 255, 255, 255, 255, 255, 255, 255
+152+  C527 FFFFFFFFFFFFFFFF
+153+  C52F             	DB 0, 0, 0, 0, 255, 255, 255, 255
+153+  C52F 00000000FFFFFFFF
+154+  C537             	DB 0, 0, 0, 0, 0, 0, 255, 255
+154+  C537 000000000000FFFF
+155+  C53F             	DB 1, 3, 7, 15, 31, 63, 127, 255
+155+  C53F 0103070F1F3F7FFF
+156+  C547             	DB 128, 192, 224, 240, 248, 252, 254, 255
+156+  C547 80C0E0F0F8FCFEFF
+157+  C54F             	DB 255, 255, 255, 255, 255, 255, 255, 255
+157+  C54F FFFFFFFFFFFFFFFF
+158+  C557             	DB 0, 0, 0, 0, 255, 255, 255, 255
+158+  C557 00000000FFFFFFFF
+159+  C55F             	DB 0, 0, 0, 0, 0, 0, 255, 255
+159+  C55F 000000000000FFFF
+160+  C567             	DB 1, 3, 7, 15, 31, 63, 127, 255
+160+  C567 0103070F1F3F7FFF
+161+  C56F             	DB 128, 192, 224, 240, 248, 252, 254, 255
+161+  C56F 80C0E0F0F8FCFEFF
+162+  C577             	DB 0, 0, 0, 0, 0, 0, 0, 0
+162+  C577 0000000000000000
+163+  C57F             	DB 0, 126, 126, 126, 126, 126, 126, 0
+163+  C57F 007E7E7E7E7E7E00
+164+  C587             	DB 0, 127, 127, 127, 127, 127, 127, 127
+164+  C587 007F7F7F7F7F7F7F
+165+  C58F             	DB 254, 254, 254, 254, 254, 254, 254, 0
+165+  C58F FEFEFEFEFEFEFE00
+166+  C597             	DB 255, 255, 255, 255, 255, 255, 255, 255
+166+  C597 FFFFFFFFFFFFFFFF
+167+  C59F             	DB 255, 255, 255, 255, 255, 255, 255, 255
+167+  C59F FFFFFFFFFFFFFFFF
+168+  C5A7             	DB 0, 127, 127, 127, 127, 127, 127, 127
+168+  C5A7 007F7F7F7F7F7F7F
+169+  C5AF             	DB 254, 254, 254, 254, 254, 254, 254, 0
+169+  C5AF FEFEFEFEFEFEFE00
+170+  C5B7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+170+  C5B7 0000000000000000
+171+  C5BF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+171+  C5BF 0000000000000000
+172+  C5C7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+172+  C5C7 0000000000000000
+173+  C5CF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+173+  C5CF 0000000000000000
+174+  C5D7             	DB 0, 127, 127, 127, 127, 127, 127, 127
+174+  C5D7 007F7F7F7F7F7F7F
+175+  C5DF             	DB 0, 254, 254, 254, 254, 254, 254, 254
+175+  C5DF 00FEFEFEFEFEFEFE
+176+  C5E7             	DB 0, 254, 159, 254, 254, 254, 254, 254
+176+  C5E7 00FE9FFEFEFEFEFE
+177+  C5EF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+177+  C5EF 0000000000000000
+178+  C5F7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+178+  C5F7 0000000000000000
+179+  C5FF             	DB 255, 255, 195, 219, 255, 219, 195, 126
+179+  C5FF FFFFC3DBFFDBC37E
+180+  C607             	DB 24, 24, 0, 24, 60, 126, 195, 255
+180+  C607 181800183C7EC3FF
+181+  C60F             	DB 255, 129, 195, 126, 60, 24, 24, 126
+181+  C60F FF81C37E3C18187E
+182+  C617             	DB 0, 0, 0, 255, 129, 195, 255, 126
+182+  C617 000000FF81C3FF7E
+183+  C61F             	DB 60, 126, 255, 129, 255, 195, 126, 60
+183+  C61F 3C7EFF81FFC37E3C
+184+  C627             	DB 24, 24, 24, 60, 126, 255, 126, 60
+184+  C627 1818183C7EFF7E3C
+185+  C62F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+185+  C62F 0000000000000000
+186+  C637             	DB 0, 0, 0, 0, 0, 0, 0, 0
+186+  C637 0000000000000000
+187+  C63F             	DB 24, 60, 126, 219, 183, 126, 60, 24
+187+  C63F 183C7EDBB77E3C18
+188+  C647             	DB 0, 8, 8, 8, 8, 8, 8, 8
+188+  C647 0008080808080808
+189+  C64F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+189+  C64F 0000000000000000
+190+  C657             	DB 0, 0, 0, 0, 0, 0, 0, 0
+190+  C657 0000000000000000
+191+  C65F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+191+  C65F 0000000000000000
+192+  C667             	DB 0, 0, 0, 0, 0, 0, 0, 0
+192+  C667 0000000000000000
+193+  C66F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+193+  C66F 0000000000000000
+194+  C677             	DB 0, 0, 0, 0, 0, 0, 0, 0
+194+  C677 0000000000000000
+195+  C67F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+195+  C67F 0000000000000000
+196+  C687             	DB 0, 0, 0, 0, 0, 0, 0, 0
+196+  C687 0000000000000000
+197+  C68F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+197+  C68F 0000000000000000
+198+  C697             	DB 0, 0, 0, 0, 0, 0, 0, 0
+198+  C697 0000000000000000
+199+  C69F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+199+  C69F 0000000000000000
+200+  C6A7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+200+  C6A7 0000000000000000
+201+  C6AF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+201+  C6AF 0000000000000000
+202+  C6B7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+202+  C6B7 0000000000000000
+203+  C6BF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+203+  C6BF 0000000000000000
+204+  C6C7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+204+  C6C7 0000000000000000
+205+  C6CF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+205+  C6CF 0000000000000000
+206+  C6D7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+206+  C6D7 0000000000000000
+207+  C6DF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+207+  C6DF 0000000000000000
+208+  C6E7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+208+  C6E7 0000000000000000
+209+  C6EF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+209+  C6EF 0000000000000000
+210+  C6F7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+210+  C6F7 0000000000000000
+211+  C6FF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+211+  C6FF 0000000000000000
+212+  C707             	DB 0, 0, 0, 0, 0, 0, 0, 0
+212+  C707 0000000000000000
+213+  C70F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+213+  C70F 0000000000000000
+214+  C717             	DB 0, 0, 0, 0, 0, 0, 0, 0
+214+  C717 0000000000000000
+215+  C71F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+215+  C71F 0000000000000000
+216+  C727             	DB 0, 0, 0, 0, 0, 0, 0, 0
+216+  C727 0000000000000000
+217+  C72F             	DB 0, 56, 68, 76, 16, 100, 68, 56
+217+  C72F 0038444C10644438
+218+  C737             	DB 0, 12, 4, 4, 0, 4, 4, 4
+218+  C737 000C040400040404
+219+  C73F             	DB 0, 28, 2, 2, 28, 32, 32, 60
+219+  C73F 001C02021C20203C
+220+  C747             	DB 0, 28, 2, 2, 12, 2, 2, 28
+220+  C747 001C02020C02021C
+221+  C74F             	DB 0, 34, 34, 34, 28, 2, 2, 2
+221+  C74F 002222221C020202
+222+  C757             	DB 0, 28, 32, 32, 28, 2, 2, 28
+222+  C757 001C20201C02021C
+223+  C75F             	DB 0, 28, 32, 32, 28, 34, 34, 28
+223+  C75F 001C20201C22221C
+224+  C767             	DB 0, 28, 2, 2, 0, 2, 2, 2
+224+  C767 001C020200020202
+225+  C76F             	DB 0, 28, 34, 34, 28, 34, 34, 28
+225+  C76F 001C22221C22221C
+226+  C777             	DB 0, 28, 34, 34, 28, 2, 2, 28
+226+  C777 001C22221C02021C
+227+  C77F             	DB 0, 60, 66, 66, 60, 66, 66, 66
+227+  C77F 003C42423C424242
+228+  C787             	DB 0, 60, 34, 34, 28, 34, 34, 60
+228+  C787 003C22221C22223C
+229+  C78F             	DB 0, 28, 32, 32, 0, 32, 32, 28
+229+  C78F 001C20200020201C
+230+  C797             	DB 0, 60, 34, 34, 0, 34, 34, 60
+230+  C797 003C22220022223C
+231+  C79F             	DB 0, 28, 32, 32, 28, 32, 32, 28
+231+  C79F 001C20201C20201C
+232+  C7A7             	DB 0, 60, 64, 64, 28, 64, 64, 64
+232+  C7A7 003C40401C404040
+233+  C7AF             	DB 0, 56, 64, 64, 12, 68, 68, 56
+233+  C7AF 003840400C444438
+234+  C7B7             	DB 0, 68, 68, 68, 56, 68, 68, 68
+234+  C7B7 0044444438444444
+235+  C7BF             	DB 0, 16, 16, 16, 0, 16, 16, 16
+235+  C7BF 0010101000101010
+236+  C7C7             	DB 0, 4, 4, 0, 4, 68, 68, 56
+236+  C7C7 0004040004444438
+237+  C7CF             	DB 0, 68, 72, 80, 56, 68, 68, 68
+237+  C7CF 0044485038444444
+238+  C7D7             	DB 0, 64, 64, 64, 0, 64, 64, 60
+238+  C7D7 004040400040403C
+239+  C7DF             	DB 0, 56, 84, 84, 0, 68, 68, 68
+239+  C7DF 0038545400444444
+240+  C7E7             	DB 0, 100, 84, 76, 0, 68, 68, 68
+240+  C7E7 0064544C00444444
+241+  C7EF             	DB 0, 56, 68, 68, 0, 68, 68, 56
+241+  C7EF 0038444400444438
+242+  C7F7             	DB 0, 56, 68, 68, 56, 64, 64, 64
+242+  C7F7 0038444438404040
+243+  C7FF             	DB 0, 56, 68, 68, 0, 68, 72, 52
+243+  C7FF 0038444400444834
+244+  C807             	DB 0, 56, 68, 68, 56, 80, 72, 68
+244+  C807 0038444438504844
+245+  C80F             	DB 0, 60, 64, 64, 56, 4, 4, 120
+245+  C80F 003C404038040478
+246+  C817             	DB 0, 124, 16, 16, 0, 16, 16, 16
+246+  C817 007C101000101010
+247+  C81F             	DB 0, 68, 68, 68, 0, 68, 68, 56
+247+  C81F 0044444400444438
+248+  C827             	DB 0, 68, 68, 68, 8, 80, 96, 64
+248+  C827 0044444408506040
+249+  C82F             	DB 0, 68, 68, 68, 0, 84, 84, 56
+249+  C82F 0044444400545438
+250+  C837             	DB 0, 68, 68, 40, 16, 40, 68, 68
+250+  C837 0044442810284444
+251+  C83F             	DB 0, 68, 68, 68, 56, 4, 4, 56
+251+  C83F 0044444438040438
+252+  C847             	DB 0, 60, 4, 8, 16, 32, 64, 120
+252+  C847 003C040810204078
+253+  C84F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+253+  C84F 0000000000000000
+254+  C857             	DB 0, 0, 0, 0, 0, 0, 0, 0
+254+  C857 0000000000000000
+255+  C85F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+255+  C85F 0000000000000000
+256+  C867             	DB 0, 0, 0, 0, 0, 0, 0, 0
+256+  C867 0000000000000000
+257+  C86F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+257+  C86F 0000000000000000
+258+  C877             	DB 0, 0, 0, 0, 0, 0, 0, 0
+258+  C877 0000000000000000
+259+  C87F             BANK_PATTERN_2: 
+260+  C87F             	DB 255, 255, 255, 255, 255, 255, 255, 255
+260+  C87F FFFFFFFFFFFFFFFF
+261+  C887             	DB 255, 255, 255, 255, 255, 255, 255, 255
+261+  C887 FFFFFFFFFFFFFFFF
+262+  C88F             	DB 0, 0, 0, 0, 255, 255, 255, 255
+262+  C88F 00000000FFFFFFFF
+263+  C897             	DB 0, 0, 0, 0, 0, 0, 255, 255
+263+  C897 000000000000FFFF
+264+  C89F             	DB 1, 3, 7, 15, 31, 63, 127, 255
+264+  C89F 0103070F1F3F7FFF
+265+  C8A7             	DB 128, 192, 224, 240, 248, 252, 254, 255
+265+  C8A7 80C0E0F0F8FCFEFF
+266+  C8AF             	DB 255, 255, 255, 255, 255, 255, 255, 255
+266+  C8AF FFFFFFFFFFFFFFFF
+267+  C8B7             	DB 0, 0, 0, 0, 255, 255, 255, 255
+267+  C8B7 00000000FFFFFFFF
+268+  C8BF             	DB 0, 0, 0, 0, 0, 0, 255, 255
+268+  C8BF 000000000000FFFF
+269+  C8C7             	DB 1, 3, 7, 15, 31, 63, 127, 255
+269+  C8C7 0103070F1F3F7FFF
+270+  C8CF             	DB 128, 192, 224, 240, 248, 252, 254, 255
+270+  C8CF 80C0E0F0F8FCFEFF
+271+  C8D7             	DB 255, 255, 255, 255, 255, 255, 255, 255
+271+  C8D7 FFFFFFFFFFFFFFFF
+272+  C8DF             	DB 0, 0, 0, 0, 255, 255, 255, 255
+272+  C8DF 00000000FFFFFFFF
+273+  C8E7             	DB 0, 0, 0, 0, 0, 0, 255, 255
+273+  C8E7 000000000000FFFF
+274+  C8EF             	DB 1, 3, 7, 15, 31, 63, 127, 255
+274+  C8EF 0103070F1F3F7FFF
+275+  C8F7             	DB 128, 192, 224, 240, 248, 252, 254, 255
+275+  C8F7 80C0E0F0F8FCFEFF
+276+  C8FF             	DB 255, 255, 255, 255, 255, 255, 255, 255
+276+  C8FF FFFFFFFFFFFFFFFF
+277+  C907             	DB 0, 0, 0, 0, 255, 255, 255, 255
+277+  C907 00000000FFFFFFFF
+278+  C90F             	DB 0, 0, 0, 0, 0, 0, 255, 255
+278+  C90F 000000000000FFFF
+279+  C917             	DB 1, 3, 7, 15, 31, 63, 127, 255
+279+  C917 0103070F1F3F7FFF
+280+  C91F             	DB 128, 192, 224, 240, 248, 252, 254, 255
+280+  C91F 80C0E0F0F8FCFEFF
+281+  C927             	DB 255, 255, 255, 255, 255, 255, 255, 255
+281+  C927 FFFFFFFFFFFFFFFF
+282+  C92F             	DB 0, 0, 0, 0, 255, 255, 255, 255
+282+  C92F 00000000FFFFFFFF
+283+  C937             	DB 0, 0, 0, 0, 0, 0, 255, 255
+283+  C937 000000000000FFFF
+284+  C93F             	DB 1, 3, 7, 15, 31, 63, 127, 255
+284+  C93F 0103070F1F3F7FFF
+285+  C947             	DB 128, 192, 224, 240, 248, 252, 254, 255
+285+  C947 80C0E0F0F8FCFEFF
+286+  C94F             	DB 255, 255, 255, 255, 255, 255, 255, 255
+286+  C94F FFFFFFFFFFFFFFFF
+287+  C957             	DB 0, 0, 0, 0, 255, 255, 255, 255
+287+  C957 00000000FFFFFFFF
+288+  C95F             	DB 0, 0, 0, 0, 0, 0, 255, 255
+288+  C95F 000000000000FFFF
+289+  C967             	DB 1, 3, 7, 15, 31, 63, 127, 255
+289+  C967 0103070F1F3F7FFF
+290+  C96F             	DB 128, 192, 224, 240, 248, 252, 254, 255
+290+  C96F 80C0E0F0F8FCFEFF
+291+  C977             	DB 0, 0, 0, 0, 0, 0, 0, 0
+291+  C977 0000000000000000
+292+  C97F             	DB 0, 126, 126, 126, 126, 126, 126, 0
+292+  C97F 007E7E7E7E7E7E00
+293+  C987             	DB 0, 127, 127, 127, 127, 127, 127, 127
+293+  C987 007F7F7F7F7F7F7F
+294+  C98F             	DB 254, 254, 254, 254, 254, 254, 254, 0
+294+  C98F FEFEFEFEFEFEFE00
+295+  C997             	DB 255, 255, 255, 255, 255, 255, 255, 255
+295+  C997 FFFFFFFFFFFFFFFF
+296+  C99F             	DB 255, 255, 255, 255, 255, 255, 255, 255
+296+  C99F FFFFFFFFFFFFFFFF
+297+  C9A7             	DB 0, 127, 127, 127, 127, 127, 127, 127
+297+  C9A7 007F7F7F7F7F7F7F
+298+  C9AF             	DB 254, 254, 254, 254, 254, 254, 254, 0
+298+  C9AF FEFEFEFEFEFEFE00
+299+  C9B7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+299+  C9B7 0000000000000000
+300+  C9BF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+300+  C9BF 0000000000000000
+301+  C9C7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+301+  C9C7 0000000000000000
+302+  C9CF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+302+  C9CF 0000000000000000
+303+  C9D7             	DB 0, 127, 127, 127, 127, 127, 127, 127
+303+  C9D7 007F7F7F7F7F7F7F
+304+  C9DF             	DB 0, 254, 254, 254, 254, 254, 254, 254
+304+  C9DF 00FEFEFEFEFEFEFE
+305+  C9E7             	DB 0, 254, 159, 254, 254, 254, 254, 254
+305+  C9E7 00FE9FFEFEFEFEFE
+306+  C9EF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+306+  C9EF 0000000000000000
+307+  C9F7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+307+  C9F7 0000000000000000
+308+  C9FF             	DB 255, 255, 195, 219, 255, 219, 195, 126
+308+  C9FF FFFFC3DBFFDBC37E
+309+  CA07             	DB 24, 24, 0, 24, 60, 126, 195, 255
+309+  CA07 181800183C7EC3FF
+310+  CA0F             	DB 255, 129, 195, 126, 60, 24, 24, 126
+310+  CA0F FF81C37E3C18187E
+311+  CA17             	DB 0, 0, 0, 255, 129, 195, 255, 126
+311+  CA17 000000FF81C3FF7E
+312+  CA1F             	DB 60, 126, 255, 129, 255, 195, 126, 60
+312+  CA1F 3C7EFF81FFC37E3C
+313+  CA27             	DB 24, 24, 24, 60, 126, 255, 126, 60
+313+  CA27 1818183C7EFF7E3C
+314+  CA2F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+314+  CA2F 0000000000000000
+315+  CA37             	DB 0, 0, 0, 0, 0, 0, 0, 0
+315+  CA37 0000000000000000
+316+  CA3F             	DB 24, 60, 126, 219, 183, 126, 60, 24
+316+  CA3F 183C7EDBB77E3C18
+317+  CA47             	DB 0, 8, 8, 8, 8, 8, 8, 8
+317+  CA47 0008080808080808
+318+  CA4F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+318+  CA4F 0000000000000000
+319+  CA57             	DB 0, 0, 0, 0, 0, 0, 0, 0
+319+  CA57 0000000000000000
+320+  CA5F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+320+  CA5F 0000000000000000
+321+  CA67             	DB 0, 0, 0, 0, 0, 0, 0, 0
+321+  CA67 0000000000000000
+322+  CA6F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+322+  CA6F 0000000000000000
+323+  CA77             	DB 0, 0, 0, 0, 0, 0, 0, 0
+323+  CA77 0000000000000000
+324+  CA7F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+324+  CA7F 0000000000000000
+325+  CA87             	DB 0, 0, 0, 0, 0, 0, 0, 0
+325+  CA87 0000000000000000
+326+  CA8F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+326+  CA8F 0000000000000000
+327+  CA97             	DB 0, 0, 0, 0, 0, 0, 0, 0
+327+  CA97 0000000000000000
+328+  CA9F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+328+  CA9F 0000000000000000
+329+  CAA7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+329+  CAA7 0000000000000000
+330+  CAAF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+330+  CAAF 0000000000000000
+331+  CAB7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+331+  CAB7 0000000000000000
+332+  CABF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+332+  CABF 0000000000000000
+333+  CAC7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+333+  CAC7 0000000000000000
+334+  CACF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+334+  CACF 0000000000000000
+335+  CAD7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+335+  CAD7 0000000000000000
+336+  CADF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+336+  CADF 0000000000000000
+337+  CAE7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+337+  CAE7 0000000000000000
+338+  CAEF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+338+  CAEF 0000000000000000
+339+  CAF7             	DB 0, 0, 0, 0, 0, 0, 0, 0
+339+  CAF7 0000000000000000
+340+  CAFF             	DB 0, 0, 0, 0, 0, 0, 0, 0
+340+  CAFF 0000000000000000
+341+  CB07             	DB 0, 0, 0, 0, 0, 0, 0, 0
+341+  CB07 0000000000000000
+342+  CB0F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+342+  CB0F 0000000000000000
+343+  CB17             	DB 0, 0, 0, 0, 0, 0, 0, 0
+343+  CB17 0000000000000000
+344+  CB1F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+344+  CB1F 0000000000000000
+345+  CB27             	DB 0, 0, 0, 0, 0, 0, 0, 0
+345+  CB27 0000000000000000
+346+  CB2F             	DB 0, 56, 68, 76, 16, 100, 68, 56
+346+  CB2F 0038444C10644438
+347+  CB37             	DB 0, 12, 4, 4, 0, 4, 4, 4
+347+  CB37 000C040400040404
+348+  CB3F             	DB 0, 28, 2, 2, 28, 32, 32, 60
+348+  CB3F 001C02021C20203C
+349+  CB47             	DB 0, 28, 2, 2, 12, 2, 2, 28
+349+  CB47 001C02020C02021C
+350+  CB4F             	DB 0, 34, 34, 34, 28, 2, 2, 2
+350+  CB4F 002222221C020202
+351+  CB57             	DB 0, 28, 32, 32, 28, 2, 2, 28
+351+  CB57 001C20201C02021C
+352+  CB5F             	DB 0, 28, 32, 32, 28, 34, 34, 28
+352+  CB5F 001C20201C22221C
+353+  CB67             	DB 0, 28, 2, 2, 0, 2, 2, 2
+353+  CB67 001C020200020202
+354+  CB6F             	DB 0, 28, 34, 34, 28, 34, 34, 28
+354+  CB6F 001C22221C22221C
+355+  CB77             	DB 0, 28, 34, 34, 28, 2, 2, 28
+355+  CB77 001C22221C02021C
+356+  CB7F             	DB 0, 60, 66, 66, 60, 66, 66, 66
+356+  CB7F 003C42423C424242
+357+  CB87             	DB 0, 60, 34, 34, 28, 34, 34, 60
+357+  CB87 003C22221C22223C
+358+  CB8F             	DB 0, 28, 32, 32, 0, 32, 32, 28
+358+  CB8F 001C20200020201C
+359+  CB97             	DB 0, 60, 34, 34, 0, 34, 34, 60
+359+  CB97 003C22220022223C
+360+  CB9F             	DB 0, 28, 32, 32, 28, 32, 32, 28
+360+  CB9F 001C20201C20201C
+361+  CBA7             	DB 0, 60, 64, 64, 28, 64, 64, 64
+361+  CBA7 003C40401C404040
+362+  CBAF             	DB 0, 56, 64, 64, 12, 68, 68, 56
+362+  CBAF 003840400C444438
+363+  CBB7             	DB 0, 68, 68, 68, 56, 68, 68, 68
+363+  CBB7 0044444438444444
+364+  CBBF             	DB 0, 16, 16, 16, 0, 16, 16, 16
+364+  CBBF 0010101000101010
+365+  CBC7             	DB 0, 4, 4, 0, 4, 68, 68, 56
+365+  CBC7 0004040004444438
+366+  CBCF             	DB 0, 68, 72, 80, 56, 68, 68, 68
+366+  CBCF 0044485038444444
+367+  CBD7             	DB 0, 64, 64, 64, 0, 64, 64, 60
+367+  CBD7 004040400040403C
+368+  CBDF             	DB 0, 56, 84, 84, 0, 68, 68, 68
+368+  CBDF 0038545400444444
+369+  CBE7             	DB 0, 100, 84, 76, 0, 68, 68, 68
+369+  CBE7 0064544C00444444
+370+  CBEF             	DB 0, 56, 68, 68, 0, 68, 68, 56
+370+  CBEF 0038444400444438
+371+  CBF7             	DB 0, 56, 68, 68, 56, 64, 64, 64
+371+  CBF7 0038444438404040
+372+  CBFF             	DB 0, 56, 68, 68, 0, 68, 72, 52
+372+  CBFF 0038444400444834
+373+  CC07             	DB 0, 56, 68, 68, 56, 80, 72, 68
+373+  CC07 0038444438504844
+374+  CC0F             	DB 0, 60, 64, 64, 56, 4, 4, 120
+374+  CC0F 003C404038040478
+375+  CC17             	DB 0, 124, 16, 16, 0, 16, 16, 16
+375+  CC17 007C101000101010
+376+  CC1F             	DB 0, 68, 68, 68, 0, 68, 68, 56
+376+  CC1F 0044444400444438
+377+  CC27             	DB 0, 68, 68, 68, 8, 80, 96, 64
+377+  CC27 0044444408506040
+378+  CC2F             	DB 0, 68, 68, 68, 0, 84, 84, 56
+378+  CC2F 0044444400545438
+379+  CC37             	DB 0, 68, 68, 40, 16, 40, 68, 68
+379+  CC37 0044442810284444
+380+  CC3F             	DB 0, 68, 68, 68, 56, 4, 4, 56
+380+  CC3F 0044444438040438
+381+  CC47             	DB 0, 60, 4, 8, 16, 32, 64, 120
+381+  CC47 003C040810204078
+382+  CC4F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+382+  CC4F 0000000000000000
+383+  CC57             	DB 0, 0, 0, 0, 0, 0, 0, 0
+383+  CC57 0000000000000000
+384+  CC5F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+384+  CC5F 0000000000000000
+385+  CC67             	DB 0, 0, 0, 0, 0, 0, 0, 0
+385+  CC67 0000000000000000
+386+  CC6F             	DB 0, 0, 0, 0, 0, 0, 0, 0
+386+  CC6F 0000000000000000
+387+  CC77             	DB 0, 0, 0, 0, 0, 0, 0, 0
+387+  CC77 0000000000000000
+388+  CC7F             
+389+  CC7F             
+110   CC7F             tileset_color: 
+111   CC7F             	include "src/tileset-color.asm"
+001+  CC7F             BANK_COLOR_0: 
+002+  CC7F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+002+  CC7F 1010101010101010
+003+  CC87             	DB 208, 208, 208, 208, 208, 208, 208, 208
+003+  CC87 D0D0D0D0D0D0D0D0
+004+  CC8F             	DB 208, 208, 208, 208, 208, 208, 208, 208
+004+  CC8F D0D0D0D0D0D0D0D0
+005+  CC97             	DB 208, 208, 208, 208, 208, 208, 208, 208
+005+  CC97 D0D0D0D0D0D0D0D0
+006+  CC9F             	DB 208, 208, 208, 208, 208, 208, 208, 208
+006+  CC9F D0D0D0D0D0D0D0D0
+007+  CCA7             	DB 208, 208, 208, 208, 208, 208, 208, 208
+007+  CCA7 D0D0D0D0D0D0D0D0
+008+  CCAF             	DB 128, 128, 128, 128, 128, 128, 128, 128
+008+  CCAF 8080808080808080
+009+  CCB7             	DB 128, 128, 128, 128, 128, 128, 128, 128
+009+  CCB7 8080808080808080
+010+  CCBF             	DB 128, 128, 128, 128, 128, 128, 128, 128
+010+  CCBF 8080808080808080
+011+  CCC7             	DB 128, 128, 128, 128, 128, 128, 128, 128
+011+  CCC7 8080808080808080
+012+  CCCF             	DB 128, 128, 128, 128, 128, 128, 128, 128
+012+  CCCF 8080808080808080
+013+  CCD7             	DB 112, 112, 112, 112, 112, 112, 112, 112
+013+  CCD7 7070707070707070
+014+  CCDF             	DB 112, 112, 112, 112, 112, 112, 112, 112
+014+  CCDF 7070707070707070
+015+  CCE7             	DB 112, 112, 112, 112, 112, 112, 112, 112
+015+  CCE7 7070707070707070
+016+  CCEF             	DB 112, 112, 112, 112, 112, 112, 112, 112
+016+  CCEF 7070707070707070
+017+  CCF7             	DB 112, 112, 112, 112, 112, 112, 112, 112
+017+  CCF7 7070707070707070
+018+  CCFF             	DB 64, 64, 64, 64, 64, 64, 64, 64
+018+  CCFF 4040404040404040
+019+  CD07             	DB 64, 64, 64, 64, 64, 64, 64, 64
+019+  CD07 4040404040404040
+020+  CD0F             	DB 64, 64, 64, 64, 64, 64, 64, 64
+020+  CD0F 4040404040404040
+021+  CD17             	DB 64, 64, 64, 64, 64, 64, 64, 64
+021+  CD17 4040404040404040
+022+  CD1F             	DB 64, 64, 64, 64, 64, 64, 64, 64
+022+  CD1F 4040404040404040
+023+  CD27             	DB 192, 192, 192, 192, 192, 192, 192, 192
+023+  CD27 C0C0C0C0C0C0C0C0
+024+  CD2F             	DB 32, 32, 32, 32, 32, 32, 32, 32
+024+  CD2F 2020202020202020
+025+  CD37             	DB 32, 32, 32, 32, 32, 32, 32, 32
+025+  CD37 2020202020202020
+026+  CD3F             	DB 32, 32, 32, 32, 32, 32, 32, 32
+026+  CD3F 2020202020202020
+027+  CD47             	DB 32, 32, 32, 32, 32, 32, 32, 32
+027+  CD47 2020202020202020
+028+  CD4F             	DB 224, 224, 224, 224, 224, 224, 224, 224
+028+  CD4F E0E0E0E0E0E0E0E0
+029+  CD57             	DB 224, 224, 224, 224, 224, 224, 224, 224
+029+  CD57 E0E0E0E0E0E0E0E0
+030+  CD5F             	DB 224, 224, 224, 224, 224, 224, 224, 224
+030+  CD5F E0E0E0E0E0E0E0E0
+031+  CD67             	DB 224, 224, 224, 224, 224, 224, 224, 224
+031+  CD67 E0E0E0E0E0E0E0E0
+032+  CD6F             	DB 224, 224, 224, 224, 224, 224, 224, 224
+032+  CD6F E0E0E0E0E0E0E0E0
+033+  CD77             	DB 16, 16, 16, 16, 16, 16, 16, 16
+033+  CD77 1010101010101010
+034+  CD7F             	DB 185, 185, 185, 185, 185, 185, 185, 185
+034+  CD7F B9B9B9B9B9B9B9B9
+035+  CD87             	DB 240, 240, 240, 240, 240, 240, 240, 241
+035+  CD87 F0F0F0F0F0F0F0F1
+036+  CD8F             	DB 240, 240, 240, 240, 240, 240, 240, 241
+036+  CD8F F0F0F0F0F0F0F0F1
+037+  CD97             	DB 240, 240, 240, 240, 240, 240, 240, 241
+037+  CD97 F0F0F0F0F0F0F0F1
+038+  CD9F             	DB 160, 160, 160, 160, 160, 160, 160, 160
+038+  CD9F A0A0A0A0A0A0A0A0
+039+  CDA7             	DB 160, 160, 160, 160, 160, 160, 160, 160
+039+  CDA7 A0A0A0A0A0A0A0A0
+040+  CDAF             	DB 160, 160, 160, 160, 160, 160, 160, 160
+040+  CDAF A0A0A0A0A0A0A0A0
+041+  CDB7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+041+  CDB7 1010101010101010
+042+  CDBF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+042+  CDBF 1010101010101010
+043+  CDC7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+043+  CDC7 1010101010101010
+044+  CDCF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+044+  CDCF 1010101010101010
+045+  CDD7             	DB 134, 134, 134, 134, 134, 134, 134, 134
+045+  CDD7 8686868686868686
+046+  CDDF             	DB 134, 134, 134, 134, 134, 134, 134, 134
+046+  CDDF 8686868686868686
+047+  CDE7             	DB 134, 134, 129, 134, 134, 134, 134, 134
+047+  CDE7 8686818686868686
+048+  CDEF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+048+  CDEF 1010101010101010
+049+  CDF7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+049+  CDF7 1010101010101010
+050+  CDFF             	DB 192, 192, 200, 201, 192, 201, 200, 192
+050+  CDFF C0C0C8C9C0C9C8C0
+051+  CE07             	DB 192, 192, 192, 192, 192, 192, 200, 192
+051+  CE07 C0C0C0C0C0C0C8C0
+052+  CE0F             	DB 128, 135, 135, 128, 128, 128, 128, 128
+052+  CE0F 8087878080808080
+053+  CE17             	DB 144, 144, 144, 144, 151, 151, 144, 144
+053+  CE17 9090909097979090
+054+  CE1F             	DB 144, 144, 144, 159, 144, 159, 144, 144
+054+  CE1F 9090909F909F9090
+055+  CE27             	DB 144, 144, 144, 145, 144, 144, 144, 144
+055+  CE27 9090909190909090
+056+  CE2F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+056+  CE2F 1010101010101010
+057+  CE37             	DB 16, 16, 16, 16, 16, 16, 16, 16
+057+  CE37 1010101010101010
+058+  CE3F             	DB 122, 122, 122, 127, 127, 122, 122, 122
+058+  CE3F 7A7A7A7F7F7A7A7A
+059+  CE47             	DB 118, 122, 122, 122, 122, 122, 122, 122
+059+  CE47 767A7A7A7A7A7A7A
+060+  CE4F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+060+  CE4F 1010101010101010
+061+  CE57             	DB 16, 16, 16, 16, 16, 16, 16, 16
+061+  CE57 1010101010101010
+062+  CE5F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+062+  CE5F 1010101010101010
+063+  CE67             	DB 16, 16, 16, 16, 16, 16, 16, 16
+063+  CE67 1010101010101010
+064+  CE6F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+064+  CE6F 1010101010101010
+065+  CE77             	DB 16, 16, 16, 16, 16, 16, 16, 16
+065+  CE77 1010101010101010
+066+  CE7F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+066+  CE7F 1010101010101010
+067+  CE87             	DB 16, 16, 16, 16, 16, 16, 16, 16
+067+  CE87 1010101010101010
+068+  CE8F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+068+  CE8F 1010101010101010
+069+  CE97             	DB 16, 16, 16, 16, 16, 16, 16, 16
+069+  CE97 1010101010101010
+070+  CE9F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+070+  CE9F 1010101010101010
+071+  CEA7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+071+  CEA7 1010101010101010
+072+  CEAF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+072+  CEAF 1010101010101010
+073+  CEB7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+073+  CEB7 1010101010101010
+074+  CEBF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+074+  CEBF 1010101010101010
+075+  CEC7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+075+  CEC7 1010101010101010
+076+  CECF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+076+  CECF 1010101010101010
+077+  CED7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+077+  CED7 1010101010101010
+078+  CEDF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+078+  CEDF 1010101010101010
+079+  CEE7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+079+  CEE7 1010101010101010
+080+  CEEF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+080+  CEEF 1010101010101010
+081+  CEF7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+081+  CEF7 1010101010101010
+082+  CEFF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+082+  CEFF 1010101010101010
+083+  CF07             	DB 16, 16, 16, 16, 16, 16, 16, 16
+083+  CF07 1010101010101010
+084+  CF0F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+084+  CF0F 1010101010101010
+085+  CF17             	DB 16, 16, 16, 16, 16, 16, 16, 16
+085+  CF17 1010101010101010
+086+  CF1F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+086+  CF1F 1010101010101010
+087+  CF27             	DB 16, 16, 16, 16, 16, 16, 16, 16
+087+  CF27 1010101010101010
+088+  CF2F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+088+  CF2F 3030303030303030
+089+  CF37             	DB 48, 48, 48, 48, 48, 48, 48, 48
+089+  CF37 3030303030303030
+090+  CF3F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+090+  CF3F 3030303030303030
+091+  CF47             	DB 48, 48, 48, 48, 48, 48, 48, 48
+091+  CF47 3030303030303030
+092+  CF4F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+092+  CF4F 3030303030303030
+093+  CF57             	DB 48, 48, 48, 48, 48, 48, 48, 48
+093+  CF57 3030303030303030
+094+  CF5F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+094+  CF5F 3030303030303030
+095+  CF67             	DB 48, 48, 48, 48, 48, 48, 48, 48
+095+  CF67 3030303030303030
+096+  CF6F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+096+  CF6F 3030303030303030
+097+  CF77             	DB 48, 48, 48, 48, 48, 48, 48, 48
+097+  CF77 3030303030303030
+098+  CF7F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+098+  CF7F 3030303030303030
+099+  CF87             	DB 48, 48, 48, 48, 48, 48, 48, 48
+099+  CF87 3030303030303030
+100+  CF8F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+100+  CF8F 3030303030303030
+101+  CF97             	DB 48, 48, 48, 48, 48, 48, 48, 48
+101+  CF97 3030303030303030
+102+  CF9F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+102+  CF9F 3030303030303030
+103+  CFA7             	DB 48, 48, 48, 48, 48, 48, 48, 48
+103+  CFA7 3030303030303030
+104+  CFAF             	DB 48, 48, 48, 48, 48, 48, 48, 48
+104+  CFAF 3030303030303030
+105+  CFB7             	DB 48, 48, 48, 48, 48, 48, 48, 48
+105+  CFB7 3030303030303030
+106+  CFBF             	DB 48, 48, 48, 48, 48, 48, 48, 48
+106+  CFBF 3030303030303030
+107+  CFC7             	DB 48, 48, 48, 48, 48, 48, 48, 48
+107+  CFC7 3030303030303030
+108+  CFCF             	DB 48, 48, 48, 48, 48, 48, 48, 48
+108+  CFCF 3030303030303030
+109+  CFD7             	DB 48, 48, 48, 48, 48, 48, 48, 48
+109+  CFD7 3030303030303030
+110+  CFDF             	DB 48, 48, 48, 48, 48, 48, 48, 48
+110+  CFDF 3030303030303030
+111+  CFE7             	DB 48, 48, 48, 48, 48, 48, 48, 48
+111+  CFE7 3030303030303030
+112+  CFEF             	DB 48, 48, 48, 48, 48, 48, 48, 48
+112+  CFEF 3030303030303030
+113+  CFF7             	DB 48, 48, 48, 48, 48, 48, 48, 48
+113+  CFF7 3030303030303030
+114+  CFFF             	DB 48, 48, 48, 48, 48, 48, 48, 48
+114+  CFFF 3030303030303030
+115+  D007             	DB 48, 48, 48, 48, 48, 48, 48, 48
+115+  D007 3030303030303030
+116+  D00F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+116+  D00F 3030303030303030
+117+  D017             	DB 48, 48, 48, 48, 48, 48, 48, 48
+117+  D017 3030303030303030
+118+  D01F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+118+  D01F 3030303030303030
+119+  D027             	DB 48, 48, 48, 48, 48, 48, 48, 48
+119+  D027 3030303030303030
+120+  D02F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+120+  D02F 3030303030303030
+121+  D037             	DB 48, 48, 48, 48, 48, 48, 48, 48
+121+  D037 3030303030303030
+122+  D03F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+122+  D03F 3030303030303030
+123+  D047             	DB 48, 48, 48, 48, 48, 48, 48, 48
+123+  D047 3030303030303030
+124+  D04F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+124+  D04F 1010101010101010
+125+  D057             	DB 16, 16, 16, 16, 16, 16, 16, 16
+125+  D057 1010101010101010
+126+  D05F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+126+  D05F 1010101010101010
+127+  D067             	DB 16, 16, 16, 16, 16, 16, 16, 16
+127+  D067 1010101010101010
+128+  D06F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+128+  D06F 1010101010101010
+129+  D077             	DB 16, 16, 16, 16, 16, 16, 16, 16
+129+  D077 1010101010101010
+130+  D07F             
+131+  D07F             BANK_COLOR_1: 
+132+  D07F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+132+  D07F 1010101010101010
+133+  D087             	DB 208, 208, 208, 208, 208, 208, 208, 208
+133+  D087 D0D0D0D0D0D0D0D0
+134+  D08F             	DB 208, 208, 208, 208, 208, 208, 208, 208
+134+  D08F D0D0D0D0D0D0D0D0
+135+  D097             	DB 208, 208, 208, 208, 208, 208, 208, 208
+135+  D097 D0D0D0D0D0D0D0D0
+136+  D09F             	DB 208, 208, 208, 208, 208, 208, 208, 208
+136+  D09F D0D0D0D0D0D0D0D0
+137+  D0A7             	DB 208, 208, 208, 208, 208, 208, 208, 208
+137+  D0A7 D0D0D0D0D0D0D0D0
+138+  D0AF             	DB 128, 128, 128, 128, 128, 128, 128, 128
+138+  D0AF 8080808080808080
+139+  D0B7             	DB 128, 128, 128, 128, 128, 128, 128, 128
+139+  D0B7 8080808080808080
+140+  D0BF             	DB 128, 128, 128, 128, 128, 128, 128, 128
+140+  D0BF 8080808080808080
+141+  D0C7             	DB 128, 128, 128, 128, 128, 128, 128, 128
+141+  D0C7 8080808080808080
+142+  D0CF             	DB 128, 128, 128, 128, 128, 128, 128, 128
+142+  D0CF 8080808080808080
+143+  D0D7             	DB 112, 112, 112, 112, 112, 112, 112, 112
+143+  D0D7 7070707070707070
+144+  D0DF             	DB 112, 112, 112, 112, 112, 112, 112, 112
+144+  D0DF 7070707070707070
+145+  D0E7             	DB 112, 112, 112, 112, 112, 112, 112, 112
+145+  D0E7 7070707070707070
+146+  D0EF             	DB 112, 112, 112, 112, 112, 112, 112, 112
+146+  D0EF 7070707070707070
+147+  D0F7             	DB 112, 112, 112, 112, 112, 112, 112, 112
+147+  D0F7 7070707070707070
+148+  D0FF             	DB 64, 64, 64, 64, 64, 64, 64, 64
+148+  D0FF 4040404040404040
+149+  D107             	DB 64, 64, 64, 64, 64, 64, 64, 64
+149+  D107 4040404040404040
+150+  D10F             	DB 64, 64, 64, 64, 64, 64, 64, 64
+150+  D10F 4040404040404040
+151+  D117             	DB 64, 64, 64, 64, 64, 64, 64, 64
+151+  D117 4040404040404040
+152+  D11F             	DB 64, 64, 64, 64, 64, 64, 64, 64
+152+  D11F 4040404040404040
+153+  D127             	DB 192, 192, 192, 192, 192, 192, 192, 192
+153+  D127 C0C0C0C0C0C0C0C0
+154+  D12F             	DB 32, 32, 32, 32, 32, 32, 32, 32
+154+  D12F 2020202020202020
+155+  D137             	DB 32, 32, 32, 32, 32, 32, 32, 32
+155+  D137 2020202020202020
+156+  D13F             	DB 32, 32, 32, 32, 32, 32, 32, 32
+156+  D13F 2020202020202020
+157+  D147             	DB 32, 32, 32, 32, 32, 32, 32, 32
+157+  D147 2020202020202020
+158+  D14F             	DB 224, 224, 224, 224, 224, 224, 224, 224
+158+  D14F E0E0E0E0E0E0E0E0
+159+  D157             	DB 224, 224, 224, 224, 224, 224, 224, 224
+159+  D157 E0E0E0E0E0E0E0E0
+160+  D15F             	DB 224, 224, 224, 224, 224, 224, 224, 224
+160+  D15F E0E0E0E0E0E0E0E0
+161+  D167             	DB 224, 224, 224, 224, 224, 224, 224, 224
+161+  D167 E0E0E0E0E0E0E0E0
+162+  D16F             	DB 224, 224, 224, 224, 224, 224, 224, 224
+162+  D16F E0E0E0E0E0E0E0E0
+163+  D177             	DB 16, 16, 16, 16, 16, 16, 16, 16
+163+  D177 1010101010101010
+164+  D17F             	DB 185, 185, 185, 185, 185, 185, 185, 185
+164+  D17F B9B9B9B9B9B9B9B9
+165+  D187             	DB 240, 240, 240, 240, 240, 240, 240, 241
+165+  D187 F0F0F0F0F0F0F0F1
+166+  D18F             	DB 240, 240, 240, 240, 240, 240, 240, 241
+166+  D18F F0F0F0F0F0F0F0F1
+167+  D197             	DB 240, 240, 240, 240, 240, 240, 240, 241
+167+  D197 F0F0F0F0F0F0F0F1
+168+  D19F             	DB 160, 160, 160, 160, 160, 160, 160, 160
+168+  D19F A0A0A0A0A0A0A0A0
+169+  D1A7             	DB 160, 160, 160, 160, 160, 160, 160, 160
+169+  D1A7 A0A0A0A0A0A0A0A0
+170+  D1AF             	DB 160, 160, 160, 160, 160, 160, 160, 160
+170+  D1AF A0A0A0A0A0A0A0A0
+171+  D1B7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+171+  D1B7 1010101010101010
+172+  D1BF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+172+  D1BF 1010101010101010
+173+  D1C7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+173+  D1C7 1010101010101010
+174+  D1CF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+174+  D1CF 1010101010101010
+175+  D1D7             	DB 134, 134, 134, 134, 134, 134, 134, 134
+175+  D1D7 8686868686868686
+176+  D1DF             	DB 134, 134, 134, 134, 134, 134, 134, 134
+176+  D1DF 8686868686868686
+177+  D1E7             	DB 134, 134, 129, 134, 134, 134, 134, 134
+177+  D1E7 8686818686868686
+178+  D1EF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+178+  D1EF 1010101010101010
+179+  D1F7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+179+  D1F7 1010101010101010
+180+  D1FF             	DB 192, 192, 200, 201, 192, 201, 200, 192
+180+  D1FF C0C0C8C9C0C9C8C0
+181+  D207             	DB 192, 192, 192, 192, 192, 192, 200, 192
+181+  D207 C0C0C0C0C0C0C8C0
+182+  D20F             	DB 128, 135, 135, 128, 128, 128, 128, 128
+182+  D20F 8087878080808080
+183+  D217             	DB 144, 144, 144, 144, 151, 151, 144, 144
+183+  D217 9090909097979090
+184+  D21F             	DB 144, 144, 144, 159, 144, 159, 144, 144
+184+  D21F 9090909F909F9090
+185+  D227             	DB 144, 144, 144, 145, 144, 144, 144, 144
+185+  D227 9090909190909090
+186+  D22F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+186+  D22F 1010101010101010
+187+  D237             	DB 16, 16, 16, 16, 16, 16, 16, 16
+187+  D237 1010101010101010
+188+  D23F             	DB 122, 122, 122, 127, 127, 122, 122, 122
+188+  D23F 7A7A7A7F7F7A7A7A
+189+  D247             	DB 118, 122, 122, 122, 122, 122, 122, 122
+189+  D247 767A7A7A7A7A7A7A
+190+  D24F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+190+  D24F 1010101010101010
+191+  D257             	DB 16, 16, 16, 16, 16, 16, 16, 16
+191+  D257 1010101010101010
+192+  D25F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+192+  D25F 1010101010101010
+193+  D267             	DB 16, 16, 16, 16, 16, 16, 16, 16
+193+  D267 1010101010101010
+194+  D26F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+194+  D26F 1010101010101010
+195+  D277             	DB 16, 16, 16, 16, 16, 16, 16, 16
+195+  D277 1010101010101010
+196+  D27F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+196+  D27F 1010101010101010
+197+  D287             	DB 16, 16, 16, 16, 16, 16, 16, 16
+197+  D287 1010101010101010
+198+  D28F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+198+  D28F 1010101010101010
+199+  D297             	DB 16, 16, 16, 16, 16, 16, 16, 16
+199+  D297 1010101010101010
+200+  D29F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+200+  D29F 1010101010101010
+201+  D2A7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+201+  D2A7 1010101010101010
+202+  D2AF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+202+  D2AF 1010101010101010
+203+  D2B7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+203+  D2B7 1010101010101010
+204+  D2BF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+204+  D2BF 1010101010101010
+205+  D2C7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+205+  D2C7 1010101010101010
+206+  D2CF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+206+  D2CF 1010101010101010
+207+  D2D7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+207+  D2D7 1010101010101010
+208+  D2DF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+208+  D2DF 1010101010101010
+209+  D2E7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+209+  D2E7 1010101010101010
+210+  D2EF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+210+  D2EF 1010101010101010
+211+  D2F7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+211+  D2F7 1010101010101010
+212+  D2FF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+212+  D2FF 1010101010101010
+213+  D307             	DB 16, 16, 16, 16, 16, 16, 16, 16
+213+  D307 1010101010101010
+214+  D30F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+214+  D30F 1010101010101010
+215+  D317             	DB 16, 16, 16, 16, 16, 16, 16, 16
+215+  D317 1010101010101010
+216+  D31F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+216+  D31F 1010101010101010
+217+  D327             	DB 16, 16, 16, 16, 16, 16, 16, 16
+217+  D327 1010101010101010
+218+  D32F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+218+  D32F 3030303030303030
+219+  D337             	DB 48, 48, 48, 48, 48, 48, 48, 48
+219+  D337 3030303030303030
+220+  D33F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+220+  D33F 3030303030303030
+221+  D347             	DB 48, 48, 48, 48, 48, 48, 48, 48
+221+  D347 3030303030303030
+222+  D34F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+222+  D34F 3030303030303030
+223+  D357             	DB 48, 48, 48, 48, 48, 48, 48, 48
+223+  D357 3030303030303030
+224+  D35F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+224+  D35F 3030303030303030
+225+  D367             	DB 48, 48, 48, 48, 48, 48, 48, 48
+225+  D367 3030303030303030
+226+  D36F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+226+  D36F 3030303030303030
+227+  D377             	DB 48, 48, 48, 48, 48, 48, 48, 48
+227+  D377 3030303030303030
+228+  D37F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+228+  D37F 3030303030303030
+229+  D387             	DB 48, 48, 48, 48, 48, 48, 48, 48
+229+  D387 3030303030303030
+230+  D38F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+230+  D38F 3030303030303030
+231+  D397             	DB 48, 48, 48, 48, 48, 48, 48, 48
+231+  D397 3030303030303030
+232+  D39F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+232+  D39F 3030303030303030
+233+  D3A7             	DB 48, 48, 48, 48, 48, 48, 48, 48
+233+  D3A7 3030303030303030
+234+  D3AF             	DB 48, 48, 48, 48, 48, 48, 48, 48
+234+  D3AF 3030303030303030
+235+  D3B7             	DB 48, 48, 48, 48, 48, 48, 48, 48
+235+  D3B7 3030303030303030
+236+  D3BF             	DB 48, 48, 48, 48, 48, 48, 48, 48
+236+  D3BF 3030303030303030
+237+  D3C7             	DB 48, 48, 48, 48, 48, 48, 48, 48
+237+  D3C7 3030303030303030
+238+  D3CF             	DB 48, 48, 48, 48, 48, 48, 48, 48
+238+  D3CF 3030303030303030
+239+  D3D7             	DB 48, 48, 48, 48, 48, 48, 48, 48
+239+  D3D7 3030303030303030
+240+  D3DF             	DB 48, 48, 48, 48, 48, 48, 48, 48
+240+  D3DF 3030303030303030
+241+  D3E7             	DB 48, 48, 48, 48, 48, 48, 48, 48
+241+  D3E7 3030303030303030
+242+  D3EF             	DB 48, 48, 48, 48, 48, 48, 48, 48
+242+  D3EF 3030303030303030
+243+  D3F7             	DB 48, 48, 48, 48, 48, 48, 48, 48
+243+  D3F7 3030303030303030
+244+  D3FF             	DB 48, 48, 48, 48, 48, 48, 48, 48
+244+  D3FF 3030303030303030
+245+  D407             	DB 48, 48, 48, 48, 48, 48, 48, 48
+245+  D407 3030303030303030
+246+  D40F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+246+  D40F 3030303030303030
+247+  D417             	DB 48, 48, 48, 48, 48, 48, 48, 48
+247+  D417 3030303030303030
+248+  D41F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+248+  D41F 3030303030303030
+249+  D427             	DB 48, 48, 48, 48, 48, 48, 48, 48
+249+  D427 3030303030303030
+250+  D42F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+250+  D42F 3030303030303030
+251+  D437             	DB 48, 48, 48, 48, 48, 48, 48, 48
+251+  D437 3030303030303030
+252+  D43F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+252+  D43F 3030303030303030
+253+  D447             	DB 48, 48, 48, 48, 48, 48, 48, 48
+253+  D447 3030303030303030
+254+  D44F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+254+  D44F 1010101010101010
+255+  D457             	DB 16, 16, 16, 16, 16, 16, 16, 16
+255+  D457 1010101010101010
+256+  D45F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+256+  D45F 1010101010101010
+257+  D467             	DB 16, 16, 16, 16, 16, 16, 16, 16
+257+  D467 1010101010101010
+258+  D46F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+258+  D46F 1010101010101010
+259+  D477             	DB 16, 16, 16, 16, 16, 16, 16, 16
+259+  D477 1010101010101010
+260+  D47F             BANK_COLOR_2: 
+261+  D47F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+261+  D47F 1010101010101010
+262+  D487             	DB 208, 208, 208, 208, 208, 208, 208, 208
+262+  D487 D0D0D0D0D0D0D0D0
+263+  D48F             	DB 208, 208, 208, 208, 208, 208, 208, 208
+263+  D48F D0D0D0D0D0D0D0D0
+264+  D497             	DB 208, 208, 208, 208, 208, 208, 208, 208
+264+  D497 D0D0D0D0D0D0D0D0
+265+  D49F             	DB 208, 208, 208, 208, 208, 208, 208, 208
+265+  D49F D0D0D0D0D0D0D0D0
+266+  D4A7             	DB 208, 208, 208, 208, 208, 208, 208, 208
+266+  D4A7 D0D0D0D0D0D0D0D0
+267+  D4AF             	DB 128, 128, 128, 128, 128, 128, 128, 128
+267+  D4AF 8080808080808080
+268+  D4B7             	DB 128, 128, 128, 128, 128, 128, 128, 128
+268+  D4B7 8080808080808080
+269+  D4BF             	DB 128, 128, 128, 128, 128, 128, 128, 128
+269+  D4BF 8080808080808080
+270+  D4C7             	DB 128, 128, 128, 128, 128, 128, 128, 128
+270+  D4C7 8080808080808080
+271+  D4CF             	DB 128, 128, 128, 128, 128, 128, 128, 128
+271+  D4CF 8080808080808080
+272+  D4D7             	DB 112, 112, 112, 112, 112, 112, 112, 112
+272+  D4D7 7070707070707070
+273+  D4DF             	DB 112, 112, 112, 112, 112, 112, 112, 112
+273+  D4DF 7070707070707070
+274+  D4E7             	DB 112, 112, 112, 112, 112, 112, 112, 112
+274+  D4E7 7070707070707070
+275+  D4EF             	DB 112, 112, 112, 112, 112, 112, 112, 112
+275+  D4EF 7070707070707070
+276+  D4F7             	DB 112, 112, 112, 112, 112, 112, 112, 112
+276+  D4F7 7070707070707070
+277+  D4FF             	DB 64, 64, 64, 64, 64, 64, 64, 64
+277+  D4FF 4040404040404040
+278+  D507             	DB 64, 64, 64, 64, 64, 64, 64, 64
+278+  D507 4040404040404040
+279+  D50F             	DB 64, 64, 64, 64, 64, 64, 64, 64
+279+  D50F 4040404040404040
+280+  D517             	DB 64, 64, 64, 64, 64, 64, 64, 64
+280+  D517 4040404040404040
+281+  D51F             	DB 64, 64, 64, 64, 64, 64, 64, 64
+281+  D51F 4040404040404040
+282+  D527             	DB 192, 192, 192, 192, 192, 192, 192, 192
+282+  D527 C0C0C0C0C0C0C0C0
+283+  D52F             	DB 32, 32, 32, 32, 32, 32, 32, 32
+283+  D52F 2020202020202020
+284+  D537             	DB 32, 32, 32, 32, 32, 32, 32, 32
+284+  D537 2020202020202020
+285+  D53F             	DB 32, 32, 32, 32, 32, 32, 32, 32
+285+  D53F 2020202020202020
+286+  D547             	DB 32, 32, 32, 32, 32, 32, 32, 32
+286+  D547 2020202020202020
+287+  D54F             	DB 224, 224, 224, 224, 224, 224, 224, 224
+287+  D54F E0E0E0E0E0E0E0E0
+288+  D557             	DB 224, 224, 224, 224, 224, 224, 224, 224
+288+  D557 E0E0E0E0E0E0E0E0
+289+  D55F             	DB 224, 224, 224, 224, 224, 224, 224, 224
+289+  D55F E0E0E0E0E0E0E0E0
+290+  D567             	DB 224, 224, 224, 224, 224, 224, 224, 224
+290+  D567 E0E0E0E0E0E0E0E0
+291+  D56F             	DB 224, 224, 224, 224, 224, 224, 224, 224
+291+  D56F E0E0E0E0E0E0E0E0
+292+  D577             	DB 16, 16, 16, 16, 16, 16, 16, 16
+292+  D577 1010101010101010
+293+  D57F             	DB 185, 185, 185, 185, 185, 185, 185, 185
+293+  D57F B9B9B9B9B9B9B9B9
+294+  D587             	DB 240, 240, 240, 240, 240, 240, 240, 241
+294+  D587 F0F0F0F0F0F0F0F1
+295+  D58F             	DB 240, 240, 240, 240, 240, 240, 240, 241
+295+  D58F F0F0F0F0F0F0F0F1
+296+  D597             	DB 240, 240, 240, 240, 240, 240, 240, 241
+296+  D597 F0F0F0F0F0F0F0F1
+297+  D59F             	DB 160, 160, 160, 160, 160, 160, 160, 160
+297+  D59F A0A0A0A0A0A0A0A0
+298+  D5A7             	DB 160, 160, 160, 160, 160, 160, 160, 160
+298+  D5A7 A0A0A0A0A0A0A0A0
+299+  D5AF             	DB 160, 160, 160, 160, 160, 160, 160, 160
+299+  D5AF A0A0A0A0A0A0A0A0
+300+  D5B7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+300+  D5B7 1010101010101010
+301+  D5BF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+301+  D5BF 1010101010101010
+302+  D5C7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+302+  D5C7 1010101010101010
+303+  D5CF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+303+  D5CF 1010101010101010
+304+  D5D7             	DB 134, 134, 134, 134, 134, 134, 134, 134
+304+  D5D7 8686868686868686
+305+  D5DF             	DB 134, 134, 134, 134, 134, 134, 134, 134
+305+  D5DF 8686868686868686
+306+  D5E7             	DB 134, 134, 129, 134, 134, 134, 134, 134
+306+  D5E7 8686818686868686
+307+  D5EF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+307+  D5EF 1010101010101010
+308+  D5F7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+308+  D5F7 1010101010101010
+309+  D5FF             	DB 192, 192, 200, 201, 192, 201, 200, 192
+309+  D5FF C0C0C8C9C0C9C8C0
+310+  D607             	DB 192, 192, 192, 192, 192, 192, 200, 192
+310+  D607 C0C0C0C0C0C0C8C0
+311+  D60F             	DB 128, 135, 135, 128, 128, 128, 128, 128
+311+  D60F 8087878080808080
+312+  D617             	DB 144, 144, 144, 144, 151, 151, 144, 144
+312+  D617 9090909097979090
+313+  D61F             	DB 144, 144, 144, 159, 144, 159, 144, 144
+313+  D61F 9090909F909F9090
+314+  D627             	DB 144, 144, 144, 145, 144, 144, 144, 144
+314+  D627 9090909190909090
+315+  D62F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+315+  D62F 1010101010101010
+316+  D637             	DB 16, 16, 16, 16, 16, 16, 16, 16
+316+  D637 1010101010101010
+317+  D63F             	DB 122, 122, 122, 127, 127, 122, 122, 122
+317+  D63F 7A7A7A7F7F7A7A7A
+318+  D647             	DB 118, 122, 122, 122, 122, 122, 122, 122
+318+  D647 767A7A7A7A7A7A7A
+319+  D64F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+319+  D64F 1010101010101010
+320+  D657             	DB 16, 16, 16, 16, 16, 16, 16, 16
+320+  D657 1010101010101010
+321+  D65F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+321+  D65F 1010101010101010
+322+  D667             	DB 16, 16, 16, 16, 16, 16, 16, 16
+322+  D667 1010101010101010
+323+  D66F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+323+  D66F 1010101010101010
+324+  D677             	DB 16, 16, 16, 16, 16, 16, 16, 16
+324+  D677 1010101010101010
+325+  D67F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+325+  D67F 1010101010101010
+326+  D687             	DB 16, 16, 16, 16, 16, 16, 16, 16
+326+  D687 1010101010101010
+327+  D68F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+327+  D68F 1010101010101010
+328+  D697             	DB 16, 16, 16, 16, 16, 16, 16, 16
+328+  D697 1010101010101010
+329+  D69F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+329+  D69F 1010101010101010
+330+  D6A7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+330+  D6A7 1010101010101010
+331+  D6AF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+331+  D6AF 1010101010101010
+332+  D6B7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+332+  D6B7 1010101010101010
+333+  D6BF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+333+  D6BF 1010101010101010
+334+  D6C7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+334+  D6C7 1010101010101010
+335+  D6CF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+335+  D6CF 1010101010101010
+336+  D6D7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+336+  D6D7 1010101010101010
+337+  D6DF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+337+  D6DF 1010101010101010
+338+  D6E7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+338+  D6E7 1010101010101010
+339+  D6EF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+339+  D6EF 1010101010101010
+340+  D6F7             	DB 16, 16, 16, 16, 16, 16, 16, 16
+340+  D6F7 1010101010101010
+341+  D6FF             	DB 16, 16, 16, 16, 16, 16, 16, 16
+341+  D6FF 1010101010101010
+342+  D707             	DB 16, 16, 16, 16, 16, 16, 16, 16
+342+  D707 1010101010101010
+343+  D70F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+343+  D70F 1010101010101010
+344+  D717             	DB 16, 16, 16, 16, 16, 16, 16, 16
+344+  D717 1010101010101010
+345+  D71F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+345+  D71F 1010101010101010
+346+  D727             	DB 16, 16, 16, 16, 16, 16, 16, 16
+346+  D727 1010101010101010
+347+  D72F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+347+  D72F 3030303030303030
+348+  D737             	DB 48, 48, 48, 48, 48, 48, 48, 48
+348+  D737 3030303030303030
+349+  D73F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+349+  D73F 3030303030303030
+350+  D747             	DB 48, 48, 48, 48, 48, 48, 48, 48
+350+  D747 3030303030303030
+351+  D74F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+351+  D74F 3030303030303030
+352+  D757             	DB 48, 48, 48, 48, 48, 48, 48, 48
+352+  D757 3030303030303030
+353+  D75F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+353+  D75F 3030303030303030
+354+  D767             	DB 48, 48, 48, 48, 48, 48, 48, 48
+354+  D767 3030303030303030
+355+  D76F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+355+  D76F 3030303030303030
+356+  D777             	DB 48, 48, 48, 48, 48, 48, 48, 48
+356+  D777 3030303030303030
+357+  D77F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+357+  D77F 3030303030303030
+358+  D787             	DB 48, 48, 48, 48, 48, 48, 48, 48
+358+  D787 3030303030303030
+359+  D78F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+359+  D78F 3030303030303030
+360+  D797             	DB 48, 48, 48, 48, 48, 48, 48, 48
+360+  D797 3030303030303030
+361+  D79F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+361+  D79F 3030303030303030
+362+  D7A7             	DB 48, 48, 48, 48, 48, 48, 48, 48
+362+  D7A7 3030303030303030
+363+  D7AF             	DB 48, 48, 48, 48, 48, 48, 48, 48
+363+  D7AF 3030303030303030
+364+  D7B7             	DB 48, 48, 48, 48, 48, 48, 48, 48
+364+  D7B7 3030303030303030
+365+  D7BF             	DB 48, 48, 48, 48, 48, 48, 48, 48
+365+  D7BF 3030303030303030
+366+  D7C7             	DB 48, 48, 48, 48, 48, 48, 48, 48
+366+  D7C7 3030303030303030
+367+  D7CF             	DB 48, 48, 48, 48, 48, 48, 48, 48
+367+  D7CF 3030303030303030
+368+  D7D7             	DB 48, 48, 48, 48, 48, 48, 48, 48
+368+  D7D7 3030303030303030
+369+  D7DF             	DB 48, 48, 48, 48, 48, 48, 48, 48
+369+  D7DF 3030303030303030
+370+  D7E7             	DB 48, 48, 48, 48, 48, 48, 48, 48
+370+  D7E7 3030303030303030
+371+  D7EF             	DB 48, 48, 48, 48, 48, 48, 48, 48
+371+  D7EF 3030303030303030
+372+  D7F7             	DB 48, 48, 48, 48, 48, 48, 48, 48
+372+  D7F7 3030303030303030
+373+  D7FF             	DB 48, 48, 48, 48, 48, 48, 48, 48
+373+  D7FF 3030303030303030
+374+  D807             	DB 48, 48, 48, 48, 48, 48, 48, 48
+374+  D807 3030303030303030
+375+  D80F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+375+  D80F 3030303030303030
+376+  D817             	DB 48, 48, 48, 48, 48, 48, 48, 48
+376+  D817 3030303030303030
+377+  D81F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+377+  D81F 3030303030303030
+378+  D827             	DB 48, 48, 48, 48, 48, 48, 48, 48
+378+  D827 3030303030303030
+379+  D82F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+379+  D82F 3030303030303030
+380+  D837             	DB 48, 48, 48, 48, 48, 48, 48, 48
+380+  D837 3030303030303030
+381+  D83F             	DB 48, 48, 48, 48, 48, 48, 48, 48
+381+  D83F 3030303030303030
+382+  D847             	DB 48, 48, 48, 48, 48, 48, 48, 48
+382+  D847 3030303030303030
+383+  D84F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+383+  D84F 1010101010101010
+384+  D857             	DB 16, 16, 16, 16, 16, 16, 16, 16
+384+  D857 1010101010101010
+385+  D85F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+385+  D85F 1010101010101010
+386+  D867             	DB 16, 16, 16, 16, 16, 16, 16, 16
+386+  D867 1010101010101010
+387+  D86F             	DB 16, 16, 16, 16, 16, 16, 16, 16
+387+  D86F 1010101010101010
+388+  D877             	DB 16, 16, 16, 16, 16, 16, 16, 16
+388+  D877 1010101010101010
+112   D87F             sprites_definition: 
+113   D87F             	include "src/spriteset.asm"
+001+  D87F             BANK_SPRITES: 
+002+  D87F             ;Definition sprite 0, name: Sprite-2
+003+  D87F             	db 1,3,7,3,6,7,3,1
+003+  D87F 0103070306070301
+004+  D887             	db 1,3,2,2,3,1,1,1
+004+  D887 0103020203010101
+005+  D88F             	db 240,240,224,224,208,240,176,224
+005+  D88F F0F0E0E0D0F0B0E0
+006+  D897             	db 224,240,208,208,240,224,32,176
+006+  D897 E0F0D0D0F0E020B0
+007+  D89F             ;Definition sprite 1, name: Sprite-3
+008+  D89F             	db 1,1,1,1,3,3,1,0
+008+  D89F 0101010103030100
+009+  D8A7             	db 0,1,1,1,1,0,0,0
+009+  D8A7 0001010101000000
+010+  D8AF             	db 240,240,240,240,104,248,232,240
+010+  D8AF F0F0F0F068F8E8F0
+011+  D8B7             	db 240,248,168,208,248,240,160,112
+011+  D8B7 F0F8A8D0F8F0A070
+012+  D8BF             ;Definition sprite 2, name: Sprite-0
+013+  D8BF             	db 15,15,7,7,11,15,13,7
+013+  D8BF 0F0F07070B0F0D07
+014+  D8C7             	db 7,15,11,11,15,7,4,13
+014+  D8C7 070F0B0B0F07040D
+015+  D8CF             	db 128,192,224,192,96,224,192,128
+015+  D8CF 80C0E0C060E0C080
+016+  D8D7             	db 128,192,64,64,192,128,128,128
+016+  D8D7 80C04040C0808080
+017+  D8DF             ;Definition sprite 3, name: Sprite-1
+018+  D8DF             	db 15,15,15,15,22,31,23,15
+018+  D8DF 0F0F0F0F161F170F
+019+  D8E7             	db 15,31,21,11,31,15,5,14
+019+  D8E7 0F1F150B1F0F050E
+020+  D8EF             	db 128,128,128,128,192,192,128,0
+020+  D8EF 80808080C0C08000
+021+  D8F7             	db 0,128,128,128,128,0,0,0
+021+  D8F7 0080808080000000
+022+  D8FF             ;Definition sprite 4, name: Sprite-4
+023+  D8FF             	db 7,7,7,7,15,15,7,3
+023+  D8FF 070707070F0F0703
+024+  D907             	db 7,15,11,9,15,7,2,6
+024+  D907 070F0B090F070206
+025+  D90F             	db 192,192,192,192,224,224,192,128
+025+  D90F C0C0C0C0E0E0C080
+026+  D917             	db 192,224,160,32,224,224,64,96
+026+  D917 C0E0A020E0E04060
+027+  D91F             ;Definition sprite 5, name: Sprite-4
+028+  D91F             	db 3,7,7,7,15,15,7,3
+028+  D91F 030707070F0F0703
+029+  D927             	db 7,15,13,9,15,7,2,2
+029+  D927 070F0D090F070202
+030+  D92F             	db 128,192,192,192,224,224,192,128
+030+  D92F 80C0C0C0E0E0C080
+031+  D937             	db 192,224,96,32,224,224,96,0
+031+  D937 C0E06020E0E06000
+032+  D93F             ;Definition sprite 6, name: Sprite-4
+033+  D93F             	db 7,7,7,7,13,15,6,3
+033+  D93F 070707070D0F0603
+034+  D947             	db 7,15,11,13,7,3,2,6
+034+  D947 070F0B0D07030206
+035+  D94F             	db 192,192,192,192,96,224,192,128
+035+  D94F C0C0C0C060E0C080
+036+  D957             	db 192,224,160,96,192,192,64,96
+036+  D957 C0E0A060C0C04060
+037+  D95F             ;Definition sprite 7, name: Sprite-4
+038+  D95F             	db 7,7,7,7,13,15,6,3
+038+  D95F 070707070D0F0603
+039+  D967             	db 7,15,13,11,7,7,2,2
+039+  D967 070F0D0B07070202
+040+  D96F             	db 192,192,192,192,96,224,192,128
+040+  D96F C0C0C0C060E0C080
+041+  D977             	db 192,224,96,160,192,192,96,0
+041+  D977 C0E060A0C0C06000
+042+  D97F             ;Definition sprite 8, name: Sprite-2
+043+  D97F             	db 0,24,31,3,3,3,3,1
+043+  D97F 00181F0303030301
+044+  D987             	db 0,0,1,1,1,1,0,0
+044+  D987 0000010101010000
+045+  D98F             	db 0,0,224,224,240,80,240,176
+045+  D98F 0000E0E0F050F0B0
+046+  D997             	db 224,240,208,184,240,240,248,64
+046+  D997 E0F0D0B8F0F0F840
+047+  D99F             ;Definition sprite 9, name: Sprite-2
+048+  D99F             	db 24,24,15,7,7,6,7,3
+048+  D99F 18180F0707060703
+049+  D9A7             	db 1,1,2,2,3,3,1,1
+049+  D9A7 0101020203030101
+050+  D9AF             	db 0,0,192,192,224,160,224,96
+050+  D9AF 0000C0C0E0A0E060
+051+  D9B7             	db 192,224,160,160,224,224,192,64
+051+  D9B7 C0E0A0A0E0E0C040
+052+  D9BF             ;Definition sprite 10, name: Sprite-2
+053+  D9BF             	db 0,0,7,7,15,10,15,13
+053+  D9BF 000007070F0A0F0D
+054+  D9C7             	db 7,15,11,29,15,15,31,2
+054+  D9C7 070F0B1D0F0F1F02
+055+  D9CF             	db 0,24,248,192,192,192,192,128
+055+  D9CF 0018F8C0C0C0C080
+056+  D9D7             	db 0,0,128,128,128,128,0,0
+056+  D9D7 0000808080800000
+057+  D9DF             ;Definition sprite 11, name: Sprite-2
+058+  D9DF             	db 0,0,3,3,7,5,7,6
+058+  D9DF 0000030307050706
+059+  D9E7             	db 3,7,5,5,7,7,3,2
+059+  D9E7 0307050507070302
+060+  D9EF             	db 24,24,240,224,224,96,224,192
+060+  D9EF 1818F0E0E060E0C0
+061+  D9F7             	db 128,128,64,64,192,192,128,128
+061+  D9F7 80804040C0C08080
+062+  D9FF             ;Definition sprite 12, name: Sprite-4
+063+  D9FF             	db 0,0,0,3,3,7,7,5
+063+  D9FF 0000000303070705
+064+  DA07             	db 7,7,19,15,3,3,2,2
+064+  DA07 0707130F03030202
+065+  DA0F             	db 0,0,0,192,192,224,224,160
+065+  DA0F 000000C0C0E0E0A0
+066+  DA17             	db 224,96,200,240,192,192,64,64
+066+  DA17 E060C8F0C0C04040
+067+  DA1F             ;Definition sprite 13, name: Sprite-4
+068+  DA1F             	db 0,0,0,3,3,7,7,5
+068+  DA1F 0000000303070705
+069+  DA27             	db 7,7,3,7,7,11,2,3
+069+  DA27 07070307070B0203
+070+  DA2F             	db 0,0,0,192,192,224,224,160
+070+  DA2F 000000C0C0E0E0A0
+071+  DA37             	db 224,96,192,224,224,208,64,96
+071+  DA37 E060C0E0E0D04060
+072+  DA3F             ;Definition sprite 14, name: Sprite-4
+073+  DA3F             	db 0,0,0,3,3,7,7,5
+073+  DA3F 0000000303070705
+074+  DA47             	db 7,6,19,15,3,3,2,2
+074+  DA47 0706130F03030202
+075+  DA4F             	db 0,0,0,192,192,224,224,160
+075+  DA4F 000000C0C0E0E0A0
+076+  DA57             	db 224,224,200,240,192,192,64,64
+076+  DA57 E0E0C8F0C0C04040
+077+  DA5F             ;Definition sprite 15, name: Sprite-4
+078+  DA5F             	db 0,0,0,3,3,7,7,5
+078+  DA5F 0000000303070705
+079+  DA67             	db 7,6,3,7,7,11,2,6
+079+  DA67 07060307070B0206
+080+  DA6F             	db 0,0,0,192,192,224,224,160
+080+  DA6F 000000C0C0E0E0A0
+081+  DA77             	db 224,224,192,224,224,208,64,192
+081+  DA77 E0E0C0E0E0D040C0
+082+  DA7F             ;Definition sprite 16, name: Sprite-4
+083+  DA7F             	db 0,7,7,7,7,7,7,1
+083+  DA7F 0007070707070701
+084+  DA87             	db 7,14,14,15,15,7,2,3
+084+  DA87 070E0E0F0F070203
+085+  DA8F             	db 0,224,240,240,176,224,224,128
+085+  DA8F 00E0F0F0B0E0E080
+086+  DA97             	db 224,240,56,248,240,224,64,96
+086+  DA97 E0F038F8F0E04060
+087+  DA9F             ;Definition sprite 17, name: Sprite-4
+088+  DA9F             	db 0,7,7,7,7,7,7,1
+088+  DA9F 0007070707070701
+089+  DAA7             	db 3,7,6,5,7,3,0,0
+089+  DAA7 0307060507030000
+090+  DAAF             	db 0,224,240,240,176,224,224,192
+090+  DAAF 00E0F0F0B0E0E0C0
+091+  DAB7             	db 240,120,252,252,248,240,160,144
+091+  DAB7 F078FCFCF8F0A090
+092+  DABF             ;Definition sprite 18, name: Sprite-4
+093+  DABF             	db 0,7,15,15,13,7,7,1
+093+  DABF 00070F0F0D070701
+094+  DAC7             	db 7,15,28,31,15,7,2,6
+094+  DAC7 070F1C1F0F070206
+095+  DACF             	db 0,224,224,224,224,224,224,128
+095+  DACF 00E0E0E0E0E0E080
+096+  DAD7             	db 224,112,112,240,240,224,64,192
+096+  DAD7 E07070F0F0E040C0
+097+  DADF             ;Definition sprite 19, name: Sprite-4
+098+  DADF             	db 0,7,15,15,13,7,7,3
+098+  DADF 00070F0F0D070703
+099+  DAE7             	db 15,30,63,63,31,15,5,9
+099+  DAE7 0F1E3F3F1F0F0509
+100+  DAEF             	db 0,224,224,224,224,224,224,128
+100+  DAEF 00E0E0E0E0E0E080
+101+  DAF7             	db 192,224,96,160,224,192,0,0
+101+  DAF7 C0E060A0E0C00000
+102+  DAFF             ;Definition sprite 20, name: Sprite-20
+103+  DAFF             	db 0,0,4,2,1,35,23,13
+103+  DAFF 000004020123170D
+104+  DB07             	db 15,22,35,1,2,4,0,0
+104+  DB07 0F16230102040000
+105+  DB0F             	db 0,0,32,64,128,196,232,176
+105+  DB0F 0000204080C4E8B0
+106+  DB17             	db 240,168,196,128,64,32,0,0
+106+  DB17 F0A8C48040200000
+107+  DB1F             ;Definition sprite 21, name: Sprite-21
+108+  DB1F             	db 0,1,3,3,0,0,0,0
+108+  DB1F 0001030300000000
+109+  DB27             	db 0,48,11,7,15,20,2,0
+109+  DB27 00300B070F140200
+110+  DB2F             	db 0,192,224,240,112,120,56,56
+110+  DB2F 00C0E0F070783838
+111+  DB37             	db 120,240,240,224,0,0,0,0
+111+  DB37 78F0F0E000000000
+112+  DB3F             ;Definition sprite 22, name: Sprite-22
+113+  DB3F             	db 0,1,13,28,24,1,1,13
+113+  DB3F 00010D1C1801010D
+114+  DB47             	db 14,6,0,7,7,0,0,0
+114+  DB47 0E06000707000000
+115+  DB4F             	db 0,128,192,192,0,184,184,128
+115+  DB4F 0080C0C000B8B880
+116+  DB57             	db 0,96,96,128,0,0,0,0
+116+  DB57 0060608000000000
+117+  DB5F             ;Definition sprite 23, name: Sprite-23
+118+  DB5F             	db 0,0,3,3,14,14,56,56
+118+  DB5F 000003030E0E3838
+119+  DB67             	db 14,14,3,3,0,0,0,0
+119+  DB67 0E0E030300000000
+120+  DB6F             	db 0,0,192,192,112,120,56,0
+120+  DB6F 0000C0C070783800
+121+  DB77             	db 0,112,240,128,0,0,0,0
+121+  DB77 0070F08000000000
+122+  DB7F             
+123+  DB7F             
+124+  DB7F             
+114   DB7F             
+115   DB7F             ;			mapas
+116   DB7F             ;-----------------------------
+117   DB7F             ;map_screen0:
+118   DB7F             ;	include "src/map-screen0.asm"
+119   DB7F              
+120   DB7F             FINAL: 
