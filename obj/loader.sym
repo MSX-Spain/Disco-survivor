@@ -1,5 +1,5 @@
 INICIO: equ 0x0000C000
-FINAL: equ 0x0000DB7F
+FINAL: equ 0x0000DB5F
 MAIN: equ 0x0000C000
 set_screen2x16: equ 0x0000C053
 load_sprites: equ 0x0000C072

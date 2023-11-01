@@ -20,7 +20,7 @@ create_player:
     ld a,11 ; el 11 es el color amarillo
     ld (ix+player.color),a 
     ret
-update_player:
+render_player:
     ld hl, player_atributes 
     ld de, 6912 ;#1b00 dirección tabla de atributos en VRAM    
     ld bc, 4; 4 bytes para copiar

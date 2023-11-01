@@ -18,14 +18,11 @@ message_lives: db "Lives",0
 message_score: db "Score",0
 message_msx_spain: db "MSX spain",0 
 map_buffer: ds 704 ;768-64 es el mapa o tabla de nombres de VRAM copiada aquí
-
+Store_Sprite_Collision: db 0
 
 MAIN:
 	call create_player
-
-    ;create_enemy va aumentando el contador de enemigos
 	call create_enemy
-
     call hud
     call load_screen_0
 	call main_loop
@@ -34,15 +31,19 @@ MAIN:
 main_loop:
 	halt
 	call cursors
-	call update_player
-  
     call update_enemies
+    call render_player
     call draw_enemies
 
 	jr main_loop
 
 
 
+
+
+kill_player
+    call BEEP
+    ret
 
 
 cursors:
@@ -160,10 +161,6 @@ load_screen_1:
     call  LDIRVM
     call hud
     ret
-
-
-
-
 
 
 

@@ -96,7 +96,7 @@ load_sprites:
     ;hemos dibujado 20 sprites
     ld hl, sprites_definition
     ld de, 14336; #3800
-    ld bc, 32*20
+    ld bc, 32*22; 32 bytes por 22 sprites dibujados
     call  LDIRVM 
 	ret
 
