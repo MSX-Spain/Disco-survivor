@@ -1,0 +1,956 @@
+001   0000                 output "main.bin"
+002   0000             
+003   0000 FE              db   0FEh               ; ID archivo binario, siempre hay que poner el mismo 0FEh
+004   0001 00 C0           dw   INICIO             ; dirección de inicio
+005   0003 79 CB           dw   FINAL - 1          ; dirección final
+006   0005 DE C2           dw   MAIN               ; dircción del programa de ejecución (para cuando pongas r en bload"nombre_programa", r)
+007   0007                 
+008   0007                  
+009   0007              
+010   0007                 org #c000              ; org se utiliza para decirle al z80 en que posición de memoria empieza nuestro programa (es la 33280 en decimal), en hezadecimal sería #8200
+011   C000                     
+012   C000             INICIO: 
+013   C000             
+014   C000             
+015   C000 00          screen:  db 0
+016   C001             message_level:  db "Level",0
+016   C001 4C6576656C00
+017   C007             message_lives:  db "Lives",0
+017   C007 4C6976657300
+018   C00D             message_score:  db "Score",0
+018   C00D 53636F726500
+019   C013             message_msx_spain:  db "MSX spain",0 
+019   C013 4D535820737061696E00
+020   C01D 00          map_buffer:  ds 704 ;768-64 es el mapa o tabla de nombres de VRAM copiada aquí
+021   C2DD 00          Store_Sprite_Collision:  db 0
+022   C2DE             
+023   C2DE             MAIN: 
+024   C2DE CD AD C3    	call create_player
+025   C2E1 CD A7 C4    	call create_enemy
+026   C2E4 CD 1B C3        call hud
+027   C2E7 CD 79 C3        call load_screen_0
+028   C2EA CD EE C2    	call main_loop
+029   C2ED C9          	ret
+030   C2EE             
+031   C2EE             main_loop: 
+032   C2EE 76          	halt
+033   C2EF CD 01 C3    	call cursors
+034   C2F2 CD B4 C4        call update_enemies
+035   C2F5 CD C6 C3        call render_player
+036   C2F8 CD 96 C5        call draw_enemies
+037   C2FB             
+038   C2FB 18 F1       	jr main_loop
+039   C2FD             
+040   C2FD             
+041   C2FD             
+042   C2FD             
+043   C2FD             
+044   C2FD             kill_player
+045   C2FD CD C0 00        call BEEP
+046   C300 C9              ret
+047   C301             
+048   C301             
+049   C301             cursors: 
+050   C301 3E 00           ld a,0
+051   C303 CD D5 00        call GTSTCK
+052   C306                 
+053   C306 FE 01           cp 1
+054   C308 CA 11 C4        jp z, move_player_up
+055   C30B                 ;cp 2
+056   C30B                 ;jp z, move_player_up_right
+057   C30B FE 03           cp 3
+058   C30D CA D3 C3        jp z, move_player_right
+059   C310                 ;cp 4
+060   C310                 ;jp z, move_player_down_right
+061   C310 FE 05           cp 5
+062   C312 CA 30 C4        jp z, move_player_down
+063   C315                 ;cp 6
+064   C315                 ;jp z, move_player_down_left
+065   C315 FE 07           cp 7
+066   C317 CA F2 C3        jp z, move_player_left
+067   C31A                 ;cp 8
+068   C31A                 ;jp z, move_player_up_left
+069   C31A C9              ret
+070   C31B             
+071   C31B             
+072   C31B             hud: 
+073   C31B 3E 0A           ld a,10
+074   C31D 32 B7 FC        ld (GRPACX),a ;GRPACX contiene la posición X del cursor en modo gráfico
+075   C320 3E B4           ld a,180
+076   C322 32 B9 FC        ld (GRPACY),a
+077   C325 21 01 C0        ld hl, message_level
+078   C328 CD 50 C3        call print
+079   C32B             
+080   C32B 3E 3A           ld a,58; posicionamos el cursor en la posición x 58
+081   C32D 32 B7 FC        ld (GRPACX),a
+082   C330                 ;metemos en b el valor correspondiente al 0 en la tabla ascii
+083   C330 06 30           ld b,48
+084   C332                 ;para sumar a y b tendremos que echar mano de ld a
+085   C332 3A 00 C0        ld a,(screen)
+086   C335 80              add b
+087   C336 CD 8D 00        call GRPPRT 
+088   C339             
+089   C339 3E 50           ld a,80
+090   C33B 32 B7 FC        ld (GRPACX),a
+091   C33E 21 0D C0        ld hl, message_score
+092   C341 CD 50 C3        call print
+093   C344             
+094   C344             
+095   C344 3E B4           ld a,180
+096   C346 32 B7 FC        ld (GRPACX),a
+097   C349 21 13 C0        ld hl, message_msx_spain
+098   C34C CD 50 C3        call print
+099   C34F C9              ret
+100   C350             
+101   C350             print: 
+102   C350 7E              ld  a,(hl)          ; Lee el 1 byte de la dirección de la memoria indicada y lo almacena en el registro a del z80.
+103   C351 A7              and a               ; Actualiza la bandera z del registro F del z80 y la pone en 0 si no hay valor, and a también actualiza el flag c, p, v y s.
+104   C352 C8              ret z               ; Devuelve el cotrol al Main si la bandera z del registro F del z80 es 0
+105   C353 CD 8D 00        call GRPPRT         ; Llama a la subrutina 0042h de la Bios la cual imprime el caracter almacenado en el registro a del z80
+106   C356 23              inc hl              ; incrementa el puntero de los registros hl para que señale al siguiente byte
+107   C357 18 F7           jr print            ; Llama al métdo print para que lo vuelva a ejecutar
+108   C359                  
+109   C359             
+110   C359             
+111   C359             
+112   C359             
+113   C359             
+114   C359             
+115   C359             
+116   C359             
+117   C359             
+118   C359             
+119   C359             
+120   C359             
+121   C359             
+122   C359             
+123   C359             
+124   C359             increase_screen: 
+125   C359 3E 96           ld a,150
+126   C35B DD 77 00        ld (ix+player.y),a
+127   C35E 3E 00           ld a,0
+128   C360 DD 77 01        ld (ix+player.x),a
+129   C363 3A 00 C0        ld a,(screen)
+130   C366 C6 01           add 1
+131   C368 32 00 C0        ld (screen),a
+132   C36B CD C3 00        call BCLS   ;borramos la pantalla
+133   C36E FE 00           cp 0
+134   C370 CA 79 C3    	jp z, load_screen_0
+135   C373 FE 01           cp 1
+136   C375 CA 91 C3    	jp z, load_screen_1
+137   C378             
+138   C378                    
+139   C378 C9              ret
+140   C379             load_screen_0: 
+141   C379                 ;ponemos el mapa en el byffer para hacer las colisiones
+142   C379 21 FA C5        ld hl, map_screen0
+143   C37C 11 1D C0        ld de, map_buffer 
+144   C37F 01 C0 02        ld bc, 768-64
+145   C382 ED B0           LDIR
+146   C384                 ;ponemos el mapa en la VRAM
+147   C384 21 1D C0        ld hl, map_buffer
+148   C387 11 00 18        ld de, 6144 
+149   C38A             	;Le quitamos 64 ya que keremos pintar el HUD en las últimas 2 líneas de la pantalla
+150   C38A 01 C0 02        ld bc, 768-64
+151   C38D CD 5C 00        call  LDIRVM
+152   C390 C9              ret
+153   C391             load_screen_1: 
+154   C391 21 BA C8        ld hl, map_screen1
+155   C394 11 1D C0        ld de, map_buffer 
+156   C397 01 C0 02        ld bc, 768-64
+157   C39A ED B0           LDIR
+158   C39C 21 1D C0        ld hl, map_buffer
+159   C39F 11 00 18        ld de, 6144 
+160   C3A2 01 C0 02        ld bc, 768-64
+161   C3A5 CD 5C 00        call  LDIRVM
+162   C3A8 CD 1B C3        call hud
+163   C3AB C9              ret
+164   C3AC             
+165   C3AC             
+166   C3AC             
+167   C3AC              
+168   C3AC             
+169   C3AC             
+170   C3AC             
+171   C3AC             
+172   C3AC                 
+173   C3AC             	include "src/vars_msxBios.asm"    
+001+  C3AC             ;ver las instruciones del z80: http://clrhome.org/table/
+002+  C3AC             ;ver las instrucciones de la bios: https://map.grauw.nl/resources/msxbios.php
+003+  C3AC             ;ver las instrucciones: https://www.msx.org/wiki/Z80_Assembler_for_Dummies
+004+  C3AC             
+005+  C3AC             ; use RST assembler mnemonic to call
+006+  C3AC             CHKRAM equ 0x00 ; RST 0x00 > Check RAM and sets slot for command area.
+007+  C3AC             SYNCHR equ 0x08 ; RST	0x08 > Checks if then current character pointed by HL is one desired.
+008+  C3AC             CHRGTR equ 0x10 ; RST	0x10 > Gets the next character (or token) of the Basic-text
+009+  C3AC             OUTDO  equ 0x18 ; RST	0x18 > Output to current outputchannel (printer, diskfile, etc.)
+010+  C3AC             DCOMPR equ 0x20 ; RST	0x20 > Compares HL with DE
+011+  C3AC             GETYPR equ 0x28 ; RST	0x28 > Returns Type of DAC
+012+  C3AC             CALLF  equ 0x30 ; RST	0x30 > Executes an interslot call
+013+  C3AC             KEYINT equ 0x38 ; RST	0x38 > Executes the timer interrupt process routine
+014+  C3AC             
+015+  C3AC             ; use CALL assembler mnemonic
+016+  C3AC             RDSLT  equ 0x000C ; Reads the value of an address in another slot
+017+  C3AC             WRSLT  equ 0x0014 ; Writes a value to an address in another slot
+018+  C3AC             CALSLT equ 0x001C ; Executes inter-slot call
+019+  C3AC             ENASLT equ 0x0024 ; Switches indicated slot at indicated page on perpetual
+020+  C3AC             
+021+  C3AC             ; Initialization-routines
+022+  C3AC             INITIO equ 0x003B ; Initialises the device
+023+  C3AC             INIFNK equ 0x003E ; Initialises the contents of the function keys
+024+  C3AC             
+025+  C3AC             ; VDP routines
+026+  C3AC             DISSCR equ 0x0041 ; inhibits the screen display
+027+  C3AC             ENASCR equ 0x0044 ; displays the screen
+028+  C3AC             WRTVDP equ 0x0047 ; write data in the VDP-register, B  - Data to write, C  - Number of the register
+029+  C3AC             RDVRM  equ 0x004A ; Reads the content of VRAM
+030+  C3AC             WRTVRM equ 0x004D ; Writes data in VRAM
+031+  C3AC             SETRD  equ 0x0050 ; Enable VDP to read
+032+  C3AC             SETWRT equ 0x0053 ; Enable VDP to write
+033+  C3AC             FILVRM equ 0x0056 ; fill VRAM with value
+034+  C3AC             LDIRMV equ 0x0059 ; Block transfer to memory from VRAM
+035+  C3AC             LDIRVM equ 0x005C ; Block transfer to VRAM from memory
+036+  C3AC             CHGMOD equ 0x005F ; Switches to given screenmode
+037+  C3AC             CHGCLR equ 0x0062 ; Changes the screencolors
+038+  C3AC             CLRSPR equ 0x0069 ; Initialises all sprites
+039+  C3AC             INITXT equ 0x006C ; Switches to SCREEN 0 (text screen with 40 * 24 characters)
+040+  C3AC             INIT32 equ 0x006F ; Switches to SCREEN 1 (text screen with 32*24 characters)
+041+  C3AC             INIGRP equ 0x0072 ; Switches to SCREEN 2 (high resolution screen with 256*192 pixels)
+042+  C3AC             INIMLT equ 0x0075 ; Switches to SCREEN 3 (multi-color screen 64*48 pixels)
+043+  C3AC             SETTXT equ 0x0078 ; Switches to VDP in SCREEN 0 mode
+044+  C3AC             SETT32 equ 0x007B ; Switches VDP in SCREEN mode 1
+045+  C3AC             SETGRP equ 0x007E ; Switches VDP to SCREEN 2 mode
+046+  C3AC             SETMLT equ 0x0081 ; Switches VDP to SCREEN 3 mode
+047+  C3AC             CALPAT equ 0x0084 ; Returns the address of the sprite pattern table
+048+  C3AC             CALATR equ 0x0087 ; Returns the address of the sprite attribute table
+049+  C3AC             GSPSIZ equ 0x008A ; Returns current sprite size
+050+  C3AC             GRPPRT equ 0x008D ; Displays a character on the graphic screen
+051+  C3AC             FORCLR equ 0xF3E9 ;color de tinta (+1=color del fondo, +1 color del borde)
+052+  C3AC                     
+053+  C3AC             ; PSG routines
+054+  C3AC             GICINI equ 0x0090 ; Initialises PSG and sets initial value for the PLAY statement
+055+  C3AC             WRTPSG equ 0x0093 ; Writes data to PSG-register
+056+  C3AC             ;Input    : A  - PSG register number
+057+  C3AC             ;           E  - Data write
+058+  C3AC             RDPSG  equ 0x0096 ; Reads value from PSG-register
+059+  C3AC             STRTMS equ 0x0099 ; Tests whether the PLAY statement is being executed as a background task. If not, begins to execute the PLAY statement  */
+060+  C3AC             
+061+  C3AC             ; Console routines, rutinas de consola
+062+  C3AC             CHSNS  equ 0x009C ; Tests the status of the keyboard buffer
+063+  C3AC             CHGET  equ 0x009F ; One character input (waiting)
+064+  C3AC             CHPUT  equ 0x00A2 ; Displays one character
+065+  C3AC             LPTOUT equ 0x00A5 ; Sends one character to printer
+066+  C3AC             LPTSTT equ 0x00A8 ; Tests printer status
+067+  C3AC             CNVCHR equ 0x00AB ; tests for the graphic header and transforms the code
+068+  C3AC             PINLIN equ 0x00AE ; Stores in the specified buffer the character codes input until the return key or STOP key is pressed     */
+069+  C3AC             INLIN  equ 0x00B1 ; Same as PINLIN except that AUGFLG (#F6AA) is set
+070+  C3AC             QINLIN equ 0x00B4 ; Prints a questionmark andone space
+071+  C3AC             BREAKX equ 0x00B7 ; Tests status of CTRL-STOP 
+072+  C3AC             ISCNTC equ 0x00BA ; Tests status of SHIFT-STOP 
+073+  C3AC             CKCNTC equ 0x00BD ; Same as ISCNTC. used in Basic
+074+  C3AC             BEEP   equ 0x00C0 ; generates beep
+075+  C3AC             BCLS   equ 0x00C3 ; Clears the screen
+076+  C3AC             POSIT  equ 0x00C6 ; Places the cursor at the specified location
+077+  C3AC             FNKSB  equ 0x00C9 ; Tests whether the function key display is active (FNKFLG)If so, displays them, otherwise erase them */
+078+  C3AC             ERAFNK equ 0x00CC ; Erase functionkey display
+079+  C3AC             DSPFNK equ 0x00CF ; Displays the function keys
+080+  C3AC             TOTEXT equ 0x00D2 ; Forces the screen to be in the text mode
+081+  C3AC             
+082+  C3AC             ; Controller routines                      
+083+  C3AC             GTSTCK equ 0x00D5 ; Returns the joystick status
+084+  C3AC             GTTRIG equ 0x00D8 ; Returns current trigger status
+085+  C3AC             GTPAD  equ 0x00DB ; Returns current touch pad status
+086+  C3AC             GTPDL  equ 0x00DE ; Returns currenct value of paddle
+087+  C3AC             
+088+  C3AC             ; Tape device routines                      
+089+  C3AC             TAPION equ 0x00E1 ; Reads the header block after turning the cassette motor on
+090+  C3AC             TAPIN  equ 0x00E4 ; Read data from the tape
+091+  C3AC             TAPIOF equ 0x00E7 ; Stops reading from the tape
+092+  C3AC             TAPOON equ 0x00EA ; Turns on the cassette motor and writes the header
+093+  C3AC             TAPOUT equ 0x00ED ; Writes data on the tape
+094+  C3AC             TAPOOF equ 0x00F0 ; Stops writing on the tape
+095+  C3AC             STMOTR equ 0x00F3 ; Sets the cassette motor action
+096+  C3AC             
+097+  C3AC             ; Queue routines                      
+098+  C3AC             LFTQ equ 0x00F6 ; Gives number of bytes in queue
+099+  C3AC             PUTQ equ 0x00F9 ; Put byte in queue
+100+  C3AC             
+101+  C3AC             ; Graphic routines
+102+  C3AC             ;More info (MSX Assembly Page): http:;map.grauw.nl/resources/msxbios.php                      
+103+  C3AC             RIGHTC equ 0x00FC ; Shifts screenpixel to the right
+104+  C3AC             LEFTC  equ 0x00FF ; Shifts screenpixel to the left
+105+  C3AC             UPC    equ 0x0102 ; Shifts screenpixel up
+106+  C3AC             TUPC   equ 0x0105 ; Tests whether UPC is possible, if possible, execute UPC
+107+  C3AC             DOWNC  equ 0x0108 ; Shifts screenpixel down
+108+  C3AC             TDOWNC equ 0x010B ; Tests whether DOWNC is possible, if possible, execute DOWNC
+109+  C3AC             SCALXY equ 0x010E ; Scales X and Y coordinates
+110+  C3AC             MAPXY  equ 0x0111 ; Places cursor at current cursor address
+111+  C3AC             FETCHC equ 0x0114 ; Gets current cursor addresses mask pattern
+112+  C3AC             STOREC equ 0x0117 ; Record current cursor addresses mask pattern
+113+  C3AC             SETATR equ 0x011A ; Set attribute byte
+114+  C3AC             READC  equ 0x011E ; Reads attribute byte of current screenpixel
+115+  C3AC             SETC   equ 0x0120 ; Returns currenct screenpixel of specificed attribute byte
+116+  C3AC             NSETCX equ 0x0123 ; Set horizontal screenpixels
+117+  C3AC             GTASPC equ 0x0126 ; Gets screen relations
+118+  C3AC             PNTINI equ 0x0129 ; Initalises the PAINT instruction
+119+  C3AC             SCANR  equ 0x012C ; Scans screenpixels to the right
+120+  C3AC             SCANL  equ 0x012F ; Scans screenpixels to the left
+121+  C3AC             
+122+  C3AC             ; Graphic routines MSX2
+123+  C3AC             ;More info (MSX Assembly Page): http:;map.grauw.nl/resources/msxbios.php#msx2bios
+124+  C3AC             CHKNEW equ 0x0165 ;Tests screen mode > C-flag set if screenmode = 5, 6, 7 or 8
+125+  C3AC             BIGFIL equ 0x016B ;fill VRAM with value (total VRAM can be reached) HL address, BC length, A data
+126+  C3AC             NSETRD equ 0x016E ;Enable VDP to read.(with full 16 bits VRAM-address)
+127+  C3AC             NSTWRT equ 0x0171 ;Enable VDP to write.(with full 16 bits VRAM-address) 
+128+  C3AC             NRDVRM equ 0x0174 ;Reads VRAM like in RDVRM.(with full 16 bits VRAM-address)
+129+  C3AC             NWRVRM equ 0x0177 ;Writes to VRAM like in WRTVRM.(with full 16 bits VRAM-address)
+130+  C3AC             
+131+  C3AC             
+132+  C3AC             
+133+  C3AC             
+134+  C3AC             
+135+  C3AC             
+136+  C3AC                                  
+137+  C3AC             ; Misc routines
+138+  C3AC             CLIKSW equ 0xF3DB; para que no se oiga el click que hace al pulsar las teclas
+139+  C3AC             CHGCAP equ 0x0132 ; Alternates the CAP lamp status
+140+  C3AC             CHGSND equ 0x0135 ; Alternates the 1-bit sound port status
+141+  C3AC             RSLREG equ 0x0138 ; Reads the primary slot register
+142+  C3AC             WSLREG equ 0x013B ; Writes value to the primary slot register
+143+  C3AC             RDVDP  equ 0x013E ; Reads VDP status register
+144+  C3AC             SNSMAT equ 0x0141 ; Returns the value of the specified line from the keyboard matrix
+145+  C3AC             ; 0   1          2           3           4           5           6           7           8       9       10
+146+  C3AC             ;0    1          2                      4           5           6
+147+  C3AC             ;1   ; fin grabr ' grabar                                                    Ñ
+148+  C3AC             ;2                                      \grabar2  DEADfingrabar2 A           B
+149+  C3AC             ;3 C                        F           G           H
+150+  C3AC             ;4                          N
+151+  C3AC             ;5 S                        V                       X                       Z
+152+  C3AC             ;6SHIFtONTROL    GRAPH      CAPS        CODE
+153+  C3AC             ;7              ESCAPE                              BS                      RET
+154+  C3AC             ;8                                               Cursor ^    Cursor v
+155+  C3AC             PHYDIO equ 0x0144 ; Executes I/O for mass-storage media like diskettes
+156+  C3AC             FORMAT equ 0x0147 ; Initialises mass-storage media like formatting of diskettes
+157+  C3AC             ISFLIO equ 0x014A ; Tests if I/O to device is taking place
+158+  C3AC             OUTDLP equ 0x014E ; Printer output
+159+  C3AC             GETVCP equ 0x0150 ; Returns pointer to play queue
+160+  C3AC             GETVC2 equ 0x0153 ; Returns pointer to variable in queue number VOICEN (byte op #FB38)
+161+  C3AC             KILBUF equ 0x0156 ; Clear keyboard buffer
+162+  C3AC             CALBAS equ 0x0159 ; Executes inter-slot call to the routine in BASIC interpreter
+163+  C3AC                     
+164+  C3AC             
+174   C3AC             	include "src/vars_msxSystem.asm"    
+001+  C3AC             ;variables del sistema
+002+  C3AC             ;https://www.msx.org/wiki/System_variables_and_work_area
+003+  C3AC             
+004+  C3AC             ;Interruptions
+005+  C3AC             ;-------------------
+006+  C3AC             ;Contiene el valor del reloj del software, cada interrupción del VDP se incrementa en 1
+007+  C3AC             ;El contenido se puede leer o cambiar mediante la función 'TIME' o la instrucción 'TIME'
+008+  C3AC             JIFFY  equ 0xFC9E
+009+  C3AC             ; Graphic variables  
+010+  C3AC             ;------------------- 
+011+  C3AC             ; posicionar cursor en modo gráfico              
+012+  C3AC             GRPACX equ 0xFCB7  
+013+  C3AC             GRPACY equ 0xFCB9
+014+  C3AC             ;VDP registers
+015+  C3AC             RG0SAV equ 0xF3DF   ;System saves here the byte written to the register R#00, Used by VDP(0)
+016+  C3AC             RG1SAV equ 0xF3E0   ;System saves here the byte written to the register R#01, Used by VDP(1)
+017+  C3AC             RG2SAV equ 0xF3E1   ;System saves here the byte written to the register R#02, Used by VDP(2)
+018+  C3AC             RG3SAV equ 0xF3E2   ;System saves here the byte written to the register R#03, Used by VDP(3)
+019+  C3AC             RG4SAV equ 0xF3E3   ;System saves here the byte written to the register R#04, Used by VDP(4)
+020+  C3AC             RG5SAV equ 0xF3E4   ;System saves here the byte written to the register R#05, Used by VDP(5)
+021+  C3AC             RG6SAV equ 0xF3E5   ;System saves here the byte written to the register R#06, Used by VDP(6)
+022+  C3AC             RG7SAV equ 0xF3E6   ;System saves here the byte written to the register R#07.at start, Used by VDP(7)
+023+  C3AC             STATFL equ 0xF3E7   ;System saves here the byte read from the status register R#00, Used by VDP(0)
+024+  C3AC             
+175   C3AC             	include "src/player.asm"    
+001+  C3AC             ;player_atributes: ds 4,0
+002+  C3AC             player_atributes: 
+003+  C3AC                 struct player 
+004+  C3AC~            y       db      0
+005+  C3AC~            x       db      0
+006+  C3AC~            plane   db      0
+007+  C3AC~            color   db      0
+008+  C3AC                 ends
+009+  C3AC 00          tile0:  db 0
+010+  C3AD             
+011+  C3AD             
+012+  C3AD             create_player: 
+013+  C3AD DD 21 AC C3     ld ix, player_atributes
+014+  C3B1 3E 96           ld a,150
+015+  C3B3 DD 77 00        ld (ix+player.y),a ;le ponemos a la posición y un 160
+016+  C3B6 3E 00           ld a,0 
+017+  C3B8 DD 77 01        ld (ix+player.x),a ;le ponemos a la posición x 120
+018+  C3BB 3E 00           ld a,0
+019+  C3BD DD 77 02        ld (ix+player.plane),a ;Le ponemos el patrón 0
+020+  C3C0 3E 0B           ld a,11 ; el 11 es el color amarillo
+021+  C3C2 DD 77 03        ld (ix+player.color),a 
+022+  C3C5 C9              ret
+023+  C3C6             render_player: 
+024+  C3C6 21 AC C3        ld hl, player_atributes 
+025+  C3C9 11 00 1B        ld de, 6912 ;#1b00 dirección tabla de atributos en VRAM    
+026+  C3CC 01 04 00        ld bc, 4; 4 bytes para copiar
+027+  C3CF CD 5C 00        call  LDIRVM 
+028+  C3D2 C9              ret
+029+  C3D3             
+030+  C3D3             
+031+  C3D3             move_player_right: 
+032+  C3D3 DD 7E 01        ld a,(ix+player.x); obtenemos el valor actual de la posicion x
+033+  C3D6 C6 01           add 1; incrementamos en 1 el valor
+034+  C3D8 DD 77 01        ld (ix+player.x), a ; se lo metemos al atributo posicion X
+035+  C3DB E6 01           and 1
+036+  C3DD CA E9 C3        jp z, right_es_impar
+037+  C3E0 3E 00           ld a, 0
+038+  C3E2 DD 77 02        ld (ix+player.plane),a ;le metemos el sprite que mira hacia la derecha 2
+039+  C3E5 CD 4F C4        call checkColision
+040+  C3E8 C9              ret
+041+  C3E9             right_es_impar: 
+042+  C3E9 3E 04           ld a, 1*4
+043+  C3EB DD 77 02        ld (ix+player.plane),a ;le metemos el sprite que mira hacia la derecha 2
+044+  C3EE CD 4F C4        call checkColision
+045+  C3F1 C9              ret
+046+  C3F2             move_player_left: 
+047+  C3F2 DD 7E 01        ld a,(ix+player.x); 
+048+  C3F5 D6 01           sub 1  
+049+  C3F7 DD 77 01        ld (ix+player.x), a 
+050+  C3FA E6 01           and 1
+051+  C3FC CA 08 C4        jp z, left_es_impar
+052+  C3FF 3E 08           ld a, 2*4 
+053+  C401 DD 77 02        ld (ix+player.plane),a
+054+  C404 CD 4F C4        call checkColision
+055+  C407 C9              ret
+056+  C408             left_es_impar: 
+057+  C408 3E 0C           ld a, 3*4
+058+  C40A DD 77 02        ld (ix+player.plane),a 
+059+  C40D CD 4F C4        call checkColision
+060+  C410 C9              ret
+061+  C411             move_player_up: 
+062+  C411 DD 7E 00        ld a,(ix+player.y)
+063+  C414 D6 01           sub 1 
+064+  C416 DD 77 00        ld (ix+player.y), a 
+065+  C419 E6 01           and 1
+066+  C41B CA 27 C4        jp z, up_es_impar
+067+  C41E 3E 10           ld a, 4*4
+068+  C420 DD 77 02        ld (ix+player.plane),a
+069+  C423 CD 4F C4        call checkColision
+070+  C426 C9              ret
+071+  C427             up_es_impar: 
+072+  C427 3E 14           ld a, 5*4
+073+  C429 DD 77 02        ld (ix+player.plane),a 
+074+  C42C CD 4F C4        call checkColision
+075+  C42F C9              ret
+076+  C430             move_player_down: 
+077+  C430 DD 7E 00        ld a,(ix+player.y)
+078+  C433 C6 01           add 1 
+079+  C435 DD 77 00        ld (ix+player.y), a 
+080+  C438 E6 01           and 1
+081+  C43A CA 46 C4        jp z, down_es_impar
+082+  C43D 3E 18           ld a, 6*4
+083+  C43F DD 77 02        ld (ix+player.plane),a
+084+  C442 CD 4F C4        call checkColision
+085+  C445 C9              ret
+086+  C446             down_es_impar: 
+087+  C446 3E 1C           ld a, 7*4
+088+  C448 DD 77 02        ld (ix+player.plane),a 
+089+  C44B CD 4F C4        call checkColision
+090+  C44E C9              ret
+091+  C44F             
+092+  C44F             
+093+  C44F             checkColision: 
+094+  C44F A8              xor b
+095+  C450 CD 62 C4        call dame_el_tile_que_hay_en_x_e_y
+096+  C453 78              ld a,b
+097+  C454 FE 2B           cp 43
+098+  C456 CA 59 C3        jp z,increase_screen
+099+  C459 FE 20           cp 32 ;Si al restalo entre 32 da negatico se activará el flag de carry
+100+  C45B 30 01           jr nc, colision_player ; si al restarlo  es negativo y dará carry, si no hay está bien
+101+  C45D C9              ret
+102+  C45E             
+103+  C45E             colision_player: 
+104+  C45E CD C0 00        call BEEP
+105+  C461             
+106+  C461 C9              ret
+107+  C462             
+108+  C462             ;----------------------------------
+109+  C462             ;Vamos a hacer esta formula (y/8)*32+(x/8)
+110+  C462             ;esta es la parte (y/8)*32
+111+  C462             ;d tiene la posicion de x
+112+  C462             ;e tiene la posicion de y
+113+  C462             dame_el_tile_que_hay_en_x_e_y: 
+114+  C462 AF              xor a
+115+  C463 DD 7E 00        ld a,(ix+player.y) ;a=posicion y en pixeles
+116+  C466 C6 10           add 16
+117+  C468                 ;con srl estas dividiendo entre 2,ya que corre a la derecha los bits. 
+118+  C468                 ;al hacerlo 3 veces es como dividir entre 8,a=y/8: 1.01001100, 2.00100110, 3.00010011
+119+  C468 CB 3F           srl a  
+120+  C46A CB 3F           srl a  
+121+  C46C CB 3F           srl a  
+122+  C46E 26 00           ld h,0 ; en h le ponemos un 0 
+123+  C470 6F              ld l,a ;y en los 8 bytes de "l" le ponemos el valor que contiene a
+124+  C471             
+125+  C471                 ;-----------------
+126+  C471                 ;Buscando la fila
+127+  C471 29              add hl, hl ;x32, sumar algo por si mismo es como multiplizarlo por 2, si lo repetivos 5 es como si o multiplixaramos por 32
+128+  C472 29              add hl, hl 
+129+  C473 29              add hl, hl 
+130+  C474 29              add hl, hl 
+131+  C475 29              add hl, hl 
+132+  C476             
+133+  C476                 ;-----------------
+134+  C476                 ;Esta es la parte +(x/8)
+135+  C476 DD 7E 01        ld a,(ix+player.x) ;a=x
+136+  C479 C6 08           add 8
+137+  C47B CB 3F           srl a 
+138+  C47D CB 3F           srl a 
+139+  C47F CB 3F           srl a 
+140+  C481 16 00           ld d,0
+141+  C483 5F              ld e,a ;e=x
+142+  C484 19              add hl,de ;hl=(y/8)*32+(x/8)
+143+  C485             
+144+  C485 11 1D C0        ld de, map_buffer; dirección buffer colisiones
+145+  C488 19              add hl,de ;hl=buffer_colisiones + (y/8)*32+(x/8)
+146+  C489             
+147+  C489 46              ld b,(hl) ;metemos en a el tile que nos pide
+148+  C48A                 ;ld (tile0),a
+149+  C48A C9              ret
+150+  C48B             
+176   C48B             	include "src/enemies.asm"    
+001+  C48B             enemy_atributes: 
+002+  C48B                 struct enemy 
+003+  C48B~            y       db      0
+004+  C48B~            x       db      0
+005+  C48B~            sprite  db      0
+006+  C48B~            color   db      0
+007+  C48B~            plane   db      0
+008+  C48B~            type    db      0
+009+  C48B~            ;ptr_e   db      0
+010+  C48B                 ends
+011+  C48B             
+012+  C48B             
+013+  C48B             template_enemy0: 
+014+  C48B 82              db 130
+015+  C48C DC              db 220
+016+  C48D 20              db 32;sprite 8 por 4 bytes
+017+  C48E 04              db 4;color azul oscuro
+018+  C48F 04              db 4; plano 1*4 bytes
+019+  C490 00              db 0
+020+  C491             template_enemy1: 
+021+  C491 64              db 100
+022+  C492 C8              db 200
+023+  C493 3C              db 60;15 sprite
+024+  C494 0F              db 15;color azul oscuro
+025+  C495 08              db 8; plano 2*4 bytes
+026+  C496 01              db 1
+027+  C497             template_enemy2: 
+028+  C497 78              db 120
+029+  C498 50              db 80
+030+  C499 34              db 52;sprite 13 por 4 bytes
+031+  C49A 03              db 3;verde claro
+032+  C49B 0C              db 12; plano 3*4 bytes
+033+  C49C 01              db 1
+034+  C49D             template_enemy3: 
+035+  C49D 82              db 130
+036+  C49E 08              db 8
+037+  C49F 2C              db 44;sprite 8 por 4 bytes
+038+  C4A0 0F              db 15;color azul oscuro
+039+  C4A1 10              db 16; plano 4*4 bytes
+040+  C4A2 00              db 0
+041+  C4A3             size_of_enemy equ 6
+042+  C4A3             
+043+  C4A3             ;los tipos son: 
+044+  C4A3             ;   1.El enemigo va de derecha a izquierda corriendo
+045+  C4A3             ;   2.El enemigo está bailando
+046+  C4A3             
+047+  C4A3             ;reservamos espacio para 10 enemigos
+048+  C4A3             ;max_enemies equ 10
+049+  C4A3             ;array_enimies: ds enemy*max_enemies ;son 7 bytes * 10 entidades de enemigos=70 bytes, si te fijas enemy vale el tamaño del struct
+050+  C4A3 00          counter_enemy:  db 0
+051+  C4A4             
+052+  C4A4             
+053+  C4A4             ;randData solo es utilizada por la rutina random
+054+  C4A4 00 00       randData:  db 0,0
+055+  C4A6             
+056+  C4A6             
+057+  C4A6             initialize_enemy: 
+058+  C4A6                 ;ld hl, template_enemy
+059+  C4A6                 ;ld de, array_enimies*counter_enemy
+060+  C4A6                 ;ld bc, (counter_enemy*enemy)
+061+  C4A6                 ;ldir
+062+  C4A6 C9              ret
+063+  C4A7             
+064+  C4A7             create_enemy: 
+065+  C4A7 FD 21 8B C4     ld iy, template_enemy0
+066+  C4AB 3A A3 C4        ld a,(counter_enemy)
+067+  C4AE C6 01           add 1
+068+  C4B0 32 A3 C4        ld (counter_enemy),a
+069+  C4B3 C9              ret
+070+  C4B4             
+071+  C4B4             
+072+  C4B4             update_enemies: 
+073+  C4B4                 ;1.vemos los creados
+074+  C4B4                 ;ld a, (counter_enemy)
+075+  C4B4                 ;ld b,a
+076+  C4B4                 ;cp 0
+077+  C4B4                 ;jr z,update_enemies_end
+078+  C4B4             
+079+  C4B4 FD 21 8B C4     ld iy, template_enemy0
+080+  C4B8 CD D4 C4        call move1_enemigo_corre_de_izquierda_a_derecha
+081+  C4BB CD 64 C5        call check_colision
+082+  C4BE                 
+083+  C4BE FD 21 91 C4     ld iy, template_enemy0+(size_of_enemy*1)
+084+  C4C2 CD 08 C5        call move2_enemigo_baila
+085+  C4C5             
+086+  C4C5 FD 21 97 C4     ld iy, template_enemy0+(size_of_enemy*2)
+087+  C4C9 CD 08 C5        call move2_enemigo_baila
+088+  C4CC             
+089+  C4CC FD 21 9D C4     ld iy, template_enemy0+(size_of_enemy*3)
+090+  C4D0 CD EE C4        call move3_enemigo_corre_de_derecha_a_izquierda
+091+  C4D3             
+092+  C4D3             
+093+  C4D3                 ;djnz update_enemies
+094+  C4D3             
+095+  C4D3             update_enemies_end: 
+096+  C4D3 C9              ret  
+097+  C4D4             
+098+  C4D4             
+099+  C4D4             move1_enemigo_corre_de_izquierda_a_derecha
+100+  C4D4 CD 45 C5        call move_enemy_left
+101+  C4D7                 ;obtenemos la posición x
+102+  C4D7 FD 7E 01        ld a,(iy+enemy.x)
+103+  C4DA                 ;si la posición x es 8
+104+  C4DA FE 08           cp 8
+105+  C4DC                 ;si al restar entre 8 no es igual a cero saltamos
+106+  C4DC C2 ED C4        jp nz, .end_move1
+107+  C4DF                 ;recolocar_enemy:
+108+  C4DF CD E7 C5        call random
+109+  C4E2 3A A4 C4        ld a,(randData)
+110+  C4E5 FD 77 00        ld (iy+enemy.y),a
+111+  C4E8 3E FA           ld a,250
+112+  C4EA FD 77 01        ld (iy+enemy.x),a
+113+  C4ED             .end_move1: 
+114+  C4ED C9              ret
+115+  C4EE             
+116+  C4EE             move3_enemigo_corre_de_derecha_a_izquierda
+117+  C4EE CD 26 C5        call move_enemy_right
+118+  C4F1                 ;---------------------
+119+  C4F1                 ;Chekeo de límite derecho
+120+  C4F1                 ;obtenemos la posición x
+121+  C4F1 FD 7E 01        ld a,(iy+enemy.x)
+122+  C4F4                 ;si la posición x es 248
+123+  C4F4 FE F8           cp 248
+124+  C4F6                 ;si al restar entre 248 no es igual a cero saltamos
+125+  C4F6 C2 07 C5        jp nz, .end_move1
+126+  C4F9                 ;Si es igual a 248 recolocamos el enemigo:
+127+  C4F9 CD E7 C5        call random
+128+  C4FC 3A A4 C4        ld a,(randData)
+129+  C4FF FD 77 00        ld (iy+enemy.y),a
+130+  C502 3E 08           ld a,8
+131+  C504 FD 77 01        ld (iy+enemy.x),a
+132+  C507             .end_move1: 
+133+  C507 C9              ret
+134+  C508             
+135+  C508             move2_enemigo_baila
+136+  C508                 ;halt
+137+  C508                 ;halt
+138+  C508 3A 9E FC        ld a,(JIFFY)
+139+  C50B E6 01           and 1
+140+  C50D CA 1B C5        jp z, .move2_change_sprite
+141+  C510 FD 7E 02        ld a, (iy+enemy.sprite);el aprite 12*4=es el byte 48 
+142+  C513 D6 04           sub 4;hay que multiplicar por 4 ya que son sprites de 16x16 pixeles, es decir 4 sprites realmente
+143+  C515 FD 77 02        ld (iy+enemy.sprite),a 
+144+  C518 C2 23 C5        jp nz, .move2_end
+145+  C51B             .move2_change_sprite: 
+146+  C51B FD 7E 02        ld a, (iy+enemy.sprite);
+147+  C51E C6 04           add 4;hay que multiplicar por 4 ya que son sprites de 16x16 pixeles, es decir 4 sprites realmente
+148+  C520 FD 77 02        ld (iy+enemy.sprite),a ;será el byte 13*4=52-48=4
+149+  C523             
+150+  C523             .move2_end
+151+  C523 C9              ret
+152+  C524             
+153+  C524             move3_desplazar_enemigo_2_derecha_2_izquierda: 
+154+  C524             
+155+  C524 C9              ret
+156+  C525             
+157+  C525             move4_enemigo_te_persigue: 
+158+  C525             
+159+  C525 C9              ret
+160+  C526             
+161+  C526             
+162+  C526             
+163+  C526             
+164+  C526             
+165+  C526             move_enemy_right: 
+166+  C526 FD 7E 01        ld a,(iy+enemy.x); 
+167+  C529 C6 01           add 1  
+168+  C52B FD 77 01        ld (iy+enemy.x), a 
+169+  C52E E6 01           and 1
+170+  C530 CA 3C C5        jp z, enemy_right_es_impar
+171+  C533 FD 7E 02        ld a, (iy+enemy.sprite);
+172+  C536 D6 04           sub 4
+173+  C538 FD 77 02        ld (iy+enemy.sprite),a 
+174+  C53B C9              ret
+175+  C53C             enemy_right_es_impar: 
+176+  C53C FD 7E 02        ld a, (iy+enemy.sprite);el aprite 12*4=es el byte 48 
+177+  C53F C6 04           add 4;hay que multiplicar por 4 ya que son sprites de 16x16 pixeles, es decir 4 sprites realmente
+178+  C541 FD 77 02        ld (iy+enemy.sprite),a 
+179+  C544 C9              ret
+180+  C545             move_enemy_left: 
+181+  C545 FD 7E 01        ld a,(iy+enemy.x); 
+182+  C548 D6 01           sub 1  
+183+  C54A FD 77 01        ld (iy+enemy.x), a 
+184+  C54D E6 01           and 1
+185+  C54F CA 5B C5        jp z, enemy_left_es_impar
+186+  C552 FD 7E 02        ld a, (iy+enemy.sprite);
+187+  C555 D6 04           sub 4
+188+  C557 FD 77 02        ld (iy+enemy.sprite),a 
+189+  C55A C9              ret
+190+  C55B             enemy_left_es_impar: 
+191+  C55B FD 7E 02        ld a, (iy+enemy.sprite);el aprite 12*4=es el byte 48 
+192+  C55E C6 04           add 4;hay que multiplicar por 4 ya que son sprites de 16x16 pixeles, es decir 4 sprites realmente
+193+  C560 FD 77 02        ld (iy+enemy.sprite),a 
+194+  C563 C9              ret
+195+  C564             
+196+  C564             check_colision: 
+197+  C564                 ;        enemy->x + enemy->w > player->x  
+198+  C564                 ;        && enemy->x < player->x + player->w 
+199+  C564                 ;        && enemy->h + enemy->y > player->y 
+200+  C564                 ;        &&  enemy->y < player->y + player->h) 
+201+  C564                 ;------------------x-----------------------   
+202+  C564                 ;si el enemigo+32 está por debajo dará carry
+203+  C564 26 00           ld h,0
+204+  C566 FD 6E 01        ld l,(iy+enemy.x)
+205+  C569                 ;lo almacenamos en b el valor de enemy.x+16
+206+  C569 7D              ld a,l
+207+  C56A C6 10           add 16
+208+  C56C 47              ld b,a
+209+  C56D DD 7E 01        ld a,(ix+player.x)
+210+  C570                 ; comparamos el valor de b con a
+211+  C570 B8              cp b
+212+  C571                 ;comprobamos si d carry
+213+  C571 38 22           jr c, check_colision_end
+214+  C573                 ;si el enemigo.x es mayor que play.x no da carry y podemos seguir
+215+  C573 DD 7E 01        ld a,(ix+player.x)
+216+  C576 C6 10           add 16
+217+  C578                 ; si enemy.x es mayor que player.x+32, no dará carry
+218+  C578 B8              cp b
+218+  C579 38 1A           jr c, check_colision_end
+219+  C57B              
+220+  C57B                 ; ---------------y------------------------
+221+  C57B                 ;y podemos seguir
+222+  C57B 26 00           ld h,0
+223+  C57D FD 6E 00        ld l,(iy+enemy.y)
+224+  C580                 ;lo almacenamos en b el valor de enemy.x+16
+225+  C580 7D              ld a,l
+226+  C581 C6 10           add 16
+227+  C583 47              ld b,a
+228+  C584 DD 7E 00        ld a,(ix+player.y)
+229+  C587                 ; comparamos el valor de b con a
+230+  C587 B8              cp b
+231+  C588                 ;comprobamos si d carry
+232+  C588 38 0B           jr c, check_colision_end
+233+  C58A                 ;si el enemigo.y es mayor que play.y no da carry y podemos seguir
+234+  C58A DD 7E 00        ld a,(ix+player.y)
+235+  C58D C6 10           add 16
+236+  C58F                 ; si enemy.x es mayor que player.x+32, no dará carry
+237+  C58F B8              cp b
+238+  C590 30 03           jr nc, check_colision_end
+239+  C592 CD C0 00        call BEEP
+240+  C595             check_colision_end: 
+241+  C595 C9              ret
+242+  C596             
+243+  C596             
+244+  C596             
+245+  C596             
+246+  C596             
+247+  C596             
+248+  C596             
+249+  C596             
+250+  C596             
+251+  C596             draw_enemies: 
+252+  C596                 ;6912 o #1b00 dirección tabla de atributos en VRAM donde están los atributos de y,x,sprite_definition, color
+253+  C596                 ;el patron 0 es el del player, el enemigo 1 tendrá el 1 plano y como son 4 bytes cada plano(así está configurado el MSX)=6912+4
+254+  C596                 ;como no podemos sumarle a de el patrón, lo hacemos a través de hl,
+255+  C596                 
+256+  C596 FD 21 8B C4     ld iy, template_enemy0
+257+  C59A 21 00 1B        ld hl, 6912
+258+  C59D                 ;ld l(ix+enemy.plane) hace la suma
+259+  C59D FD 6E 04        ld l,(iy+enemy.plane)
+260+  C5A0                 ;intercambiamos los valores para que tengamos en el registro "de" la dirección de la memoria que necesita LDIRVM
+261+  C5A0 EB              ex hl,de
+262+  C5A1 21 8B C4        ld hl, template_enemy0 
+263+  C5A4 01 04 00        ld bc, 4; 4 bytes para copiar
+264+  C5A7 CD 5C 00        call  LDIRVM 
+265+  C5AA             
+266+  C5AA             
+267+  C5AA FD 21 91 C4     ld iy, template_enemy0+(size_of_enemy*1)
+268+  C5AE 21 00 1B        ld hl, 6912
+269+  C5B1                 ;ld l(ix+enemy.plane) hace la suma
+270+  C5B1 FD 6E 04        ld l,(iy+enemy.plane)
+271+  C5B4                 ;intercambiamos los valores para que tengamos en el registro "de" la dirección de la memoria que necesita LDIRVM
+272+  C5B4 EB              ex hl,de
+273+  C5B5 21 91 C4        ld hl, template_enemy0+(size_of_enemy*1)
+274+  C5B8 01 04 00        ld bc, 4; 4 bytes para copiar
+275+  C5BB CD 5C 00        call  LDIRVM 
+276+  C5BE             
+277+  C5BE             
+278+  C5BE FD 21 97 C4     ld iy, template_enemy0+(size_of_enemy*2)
+279+  C5C2 21 00 1B        ld hl, 6912
+280+  C5C5                 ;ld l(ix+enemy.plane) hace la suma
+281+  C5C5 FD 6E 04        ld l,(iy+enemy.plane)
+282+  C5C8                 ;intercambiamos los valores para que tengamos en el registro "de" la dirección de la memoria que necesita LDIRVM
+283+  C5C8 EB              ex hl,de
+284+  C5C9 21 97 C4        ld hl, template_enemy0+(size_of_enemy*2)
+285+  C5CC 01 04 00        ld bc, 4; 4 bytes para copiar
+286+  C5CF CD 5C 00        call  LDIRVM 
+287+  C5D2             
+288+  C5D2             
+289+  C5D2             
+290+  C5D2 FD 21 9D C4     ld iy, template_enemy0+(size_of_enemy*3)
+291+  C5D6 21 00 1B        ld hl, 6912
+292+  C5D9                 ;ld l(ix+enemy.plane) hace la suma
+293+  C5D9 FD 6E 04        ld l,(iy+enemy.plane)
+294+  C5DC                 ;intercambiamos los valores para que tengamos en el registro "de" la dirección de la memoria que necesita LDIRVM
+295+  C5DC EB              ex hl,de
+296+  C5DD 21 9D C4        ld hl, template_enemy0+(size_of_enemy*3)
+297+  C5E0 01 04 00        ld bc, 4; 4 bytes para copiar
+298+  C5E3 CD 5C 00        call  LDIRVM 
+299+  C5E6 C9              ret
+300+  C5E7             
+301+  C5E7             
+302+  C5E7             
+303+  C5E7             
+304+  C5E7             
+305+  C5E7             
+306+  C5E7             
+307+  C5E7             
+308+  C5E7             
+309+  C5E7             ;https://gist.github.com/JohnConnolly0/25c65425cf4f84954585
+310+  C5E7             ; El registro de refresco (R) en el Z80 es muy impredecible ya que se incrementa en cada ciclo.
+311+  C5E7             ; Debido a que puede tener cualquier valor cuando se llama a esta rutina, es muy bueno para números aleatorios.
+312+  C5E7             ; Esta rutina aumenta la aleatoriedad del número ya que forma una dirección basada en el
+313+  C5E7             ; actualiza el estado actual del contador y accede a la memoria en esa dirección.
+314+  C5E7             random: 
+315+  C5E7 ED 5F           LD A,R			; Cargo el registro A con el registro r
+316+  C5E9 6F              LD L,A			; Copia el valor del registro a en l
+317+  C5EA E6 3F           AND %00111111	; 63,#3f,Este enmascaramiento impide que la dirección que estamos formando acceda a la RAM
+318+  C5EC 67              LD H,A			; Copy register A into register H
+319+  C5ED 7E              LD A,(HL)		; Load the pseudo-random value into A
+320+  C5EE FE 50           cp 80           ;le hacemos la resta con 100 si el resultado es menor que 0 se activará el flag de carry
+321+  C5F0 38 F5           jr c, random    
+322+  C5F2 FE A0           cp 160          ;si el resultado es menor de 160 no se acivará el flag de carry
+323+  C5F4 30 F1           jr nc, random
+324+  C5F6 32 A4 C4        ld (randData),a
+325+  C5F9 C9              ret
+326+  C5FA             
+327+  C5FA             
+328+  C5FA             
+329+  C5FA             
+177   C5FA             ;			mapas
+178   C5FA             ;-----------------------------
+179   C5FA             map_screen0: 
+180   C5FA             	include "src/maps/map-screen0.asm"
+001+  C5FA             
+002+  C5FA             SCREEN_0_0: 
+003+  C5FA             	DB  38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 57, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38
+003+  C5FA 2626262626262626262626262626262639262626262626262626262626262626
+004+  C61A             	DB  38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 57, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38
+004+  C61A 2626262626262626262626262626262639262626262626262626262626262626
+005+  C63A             	DB  38, 38,100,119,104,115, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 56, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38
+005+  C63A 2626647768732626262626262626262638262626262626262626262626262626
+006+  C65A             	DB  38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38
+006+  C65A 2626262626262626262626262626262626262626262626262626262626262626
+007+  C67A             	DB  38, 38, 38, 43, 44, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38
+007+  C67A 2626262B2C262626262626262626262626262626262626262626262626262626
+008+  C69A             	DB  38, 38, 38, 43, 45, 38,  4,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  5, 38, 38, 38, 38, 38, 38
+008+  C69A 2626262B2D260400030003000300030003000300030003000305262626262626
+009+  C6BA             	DB  38, 38, 38, 43, 43,  4,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  5, 38, 38, 38, 38, 38
+009+  C6BA 2626262B2B040003000300030003000300030003000300030003052626262626
+010+  C6DA             	DB  38, 38, 38, 43,  4,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  5, 38, 38, 38, 38
+010+  C6DA 2626262B04000300030003000300030003000300030003000300030526262626
+011+  C6FA             	DB  38, 38, 38,  4,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  0,  3,  5, 38, 38, 38
+011+  C6FA 2626260400030003000300030003000300030003000300030003000305262626
+012+  C71A             	DB  38, 38,  4,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  5, 38, 38
+012+  C71A 2626040002000200020002000200020002000200020002000200020002052626
+013+  C73A             	DB  38,  4,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  5, 38
+013+  C73A 2604000200020002000200020002000200020002000200020002000200020526
+014+  C75A             	DB   4,  0,  2,  0,  2,  0,  2, 50,  2,  0,  2, 51,  2,  0,  2, 50,  2,  0,  2,  0,  2,  0,  2,  0, 50,  0,  2,  0,  2,  0,  2,  5
+014+  C75A 0400020002000232020002330200023202000200020002003200020002000205
+015+  C77A             	DB   0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2
+015+  C77A 0002000200020002000200020002000200020002000200020002000200020002
+016+  C79A             	DB   2,  0,  2, 51,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0,  2, 51,  2,  0,  2,  0,  2,  0,  2,  0,  2,  0
+016+  C79A 0200023302000200020002000200020002000200023302000200020002000200
+017+  C7BA             	DB   0,  1,  0,  1,  0,  1, 50,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1, 50,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1
+017+  C7BA 0001000100013201000100010001000100013201000100010001000100010001
+018+  C7DA             	DB   1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1, 50,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0, 50,  0,  1,  0,  1,  0,  1,  0
+018+  C7DA 0100010001000100010001320100010001000100010001003200010001000100
+019+  C7FA             	DB   0,  1,  0,  1, 49,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1
+019+  C7FA 0001000131010001000100010001000100010001000100010001000100010001
+020+  C81A             	DB   1,  0,  1,  0, 48,  0,  1,  0,  1,  0,  1,  0,  1, 51,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0, 49,  0,  1,  0,  1,  0
+020+  C81A 0100010030000100010001000133010001000100010001000100310001000100
+021+  C83A             	DB   0,  1,  0,  1,  0,  1,  0,  1,  0, 49,  0,  1,  0,  1,  0,  1,  0,  1, 49,  1,  0,  1,  0,  1,  0,  1, 48,  1,  0,  1,  0,  1
+021+  C83A 0001000100010001003100010001000100013101000100010001300100010001
+022+  C85A             	DB   1, 51,  1,  0,  1,  0,  1,  0,  1, 48,  1,  0,  1,  0,  1,  0,  1,  0, 48,  0,  1,  0, 51,  0,  1,  0,  1,  0,  1,  0,  1,  0
+022+  C85A 0133010001000100013001000100010001003000010033000100010001000100
+023+  C87A             	DB   0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0, 51,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1
+023+  C87A 0001000100010001000100010033000100010001000100010001000100010001
+024+  C89A             	DB   1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0
+024+  C89A 0100010001000100010001000100010001000100010001000100010001000100
+025+  C8BA             	;DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+026+  C8BA             	;DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+027+  C8BA             
+028+  C8BA             
+181   C8BA             map_screen1: 
+182   C8BA             	include "src/maps/map-screen1.asm"
+001+  C8BA             
+002+  C8BA             SCREEN_1: 
+003+  C8BA             	DB  34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34
+003+  C8BA 2222222222222222222222222222222222222222222222222222222222222222
+004+  C8DA             	DB  34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34
+004+  C8DA 2222222222222222222222222222222222222222222222222222222222222222
+005+  C8FA             	DB  34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 11, 11, 34, 11, 11, 34, 11, 11, 34, 11, 11, 34, 11, 11, 34, 34
+005+  C8FA 222222222222222222222222222222220B0B220B0B220B0B220B0B220B0B2222
+006+  C91A             	DB  34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 11, 11, 34, 11, 11, 34, 11, 11, 34, 11, 11, 34, 11, 11, 34, 34
+006+  C91A 222222222222222222222222222222220B0B220B0B220B0B220B0B220B0B2222
+007+  C93A             	DB  34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34
+007+  C93A 2222222222222222222222222222222222222222222222222222222222222222
+008+  C95A             	DB  34, 34, 34,  0,  0, 34, 34, 34, 34, 34, 34,  0,  0, 34, 34, 34, 11, 11, 34, 11, 11, 34, 11, 11, 34, 11, 11, 34, 11, 11, 34, 34
+008+  C95A 222222000022222222222200002222220B0B220B0B220B0B220B0B220B0B2222
+009+  C97A             	DB  34, 34, 34,  0,  0, 34, 34, 34, 34, 34, 34,  0,  0, 34, 34, 34, 11, 11, 34, 11, 11, 34, 11, 11, 34, 11, 11, 34, 11, 11, 34, 34
+009+  C97A 222222000022222222222200002222220B0B220B0B220B0B220B0B220B0B2222
+010+  C99A             	DB  34, 34, 34,  0,  0, 34, 34, 34, 34, 34, 34,  0,  0, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34
+010+  C99A 2222220000222222222222000022222222222222222222222222222222222222
+011+  C9BA             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+011+  C9BA 0000000000000000000000000000000000000000000000000000000000000000
+012+  C9DA             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+012+  C9DA 0000000000000000000000000000000000000000000000000000000000000000
+013+  C9FA             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+013+  C9FA 0000000000000000000000000000000000000000000000000000000000000000
+014+  CA1A             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+014+  CA1A 0000000000000000000000000000000000000000000000000000000000000000
+015+  CA3A             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+015+  CA3A 0000000000000000000000000000000000000000000000000000000000000000
+016+  CA5A             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+016+  CA5A 0000000000000000000000000000000000000000000000000000000000000000
+017+  CA7A             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+017+  CA7A 0000000000000000000000000000000000000000000000000000000000000000
+018+  CA9A             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+018+  CA9A 0000000000000000000000000000000000000000000000000000000000000000
+019+  CABA             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+019+  CABA 0000000000000000000000000000000000000000000000000000000000000000
+020+  CADA             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+020+  CADA 0000000000000000000000000000000000000000000000000000000000000000
+021+  CAFA             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+021+  CAFA 0000000000000000000000000000000000000000000000000000000000000000
+022+  CB1A             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+022+  CB1A 0000000000000000000000000000000000000000000000000000000000000000
+023+  CB3A             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+023+  CB3A 0000000000000000000000000000000000000000000000000000000000000000
+024+  CB5A             	DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+024+  CB5A 0000000000000000000000000000000000000000000000000000000000000000
+025+  CB7A             	;DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+026+  CB7A             	;DB   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+027+  CB7A             
+028+  CB7A             
+183   CB7A              
+184   CB7A             FINAL: 
