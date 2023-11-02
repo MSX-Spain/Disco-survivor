@@ -1,10 +1,12 @@
 ;player_atributes: ds 4,0
 player_atributes:
     struct player 
-y       db      0
-x       db      0
-plane   db      0
-color   db      0
+y           db    0
+x           db    0
+plane       db    0
+color       db    0
+direction   db    0
+collision   db    0
     ends
 tile0: db 0
 
@@ -13,7 +15,7 @@ create_player:
     ld ix, player_atributes
     ld a,150
     ld (ix+player.y),a ;le ponemos a la posición y un 160
-    ld a,0 
+    ld a,8
     ld (ix+player.x),a ;le ponemos a la posición x 120
     ld a,0
     ld (ix+player.plane),a ;Le ponemos el patrón 0
@@ -26,9 +28,43 @@ render_player:
     ld bc, 4; 4 bytes para copiar
     call  LDIRVM 
     ret
-
+update_player:
+    call GTSTCK
+    cp 1
+    jp z, move_player_up
+    ;cp 2
+    ;jp z, move_player_up_right
+    cp 3
+    jp z, move_player_right
+    ;cp 4
+    ;jp z, move_player_down_right
+    cp 5
+    jp z, move_player_down
+    ;cp 6
+    ;jp z, move_player_down_left
+    cp 7
+    jp z, move_player_left
+    ;cp 8
+    ;jp z, move_player_up_left
+.update_player_end:
+    ret
 
 move_player_right:
+    ;Le metemos la dirección al player
+    ld a,3
+    ld (ix+player.direction),a
+
+    ;comprobamos los límites de la pantalla
+    ld a,(ix+player.x)
+    cp 240
+    jr z,.move_player_right_end
+
+    ;Comprobamos las colisones
+    call check_collision_player
+    ld a,(ix+player.collision)
+    cp 1
+    jr z, .move_player_right_end; si hay colisón saltamos la parte siguiente  hacemos que vaya al final
+
     ld a,(ix+player.x); obtenemos el valor actual de la posicion x
     add 1; incrementamos en 1 el valor
     ld (ix+player.x), a ; se lo metemos al atributo posicion X
@@ -36,44 +72,99 @@ move_player_right:
     jp z, right_es_impar
     ld a, 0
     ld (ix+player.plane),a ;le metemos el sprite que mira hacia la derecha 2
-    call checkColision
+.move_player_right_end:
+    ld a,0
+    ld (ix+player.collision),a
     ret
 right_es_impar:
     ld a, 1*4
     ld (ix+player.plane),a ;le metemos el sprite que mira hacia la derecha 2
-    call checkColision
+
     ret
 move_player_left:
-    ld a,(ix+player.x); 
+    ;le ponemos la dirección
+    ld a,7
+    ld (ix+player.direction),a
+
+    ;comprobamos los límites de la pantalla
+    ld a,(ix+player.x)
+    cp 0
+    jr z,.move_player_left_end
+
+    ;comprobamos las colisiones
+    call check_collision_player
+    ;su hubo uno colisión saltamos y vamos a la parte final
+    ld a,(ix+player.collision)
+    cp 1
+    jr z, .move_player_left_end
+
+    ;cp 1
+    ld a,(ix+player.x)
     sub 1  
     ld (ix+player.x), a 
     and 1
     jp z, left_es_impar
     ld a, 2*4 
     ld (ix+player.plane),a
-    call checkColision
+.move_player_left_end:
+    ld a,0
+    ld (ix+player.collision),a
     ret
 left_es_impar:
     ld a, 3*4
     ld (ix+player.plane),a 
-    call checkColision
     ret
 move_player_up:
+    ;le ponemos la dirección
+    ld a,1
+    ld (ix+player.direction),a
+
+    ;comprobamos los límites de la pantalla
+    ld a,(ix+player.y)
+    cp 0; 
+    jr z,.move_player_up_end
+
+    ;comprobamos las colisiones
+    call check_collision_player
+    ;si hubo uno colisión saltamos y vamos a la parte final
+    ld a,(ix+player.collision)
+    cp 1
+    jr z, .move_player_up_end
+    
+    ;actualizamos el player
     ld a,(ix+player.y)
     sub 1 
     ld (ix+player.y), a 
+    ;Ponemos el sprite correspondiente
     and 1
     jp z, up_es_impar
     ld a, 4*4
     ld (ix+player.plane),a
-    call checkColision
+.move_player_up_end:
+    ld a,0
+    ld (ix+player.collision),a
     ret
 up_es_impar:
     ld a, 5*4
     ld (ix+player.plane),a 
-    call checkColision
     ret
 move_player_down:
+    ;le ponemos la dirección
+    ld a,5
+    ld (ix+player.direction),a
+
+    ;comprobamos los límites de la pantalla
+    ld a,(ix+player.y)
+    cp 159; 192-8-8-16-2
+    jr z,.move_player_down_end
+
+
+    call check_collision_player
+    ;si hubo uno colisión saltamos y vamos a la parte final
+    ld a,(ix+player.collision)
+    cp 1
+    jr z, .move_player_down_end
+
     ld a,(ix+player.y)
     add 1 
     ld (ix+player.y), a 
@@ -81,69 +172,72 @@ move_player_down:
     jp z, down_es_impar
     ld a, 6*4
     ld (ix+player.plane),a
-    call checkColision
+.move_player_down_end:
+    ld a,0
+    ld (ix+player.collision),a
     ret
 down_es_impar:
     ld a, 7*4
     ld (ix+player.plane),a 
-    call checkColision
     ret
 
 
-checkColision:
-    xor b
-    call dame_el_tile_que_hay_en_x_e_y
+;;--------------------------------------
+;;  CHECKCOLISION
+;;      Output: si hay colsión mete en la variable player.colision=1
+check_collision_player:
+    ld hl, player_atributes
+    ld a,(hl)
+    ld e,a;y
+    inc hl
+    ld a,(hl)
+    ld d,a;x
+
+    ld a,(ix+player.direction)
+    cp 3
+    jr z,.get_block_right
+    cp 7
+    jr z,.get_block_left
+    cp 1
+    jr z,.get_block_up
+    cp 5
+    jr z,.get_block_down
+
+    jr .not_direction_found
+.get_block_right:
+    ld a,d
+    add 8
+    ld d,a
+    jp .not_direction_found
+.get_block_left:
+    ld a,d
+    sub 8
+    ld d,a
+    jp .not_direction_found
+.get_block_up:
+    ld a,e
+    sub 8
+    ld e,a
+    jp .not_direction_found
+.get_block_down:
+    ld a,e
+    add 1
+    ld e,a
+
+
+.not_direction_found:
+    ;get_block necesita en el registro e la posición x y en d la posición y, devuelve el resultado en b
+    call get_block
     ld a,b
     cp 43
     jp z,increase_screen
     cp 32 ;Si al restalo entre 32 da negatico se activará el flag de carry
     jr nc, colision_player ; si al restarlo  es negativo y dará carry, si no hay está bien
+
     ret
 
 colision_player:
-    call BEEP
-
-    ret
-
-;----------------------------------
-;Vamos a hacer esta formula (y/8)*32+(x/8)
-;esta es la parte (y/8)*32
-;d tiene la posicion de x
-;e tiene la posicion de y
-dame_el_tile_que_hay_en_x_e_y:
-    xor a
-    ld a,(ix+player.y) ;a=posicion y en pixeles
-    add 16
-    ;con srl estas dividiendo entre 2,ya que corre a la derecha los bits. 
-    ;al hacerlo 3 veces es como dividir entre 8,a=y/8: 1.01001100, 2.00100110, 3.00010011
-    srl a  
-    srl a  
-    srl a  
-    ld h,0 ; en h le ponemos un 0 
-    ld l,a ;y en los 8 bytes de "l" le ponemos el valor que contiene a
-
-    ;-----------------
-    ;Buscando la fila
-    add hl, hl ;x32, sumar algo por si mismo es como multiplizarlo por 2, si lo repetivos 5 es como si o multiplixaramos por 32
-    add hl, hl 
-    add hl, hl 
-    add hl, hl 
-    add hl, hl 
-
-    ;-----------------
-    ;Esta es la parte +(x/8)
-    ld a,(ix+player.x) ;a=x
-    add 8
-    srl a 
-    srl a 
-    srl a 
-    ld d,0
-    ld e,a ;e=x
-    add hl,de ;hl=(y/8)*32+(x/8)
-
-    ld de, map_buffer; dirección buffer colisiones
-    add hl,de ;hl=buffer_colisiones + (y/8)*32+(x/8)
-
-    ld b,(hl) ;metemos en a el tile que nos pide
-    ;ld (tile0),a
+    ;call BEEP
+    ld a,1
+    ld (ix+player.collision),a
     ret

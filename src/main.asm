@@ -25,12 +25,13 @@ MAIN:
 	call create_enemy
     call hud
     call load_screen_0
+    call ENASCR; encendemos la pantalla
 	call main_loop
 	ret
 
 main_loop:
 	halt
-	call cursors
+	call update_player
     call update_enemies
     call render_player
     call draw_enemies
@@ -46,27 +47,7 @@ kill_player
     ret
 
 
-cursors:
-    ld a,0
-    call GTSTCK
-    
-    cp 1
-    jp z, move_player_up
-    ;cp 2
-    ;jp z, move_player_up_right
-    cp 3
-    jp z, move_player_right
-    ;cp 4
-    ;jp z, move_player_down_right
-    cp 5
-    jp z, move_player_down
-    ;cp 6
-    ;jp z, move_player_down_left
-    cp 7
-    jp z, move_player_left
-    ;cp 8
-    ;jp z, move_player_up_left
-    ret
+
 
 
 hud:
@@ -112,6 +93,51 @@ print:
 
 
 
+;;----------------------------------
+;;   GETBLOCK=Hace esta formula (y/8)*32+(x/8)
+;;      Input:
+;;          D=con la posición x
+;;          E=con la posición y
+;;      Output
+;;          B=el tile sobre el que está laentidad
+get_block:
+    ld a,e
+    ;ld a,(ix+player.y) ;a=posicion y en pixeles
+    add 16
+    ;con srl estas dividiendo entre 2,ya que corre a la derecha los bits. 
+    ;al hacerlo 3 veces es como dividir entre 8,a=y/8: 1.01001100, 2.00100110, 3.00010011
+    srl a  
+    srl a  
+    srl a  
+    ld h,0 ; en h le ponemos un 0 
+    ld l,a ;y en los 8 bytes de "l" le ponemos el valor que contiene a
+
+    ;-----------------
+    ;Buscando la fila
+    add hl, hl ;x32, sumar algo por si mismo es como multiplizarlo por 2, si lo repetivos 5 es como si o multiplixaramos por 32
+    add hl, hl 
+    add hl, hl 
+    add hl, hl 
+    add hl, hl 
+
+    ;-----------------
+    ;Esta es la parte +(x/8)
+    ld a,d
+    ;ld a,(ix+player.x) ;a=x
+    add 8
+    srl a 
+    srl a 
+    srl a 
+    ld d,0
+    ld e,a ;e=x
+    add hl,de ;hl=(y/8)*32+(x/8)
+
+    ld de, map_buffer; dirección buffer colisiones
+    add hl,de ;hl=buffer_colisiones + (y/8)*32+(x/8)
+
+    ld b,(hl) ;metemos en a el tile que nos pide
+    ;ld (tile0),a
+    ret
 
 
 
@@ -160,6 +186,40 @@ load_screen_1:
     ld bc, 768-64
     call  LDIRVM
     call hud
+
+    ;y       db      0
+    ;x       db      0
+    ;sprite  db      0
+    ;color   db      0
+    ;plane   db      0
+    ;type    db      0
+
+    ld iy, template_enemy0
+    ld a,100;y
+    ld (iy+enemy.y),a
+    ld a,8;x
+    ld (iy+enemy.x),a
+
+    ld iy, template_enemy0+(size_of_enemy*1)
+    ld a,100;y
+    ld (iy+enemy.y),a
+    ld a,40;x
+    ld (iy+enemy.x),a
+
+    ld iy, template_enemy0+(size_of_enemy*2)
+    ld a,110;y
+    ld (iy+enemy.y),a
+    ld a,200;x
+    ld (iy+enemy.x),a
+
+    
+    ld iy, template_enemy0+(size_of_enemy*3)
+    ld a,100;y
+    ld (iy+enemy.y),a
+    ld a,0;x
+    ld (iy+enemy.x),a
+    ld a,2;x
+    ld (iy+enemy.type),a
     ret
 
 

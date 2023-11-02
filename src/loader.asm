@@ -15,6 +15,7 @@ INICIO:
 MAIN:
  	call set_screen2x16
 	call load_sprites
+	call DISSCR ;apagamos la pantalla, la encendermos en el main.asm
 	call load_tileset
 	;call load_screen_0
 	ret
@@ -27,8 +28,9 @@ MAIN:
 	
 load_tileset:
 	;banco 0
+	;la rutina LDIRVM necesita haber cargado previamente con de la dirección de inicio de la VRAM.https://sites.google.com/site/multivac7/files-images/TMS9918_VRAMmap_G2_300dpi.png,así es como está formado el VDP en screen 2          
 	ld hl, tileset_definition 
-	ld de, 0  ; la rutina LDIRVM necesita haber cargado previamente con de la dirección de inicio de la VRAM.https://sites.google.com/site/multivac7/files-images/TMS9918_VRAMmap_G2_300dpi.png,así es como está formado el VDP en screen 2          
+	ld de, 0  ; aquí es posible utilizar la variable del sistema GRPCGP
 	ld bc, 1024  ; son los 8 bytes por 128 tiles que hemos dibujado=1024 bytes
 	call  LDIRVM 
 	;banco 1
@@ -44,7 +46,7 @@ load_tileset:
 
 	;banco 0
 	ld hl, tileset_color
-    ld de, 8192  
+    ld de, 8192 ; aquí es posible utilizar la variable del sistema GRPCOL
     ld bc, 1024  
     call  LDIRVM 
 	;banco 1
@@ -95,7 +97,7 @@ set_screen2x16:
 load_sprites:
     ;hemos dibujado 20 sprites
     ld hl, sprites_definition
-    ld de, 14336; #3800
+    ld de, 14336; #3800, aquí es posible utilizar la variable del sistema GRPPAT
     ld bc, 32*22; 32 bytes por 22 sprites dibujados
     call  LDIRVM 
 	ret
@@ -105,6 +107,7 @@ load_sprites:
     
     
 	include "src/vars_msxBios.asm"    
+	include "src/vars_msxSystem.asm"    
 tileset_definition:
 	include "src/tileset-definition.asm"
 tileset_color:

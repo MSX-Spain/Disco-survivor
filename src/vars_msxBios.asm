@@ -48,7 +48,7 @@ CALPAT equ 0x0084 ; Returns the address of the sprite pattern table
 CALATR equ 0x0087 ; Returns the address of the sprite attribute table
 GSPSIZ equ 0x008A ; Returns current sprite size
 GRPPRT equ 0x008D ; Displays a character on the graphic screen
-FORCLR equ 0xF3E9 ;color de tinta (+1=color del fondo, +1 color del borde)
+
         
 ; PSG routines
 GICINI equ 0x0090 ; Initialises PSG and sets initial value for the PLAY statement
