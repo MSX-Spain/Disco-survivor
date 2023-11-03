@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#El makefile es una aplicación que viene por defecto en sistemas unix y que permite construir proyectos o en mingw o gitbash windows
 #Definiendo una regla
 #objetivo: dependencias
 all: emulator main.bin 

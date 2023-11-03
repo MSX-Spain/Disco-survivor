@@ -229,9 +229,9 @@ check_collision_player:
     ;get_block necesita en el registro e la posición x y en d la posición y, devuelve el resultado en b
     call get_block
     ld a,b
-    cp 43
+    cp TILE_DOOR
     jp z,increase_screen
-    cp 32 ;Si al restalo entre 32 da negatico se activará el flag de carry
+    cp TILE_SOLID ;Si al restalo entre 32 da negatico se activará el flag de carry
     jr nc, colision_player ; si al restarlo  es negativo y dará carry, si no hay está bien
 
     ret

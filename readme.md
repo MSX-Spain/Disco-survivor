@@ -1,6 +1,6 @@
 # Disco survivor
 
-George debe llegar a los lugares de la discoteca:
+George debe llegar a los lugares de la discoteca para ello deberá de intentar no chocarse con nadie, cuidado con el coronavirus:
 
 En la 1 pantalla debe llegar al aseo antes de que explote.
 
@@ -40,3 +40,77 @@ Escribe en un cmd o terminal:
 Pincha aquí para ver como depurar en ensamblador:
 
 <a href="docs/Como-depurar.md">Como depurar</a>
+
+
+
+
+## Spriteset
+
+<img src="docs/spritesheet2.PNG" width="400px">
+
+<img src="docs/spritesheet2.PNG" width="400px">
+
+<img src="docs/spritesheet3.PNG" width="400px">
+
+<img src="docs/spritesheet4.PNG" width="100px">
+
+## Tileset
+
+Del 0 al 32 los de decoración.
+
+del hacia delante los sólidos
+
+
+
+<img src="docs/tileset-readme.PNG" >
+
+
+## Screens /levels
+
+Menu
+
+<!--<img src="docs/menu.PNG" width="300px" >-->
+
+
+Level 1
+
+
+<!--<img src="docs/level1-2.PNG"  width="300px" >
+
+<img src="docs/level1.PNG" >-->
+
+Level 2
+
+
+
+<!--<img src="docs/level2-2.PNG"  width="300px" >
+
+<img src="docs/level2.PNG" >-->
+
+Level 3
+
+<!--<img src="docs/level3-2.PNG"  width="300px" >
+
+<img src="docs/level3.PNG" >-->
+
+Level 4
+
+<!--<img src="docs/level4-2.PNG"  width="300px" >
+
+<img src="docs/level4.PNG" >-->
+
+Level 5
+
+<!--<img src="docs/level5-2.PNG"  width="300px" >
+
+<img src="docs/level5.PNG" >-->
+
+Level 6
+
+<!--<img src="docs/level6-2.PNG"  width="300px" >
+
+<img src="docs/level6.PNG" >-->
+
+Final
+
+<!--<img src="docs/final.PNG"  width="300px" >-->

@@ -17,8 +17,12 @@ message_level: db "Level",0
 message_lives: db "Lives",0
 message_score: db "Score",0
 message_msx_spain: db "MSX spain",0 
+message_game_completed: db "Felicidades, te has pasado el juego!!!",0 
 map_buffer: ds 704 ;768-64 es el mapa o tabla de nombres de VRAM copiada aquí
 Store_Sprite_Collision: db 0
+
+TILE_DOOR equ 55
+TILE_SOLID equ 32
 
 MAIN:
 	call create_player
@@ -156,16 +160,34 @@ increase_screen:
     add 1
     ld (screen),a
     call BCLS   ;borramos la pantalla
+    
     cp 0
-	jp z, load_screen_0
+	jr z, load_screen_0
     cp 1
-	jp z, load_screen_1
+	jr z, load_screen_1
+    cp 2
+	jr z, load_screen_2
+    cp 3
+	jr z, load_screen_3
+    cp 4
+	jr z, load_screen_4
+    cp 5
+	jr z, load_screen_5
+    cp 6
+	jr z, load_screen_6
+    ;cp 7
+	;jr z, load_screen_7
+    ;cp 8
+	;jr z, load_screen_8
+    ;cp 9
+	;jr z, load_screen_9
+    ;cp 10
+	;jr z, load_screen_10
 
-       
+    
+    
     ret
-load_screen_0:
-    ;ponemos el mapa en el byffer para hacer las colisiones
-    ld hl, map_screen0
+load_screen:
     ld de, map_buffer 
     ld bc, 768-64
     LDIR
@@ -175,52 +197,72 @@ load_screen_0:
 	;Le quitamos 64 ya que keremos pintar el HUD en las últimas 2 líneas de la pantalla
     ld bc, 768-64
     call  LDIRVM
+
+    ret
+load_screen_0:
+    ;ponemos el mapa en el byffer para hacer las colisiones
+    ld hl, map_screen0
+    call load_screen
+    call hud
     ret
 load_screen_1:
     ld hl, map_screen1
-    ld de, map_buffer 
-    ld bc, 768-64
-    LDIR
-    ld hl, map_buffer
-    ld de, 6144 
-    ld bc, 768-64
-    call  LDIRVM
+    call recolocate_enemies_screen_1
+    call load_screen
     call hud
-
-    ;y       db      0
-    ;x       db      0
-    ;sprite  db      0
-    ;color   db      0
-    ;plane   db      0
-    ;type    db      0
-
-    ld iy, template_enemy0
-    ld a,100;y
-    ld (iy+enemy.y),a
-    ld a,8;x
-    ld (iy+enemy.x),a
-
-    ld iy, template_enemy0+(size_of_enemy*1)
-    ld a,100;y
-    ld (iy+enemy.y),a
-    ld a,40;x
-    ld (iy+enemy.x),a
-
-    ld iy, template_enemy0+(size_of_enemy*2)
-    ld a,110;y
-    ld (iy+enemy.y),a
-    ld a,200;x
-    ld (iy+enemy.x),a
-
-    
-    ld iy, template_enemy0+(size_of_enemy*3)
-    ld a,100;y
-    ld (iy+enemy.y),a
-    ld a,0;x
-    ld (iy+enemy.x),a
-    ld a,2;x
-    ld (iy+enemy.type),a
     ret
+    
+load_screen_2:
+    ld hl, map_screen2
+    call load_screen
+    call hud
+    ret
+load_screen_3:
+    ld hl, map_screen3
+    call load_screen
+    call hud
+    ret
+load_screen_4:
+    ld hl, map_screen4
+    call load_screen
+    call hud
+    ret
+load_screen_5:
+    ld hl, map_screen5
+    call load_screen
+    call hud
+    ret
+load_screen_6:
+    ld hl, map_screen6
+    call load_screen
+    call hud
+    ret
+load_screen_7:
+    ld a,0
+    ld (GRPACX),a ;GRPACX contiene la posición X del cursor en modo gráfico
+    ld a,100
+    ld (GRPACY),a
+    ld hl, message_game_completed
+    call print
+    xor a
+    ld (screen),a
+    ;call show_menu
+    ret
+;load_screen_8:
+;    ld hl, map_screen8
+;    call load_screen
+;    call hud
+;    ret
+;load_screen_9:
+;    ld hl, map_screen9
+;    call load_screen
+;    call hud
+;    ret
+;load_screen_10:
+;    ld hl, map_screen10
+;    call load_screen
+;    call hud
+;    ret
 
 
 
@@ -232,6 +274,7 @@ load_screen_1:
     
 	include "src/vars_msxBios.asm"    
 	include "src/vars_msxSystem.asm"    
+	include "src/diskloader.asm"    
 	include "src/player.asm"    
 	include "src/enemies.asm"    
 ;			mapas
@@ -240,5 +283,22 @@ map_screen0:
 	include "src/maps/map-screen0.asm"
 map_screen1:
 	include "src/maps/map-screen1.asm"
- 
+map_screen2:
+	include "src/maps/map-screen2.asm"
+map_screen3:
+	include "src/maps/map-screen3.asm"
+map_screen4:
+	include "src/maps/map-screen4.asm"
+map_screen5:
+	include "src/maps/map-screen5.asm"
+map_screen6:
+	include "src/maps/map-screen6.asm"
+;map_screen7:
+;	include "src/maps/map-screen7.asm"
+;map_screen8:
+;	include "src/maps/map-screen8.asm"
+;map_screen9:
+;	include "src/maps/map-screen9.asm"
+;map_screen10:
+;	include "src/maps/map-screen10.asm"
 FINAL:

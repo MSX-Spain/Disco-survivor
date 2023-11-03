@@ -1,3 +1,5 @@
+;ver las instrucciones del z80
+;ver las instruciones del z80: http://clrhome.org/table/
 ;variables del sistema
 ;https://www.msx.org/wiki/System_variables_and_work_area
 

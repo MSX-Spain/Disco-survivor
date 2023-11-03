@@ -1,0 +1,9 @@
+PROJECT
+SCREEN
+tileset-screen1.scr
+TILES
+tileset.til
+ALLBANKS
+PALETTE
+tileset.pal
+END

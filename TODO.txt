@@ -1,4 +1,3 @@
--En el update pone un contador que segun el tipo llame a un comportamiento u otro
 -Sistema de colisiones con sprites no funciona
 -Crear sistema para ralentizar sprites
 -Crear 12 pantallas
