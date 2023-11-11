@@ -1,5 +1,12 @@
 ;https://map.grauw.nl/resources/dos2_functioncalls.php	
 
+;para llamar a las funciones de la bios recuerda:
+    ;ld a,61              ; es la letra a en ASCII
+	;ld   ix,CHPUT	      ; Bios CHPUT
+    ;ld   iy,(SLOT0)      ; mainrom slotaddress
+    ;call CALSLT          ; interslotcall
+
+
 
 ; definitions & descriptions by MSX Assembly Page For details see the WEB document at:  http://map.grauw.nl/resources/dos2_functioncalls.php
 

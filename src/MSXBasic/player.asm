@@ -29,7 +29,9 @@ render_player:
     call  LDIRVM 
     ret
 update_player:
+    xor a
     call GTSTCK
+    ;call Readjoystick
     cp 1
     jp z, move_player_up
     ;cp 2
@@ -48,6 +50,7 @@ update_player:
     ;jp z, move_player_up_left
 .update_player_end:
     ret
+
 
 move_player_right:
     ;Le metemos la dirección al player
@@ -240,4 +243,10 @@ colision_player:
     ;call BEEP
     ld a,1
     ld (ix+player.collision),a
+    ret
+recolocate_player:
+    ld a,150
+    ld (ix+player.y),a
+    ld a,0
+    ld (ix+player.x),a
     ret

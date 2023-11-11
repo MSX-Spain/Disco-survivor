@@ -24,9 +24,11 @@ Escribe en un cmd o terminal:
 
 ## Windows:
 
-"make.bat" para compilar el proyecto utilizando dir as disk
+"make.bat" para compilar el proyecto MSX basic utilizando dir as disk
 
-"make.bat dsk" para crear el dsk y ponerlo en la carpeta docs
+"make.bat dos" para compilar el proyecto MSX DOS utilizando dir as disk
+
+"make.bat rom32" para compilar el proyecto ROM 32Kb utilizando un cartucho
 
 ## Unix:
 

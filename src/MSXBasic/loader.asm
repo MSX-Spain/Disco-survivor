@@ -7,7 +7,7 @@
     
      
  
-    org #c000              ; org se utiliza para decirle al z80 en que posición de memoria empieza nuestro programa (es la 33280 en decimal), en hezadecimal sería #8200
+    org #8500              ; org se utiliza para decirle al z80 en que posición de memoria empieza nuestro programa (es la 33280 en decimal), en hezadecimal sería #8200
         
 INICIO:
 
@@ -15,10 +15,9 @@ INICIO:
 MAIN:
  	call set_screen2x16
 	call load_sprites
-	call DISSCR ;apagamos la pantalla, la encendermos en el main.asm
+	;call DISSCR ;apagamos la pantalla, la encendermos en el main.asm
 	call load_tileset
-	;call load_screen_0
-	ret
+
 
 
 

@@ -3,11 +3,28 @@
 ;variables del sistema
 ;https://www.msx.org/wiki/System_variables_and_work_area
 
+
+
+;Slots
+;---------
+
+;SLOTs
+SLOT0 equ #FCC1
+SLOT1 equ #FCC2
+SLOT2 equ #FCC3
+SLOT3 equ #FCC4
+
 ;Interruptions
 ;-------------------
 ;Contiene el valor del reloj del software, cada interrupción del VDP se incrementa en 1
 ;El contenido se puede leer o cambiar mediante la función 'TIME' o la instrucción 'TIME'
 JIFFY  equ 0xFC9E
+
+;Graphics
+;-------------------
+gxpos equ 0xfcb3
+gypos equ 0xfcb5
+bios_line equ 0x58C1
 
 
 ;VDP registers

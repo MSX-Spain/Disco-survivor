@@ -7,6 +7,111 @@
         {
             "type": "dezog",
             "request": "launch",
+            "name": "OpenMSX ROM32 main.asm",
+            "remoteType": "openmsx",
+            "listFiles": [
+                {
+                    "path": "obj/main.lst",
+                    "useFiles": true,
+                    "asm": "sjasmplus",
+                    "mainFile": "src/ROM32/main.asm"
+                }
+            ],
+            "startAutomatically": false,
+            "commandsAfterLaunch": [
+                "-e openmsx_info version"
+            ],
+            "resetOnLaunch": false,
+            "rootFolder": "${workspaceFolder}",
+            "tmpDir": ".tmp"
+        },
+        {
+            "type": "dezog",
+            "request": "launch",
+            "name": "OpenMSX MSXbasic loader.asm",
+            "remoteType": "openmsx",
+            "listFiles": [
+                {
+                    "path": "obj/loader.lst",
+                    "useFiles": true,
+                    "asm": "sjasmplus",
+                    "mainFile": "src/MSXBasic/loader.asm"
+                }
+            ],
+            "startAutomatically": false,
+            "commandsAfterLaunch": [
+                "-e openmsx_info version"
+            ],
+            "resetOnLaunch": false,
+            "rootFolder": "${workspaceFolder}",
+            "tmpDir": ".tmp"
+        },
+        {
+            "type": "dezog",
+            "request": "launch",
+            "name": "OpenMSX MSXbasic main.asm",
+            "remoteType": "openmsx",
+            "listFiles": [
+                {
+                    "path": "obj/main.lst",
+                    "useFiles": true,
+                    "asm": "sjasmplus",
+                    "mainFile": "src/MSXBasic/main.asm"
+                }
+            ],
+            "startAutomatically": false,
+            "commandsAfterLaunch": [
+                "-e openmsx_info version"
+            ],
+            "resetOnLaunch": false,
+            "rootFolder": "${workspaceFolder}",
+            "tmpDir": ".tmp"
+        },
+        {
+            "type": "dezog",
+            "request": "launch",
+            "name": "OpenMSX MSXDos loader.asm",
+            "remoteType": "openmsx",
+            "listFiles": [
+                {
+                    "path": "obj/loader.lst",
+                    "useFiles": true,
+                    "asm": "sjasmplus",
+                    "mainFile": "src/MSXDos/loader.asm"
+                }
+            ],
+            "startAutomatically": false,
+            "commandsAfterLaunch": [
+                "-e openmsx_info version"
+            ],
+            "resetOnLaunch": false,
+            "rootFolder": "${workspaceFolder}",
+            "tmpDir": ".tmp"
+        },
+        {
+            "type": "dezog",
+            "request": "launch",
+            "name": "OpenMSX MSXDos main.asm",
+            "remoteType": "openmsx",
+            "listFiles": [
+                {
+                    "path": "obj/main.lst",
+                    "useFiles": true,
+                    "asm": "sjasmplus",
+                    "mainFile": "src/MSXDos/main.asm"
+                }
+            ],
+            "startAutomatically": false,
+            "commandsAfterLaunch": [
+                "-e openmsx_info version"
+            ],
+            "resetOnLaunch": false,
+            "rootFolder": "${workspaceFolder}",
+            "tmpDir": ".tmp"
+        },
+        {
+            "type": "dezog",
+            "request": "launch",
             "name": "Simulator",
             "remoteType": "zsim",
             "zsim": {
@@ -58,27 +163,6 @@
             ],
             "topOfStack": "your_stack_top",
             "load": "your_sna_or_nex_file"
-        },
-        {
-            "type": "dezog",
-            "request": "launch",
-            "name": "Debug OpenMSX",
-            "remoteType": "openmsx",
-            "listFiles": [
-                {
-                    "path": "obj/main.lst",
-                    "useFiles": true,
-                    "asm": "sjasmplus",
-                    "mainFile": "src/main.asm"
-                }
-            ],
-            "startAutomatically": false,
-            "commandsAfterLaunch": [
-                "-e openmsx_info version"
-            ],
-            "resetOnLaunch": false,
-            "rootFolder": "${workspaceFolder}",
-            "tmpDir": ".tmp"
         }
     ]
 }

@@ -41,8 +41,8 @@ Lee_Bytes: ;Lee bytes hasta terminar
 	ld A,(FH) ;el archivo con error en A
 	ld B,A
 	ld C,FH_READ
-	ld DE,map_buffer
-	ld hl,768 ;Numero de Bytes A Leer
+	ld DE,Buffer
+	ld hl,704 ;Numero de Bytes A Leer
 	call CALL_DISK_BASIC ;en cada iteracion del bucle
 	or A
 	jp NZ,Error
@@ -60,7 +60,7 @@ Abrir:
 	ld A,B
 	ld (FH),A
 
-ret
+	ret
 
 Crear:
 	ld DE,File
@@ -86,11 +86,11 @@ Error_al_Crear:
 	ret
 Error:
 	ret
-File:
-	db "maps/map-screen5.asm",0
+;File:
+;	db "maps/map-screen5.asm",0
 FH:
 	ds 1
-;Buffer:
-;	ds 256
+Buffer:
+	ds 768
 
 END:

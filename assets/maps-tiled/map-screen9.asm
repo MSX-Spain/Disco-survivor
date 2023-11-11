@@ -1,5 +1,18 @@
+    output "screen9.bin"
 
-SCREEN_2:
+    db   0FEh               ; ID archivo binario, siempre hay que poner el mismo 0FEh
+    dw   INICIO             ; dirección de inicio
+    dw   FINAL - 1          ; dirección final
+    dw   MAIN               ; dircción del programa de ejecución (para cuando pongas r en bload"nombre_programa", r)
+    
+     
+ 
+    org #d100            ; org se utiliza para decirle al z80 en que posición de memoria empieza nuestro programa (es la 33280 en decimal), en hezadecimal sería #8200
+        
+INICIO:
+MAIN:
+	ret
+SCREEN_9:
 	db 16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,47,48,0,0,0,0,0,55,55,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,79,80,0,0,0,0,0,55,55,0,0,0,0,0
@@ -24,4 +37,4 @@ SCREEN_2:
 	db 16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16
 	;db 26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26
 	;db 26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26
-
+FINAL:
