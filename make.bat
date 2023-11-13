@@ -128,7 +128,7 @@ goto:eof
         rem echo 60 a=usr(0):print #1 "Loading level..."a >> dsk/autoexec.bas
         rem echo 100 goto 100  >> dsk/autoexec.bas
         copy .\src\MSXBasic\autoexec.bas .\dsk
-
+        copy /Y .\src\discoim.s02 .\dsk
 
         rem /************Pantallas******************/
         rem java -jar -m=a -o=assets\maps-tiled\screen0.tmx
@@ -143,6 +143,8 @@ goto:eof
         if not exist obj mkdir obj
         tools\assemblers\sjasmplus\windows\sjasmplus.exe --sym=obj\loader.sym --lst=obj\loader.lst src\MSXBasic\loader.asm 
         tools\assemblers\sjasmplus\windows\sjasmplus.exe --sym=obj\main.sym --lst=obj\main.lst src\MSXBasic\main.asm 
+        tools\assemblers\sjasmplus\windows\sjasmplus.exe --sym=obj\musicint.sym --lst=obj\musicint.lst src\musicint.asm 
+
 
         tools\assemblers\sjasmplus\windows\sjasmplus.exe .\assets\maps-tiled\map-screen1.asm 
         tools\assemblers\sjasmplus\windows\sjasmplus.exe .\assets\maps-tiled\map-screen2.asm 
@@ -162,7 +164,7 @@ goto:eof
         move /Y screen2.bin .\obj
         move /Y screen3.bin .\obj
         move /Y screen4.bin .\obj
-       
+        move /Y musicint.bin .\obj
         rem /************creando carpeta dsk******************/
         if not exist dsk mkdir dsk
         for /R .\obj %%a in (*.bin) do (

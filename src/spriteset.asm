@@ -1,4 +1,4 @@
-BANK_SPRITES:
+sprites_definition:
 ;Definition sprite 0, name: Sprite-2
 	db 1,3,7,3,6,7,3,1
 	db 1,3,2,2,3,1,1,1

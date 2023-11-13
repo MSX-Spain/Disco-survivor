@@ -7,63 +7,44 @@
     
      
  
-    org #8500             ; org se utiliza para decirle al z80 en que posición de memoria empieza nuestro programa (es la 33280 en decimal), en hezadecimal sería #8200
+    org #8600             ; org se utiliza para decirle al z80 en que posición de memoria empieza nuestro programa (es la 33280 en decimal), en hezadecimal sería #8200
         
 INICIO:
 
-
-screen: db 1
-message_level: db "Level",0
-message_lives: db "Lives",0
-message_score: db "Score",0
-message_msx_spain: db "MSX spain",0 
-message_game_completed: db "Felicidades, te has pasado el juego!!!",0 
-map_buffer: ds 704 ;768-64 es el mapa o tabla de nombres de VRAM copiada aquí
-
-Store_Sprite_Collision: db 0
-IN_GAME_DIRECTION equ #ef00
-COMIENZO_TILE_NUMEROS equ 86
-buffer_numeros: ds 8
-
-TILE_DOOR equ 55
-TILE_SOLID equ 32
+screen: equ #8500
+in_game: equ #8501
+lives: equ #8502
+score: equ #8503
 
 
-
-
-MAIN:
-
+MAIN:   
+    ;call inicilizar_tracker
+    call ENASCR; encendemos la pantalla
     ld a,1
-    ld (IN_GAME_DIRECTION),a
+    ld (in_game),a;ponemos el valor de ingame a 1 para que no se salga a la siguiente pantalla
+
 	call create_player
 	call create_enemy
     call hud
-    call load_screen
-    call ENASCR; encendemos la pantalla
+    call load_screens ; cargamos las 5 pantallas
 	call main_loop
+    
+
 	ret
 
 main_loop:
-	halt
+    halt
 	call update_player
     call update_enemies
     call render_player
     call draw_enemies
-    ld a, (IN_GAME_DIRECTION)
-    cp 2
-    jr z, .end_game
+    ld a, (in_game)
+    cp 0
+    jp z, .end_game
 	jr main_loop
 .end_game:
+    ;call REPLAYER_STOP
     ret
-
-;devolver_valor_screen_a_basic:
-;    ld a,(screen)
-;    ld h,0
-;    ld l,a
-;    ld d,0
-;    ld e,a
-;    ld ix,screen
-;    ret
 
 
 kill_player
@@ -127,65 +108,61 @@ get_block:
 
 
 hud:
-    ;Esto crea un  line (0,170)-(256,190),9,BF
-    ;ld a,1
-    ;call SETATR ;establece el atributo rojo claro
-    ;ld hl,0
-    ;ld (gxpos),hl
-    ;ld hl,170
-    ;ld (gypos),hl
-    ;ld bc,256
-    ;ld de,190
-    ;ld ix,bios_line
-    ;call CALBAS
-
-    ;1 nos estudiamos donde está la dirección de la tabla de nombres en VRAM
-    ;2.obtenemos el número de tile que keremos poner
-    ld a,(screen)
-    ld b, COMIENZO_TILE_NUMEROS
-    add b
-    ld hl, 6887 ;aki va la dirección de la tabla de nombres que keremos cambiar;6912(final de la tabla de nombres)-32(-1 fila)=6880+7
-    call WRTVRM
-
-
+    ;------------------------Level--------------------------
     ld a,0
     ld (GRPACX),a ;GRPACX contiene la posición X del cursor en modo gráfico
     ld a,184
     ld (GRPACY),a
     ld hl, message_level
-    call print
+    call graphics_print
+    ;1 nos estudiamos donde está la dirección de la tabla de nombres en VRAM
+    ;2.obtenemos el número de tile que keremos poner
+    ld a,(screen)
+    ld b, COMIENZO_TILE_NUMEROS
+    add b
+    ld hl, 6885 ;aki va la dirección de la tabla de nombres que keremos cambiar;6912(final de la tabla de nombres)-32(-1 fila)=6880+7
+    call WRTVRM
+   ;---------------------Fin Level--------------------------
 
+
+    ;------------------------Score--------------------------
     ld a,58; posicionamos el cursor en la posición x 58
     ld (GRPACX),a
+    ld hl, message_score
+    call graphics_print
+    ld a,100; posicionamos el cursor en la posición x 58
+    ld (GRPACX),a
     ;metemos en b el valor correspondiente al 0 en la tabla ascii
-    ld b,48
+    ld b,47
     ;para sumar a y b tendremos que echar mano de ld a
-    ld a,(screen)
+    ld a,(score)
     add b
     call GRPPRT 
+    ;---------------------Fin score--------------------------
 
-    ld a,80
+    ;------------------------Lives--------------------------
+    ld a,150
     ld (GRPACX),a
-    ld hl, message_score
-    call print
-
-
-    ld a,180
+    ld hl, message_lives
+    call graphics_print
+    ld a,200
     ld (GRPACX),a
-    ld hl, message_msx_spain
-    call print
-
+    ;metemos en b el valor correspondiente al 0 en la tabla ascii
+    ld b,47
+    ;para sumar a y b tendremos que echar mano de ld a
+    ld a,(lives)
+    add b
+    call GRPPRT 
+    ;----------------------Fin lives-------------------------
     ret
 
-print:
-    ld  a,(hl)          ; Lee el 1 byte de la dirección de la memoria indicada y lo almacena en el registro a del z80.
-    and a               ; Actualiza la bandera z del registro F del z80 y la pone en 0 si no hay valor, and a también actualiza el flag c, p, v y s.
-    ret z               ; Devuelve el cotrol al Main si la bandera z del registro F del z80 es 0
-    call GRPPRT         ; Llama a la subrutina 0042h de la Bios la cual imprime el caracter almacenado en el registro a del z80
-    inc hl              ; incrementa el puntero de los registros hl para que señale al siguiente byte
-    jr print            ; Llama al métdo print para que lo vuelva a ejecutar
-     
-
+graphics_print:
+    ld  a,(hl)          
+    and a               
+    ret z               
+    call GRPPRT         
+    inc hl              
+    jr graphics_print      
 
 
 
@@ -194,22 +171,16 @@ print:
 
 
 increase_screen:
-    call BEEP
+    ;call para_cancion
     call recolocate_player
-    ld a,(IN_GAME_DIRECTION)
-    add 1
-    ld (IN_GAME_DIRECTION),a
-    call BCLS   ;Apagamos la pantalla
+    ;call BCLS   ;Apagamos la pantalla
     ld a,(screen)
     add 1
-    ld (screen),a
-    call hud
-    ;cp 0
-	;jr z, load_screen_0
-    ;cp 1
-	;jr z, load_screen_1
+    ld (screen),a ; aumentamos en contador de pantallas
+    ld a,0
+    ld (in_game),a ; ponemos para que finalice la pantalla y carguemos con el basic la siguiente
     ret
-load_screen:
+load_screens:
     ld hl, #d101
     ld de, map_buffer 
     ld bc, 768-64
@@ -226,12 +197,27 @@ load_screen:
 
 
 
+message_level: db "Level",0
+message_lives: db "Lives",0
+message_score: db "Score",0
+
+map_buffer: ds 704 ;768-64 es el mapa o tabla de nombres de VRAM copiada aquí
+Store_Sprite_Collision: db 0
+COMIENZO_TILE_NUMEROS equ 86
+buffer_numeros: ds 8
+TILE_DOOR equ 55
+TILE_SOLID equ 32
+
+REPLAYER_INIT equ #bf00;inicializa el reproductor
+REPLAYER_STOP equ #BF3B;Parar canción
+REPLAYER_NOT_REPEAT equ #BF4A;    
     
 	include "src/vars_msxBios.asm"    
 	include "src/vars_msxSystem.asm"    
+
 	include "src/MSXBasic/player.asm"    
 	include "src/MSXBasic/enemies.asm"    
-;			mapas
-;-----------------------------
+
+    ;include "./src/musicint.asm"
 
 FINAL:

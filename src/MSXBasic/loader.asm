@@ -10,15 +10,43 @@
     org #8500              ; org se utiliza para decirle al z80 en que posición de memoria empieza nuestro programa (es la 33280 en decimal), en hezadecimal sería #8200
         
 INICIO:
+screen: db 1
+in_game: db 0
+lives: db 8
+score: db 1,0
 
 ;esta es la entrada principal
 MAIN:
- 	call set_screen2x16
+ 	call KILBUF ; limpiamos el buffer, por si vlvemos a empezar
+ 	call ERAFNK ; kitamos las letras de las teclas función
+    ld a,1
+    ld (#fcaa),a; borramos el cursor
+
+    ld a,1      ;cambiamos a screen 1 ya que para cargar la pantalla de carga hemos tenido que poner el 2
+    call CHGMOD
+
+    call show_menu ; mostramos el menu
+    ld a,1
+    ld (in_game),a ; ponemos la variable que le dice al juego que está en marcha a 1
+	;CALL inicilizar_tracker
+loop:	
+	xor a
+	call GTTRIG
+	;GTTRIG devuelve 255 si está presionada y 0 sino lo está
+	cp 0
+	jp z, loop
+	
+		
+	call set_screen2_16x16
+    ;call DISSCR ;apagamos la pantalla, la encendermos en el main.asm
 	call load_sprites
-	;call DISSCR ;apagamos la pantalla, la encendermos en el main.asm
 	call load_tileset
 
 
+	;call para_cancion
+
+
+	ret
 
 
 
@@ -60,15 +88,9 @@ load_tileset:
     call  LDIRVM 
 	ret
 
-;load_screen_0:
-;    ld hl, map_screen0
-;    ld de, 6144 
-;	;Le quitamos 64 ya que keremos pintar el HUD en las últimas 2 líneas de la pantalla
-;    ld bc, 768-64
-;    call  LDIRVM
-;    ret
 
-set_screen2x16:
+
+set_screen2_16x16:
     ;poner los colores de tinta, fondo y borde
 	ld      hl,FORCLR
 	ld      [hl],15 ;le poneos el 15 en tinta que es el blanco
@@ -101,22 +123,56 @@ load_sprites:
     call  LDIRVM 
 	ret
 
+show_menu:
+    ld h,10 ;x coordinate
+    ld l,2  ;y coordinate
+    call POSIT
+    ld hl, message_msx_spain
+    call text_mode_print
+
+    ld h,12 ;x coordinate
+    ld l,5  ;y coordinate
+    call POSIT
+    ld hl, message_disco
+    call text_mode_print
+
+    ld h,8  ;x coordinate
+    ld l,12  ;y coordinate
+    call POSIT
+    ld hl, message_start_game
+    call text_mode_print
+
+    ld h,3  ;x coordinate
+    ld l,19 ;y coordinate
+    call POSIT
+    ld hl, message_press_any_key_to_start
+    call text_mode_print
+
+    ret
+text_mode_print:
+    ld  a,(hl)          
+    and a               
+    ret z               
+    call CHPUT         
+    inc hl              
+    jr text_mode_print   
 
 
-    
+message_msx_spain_presents: db "MSX spain presents",0
+message_disco: db "Disco",0
+message_start_game: db "1.Start game",0
+message_press_any_key_to_start: db "Press any key to start",0
+message_msx_spain: db "MSX spain",0 
+
+
     
 	include "src/vars_msxBios.asm"    
 	include "src/vars_msxSystem.asm"    
-tileset_definition:
+
 	include "src/tileset-definition.asm"
-tileset_color:
 	include "src/tileset-color.asm"
-sprites_definition:
 	include "src/spriteset.asm"
 
-;			mapas
-;-----------------------------
-;map_screen0:
-;	include "src/map-screen0.asm"
+
  
 FINAL:
