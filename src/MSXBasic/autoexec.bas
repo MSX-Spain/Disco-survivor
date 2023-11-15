@@ -13,11 +13,11 @@
 1 'La dirección don se almacenan los mapas es a partir de #c000'
 50 bload "screen1.bin",r
 60 bload "main.bin",r 
+1 '100 bload "screen2.bin",r
+1 '110 bload "main.bin",r 
+1 '120 bload "screen3.bin",r
+1 '130 bload "main.bin",r 
+1 '140 bload "screen4.bin",r
+1 '150 bload "main.bin",r 
+1 '160 open "grp:" as #1:preset (0,180):print #1,"Final":close:goto 40
 
-100 bload "screen2.bin",r
-110 bload "main.bin",r 
-120 bload "screen3.bin",r
-130 bload "main.bin",r 
-140 bload "screen4.bin",r
-150 bload "main.bin",r 
-160 open "grp:" as #1:preset (0,180):print #1,"Final":close:goto 40

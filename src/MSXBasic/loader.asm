@@ -38,7 +38,7 @@ loop:
 	
 		
 	call set_screen2_16x16
-    ;call DISSCR ;apagamos la pantalla, la encendermos en el main.asm
+    call DISSCR ;apagamos la pantalla, la encendermos en el main.asm
 	call load_sprites
 	call load_tileset
 

@@ -18,8 +18,10 @@ score: equ #8503
 
 
 MAIN:   
-    ;call inicilizar_tracker
-    call ENASCR; encendemos la pantalla
+    call inicilizar_tracker
+    ld a,1
+    ld (musica_activa),a
+
     ld a,1
     ld (in_game),a;ponemos el valor de ingame a 1 para que no se salga a la siguiente pantalla
 
@@ -27,6 +29,7 @@ MAIN:
 	call create_enemy
     call hud
     call load_screens ; cargamos las 5 pantallas
+    call ENASCR; encendemos la pantalla
 	call main_loop
     
 
@@ -34,16 +37,17 @@ MAIN:
 
 main_loop:
     halt
+ 
 	call update_player
     call update_enemies
     call render_player
     call draw_enemies
-    ld a, (in_game)
-    cp 0
-    jp z, .end_game
+    ;ld a, (in_game)
+    ;cp 0
+    ;jp z, .end_game
 	jr main_loop
 .end_game:
-    ;call REPLAYER_STOP
+    ;call para_cancion
     ret
 
 
@@ -171,17 +175,28 @@ graphics_print:
 
 
 increase_screen:
-    ;call para_cancion
     call recolocate_player
     ;call BCLS   ;Apagamos la pantalla
     ld a,(screen)
+    cp 3
+    jr z, is_final_screen
     add 1
     ld (screen),a ; aumentamos en contador de pantallas
     ld a,0
     ld (in_game),a ; ponemos para que finalice la pantalla y carguemos con el basic la siguiente
+    call load_screens
     ret
 load_screens:
     ld hl, #d101
+    ld bc, 704
+    ld a,(screen)
+.loop_load_screens:
+    cp 1
+    jr z, .es_cero
+    sub 1
+    add hl, bc
+    jr .loop_load_screens
+.es_cero:
     ld de, map_buffer 
     ld bc, 768-64
     LDIR
@@ -192,6 +207,11 @@ load_screens:
     ld bc, 768-64
     call  LDIRVM
     call hud
+    ret
+is_final_screen:
+    ld a,1
+    ld (screen),a
+    call load_screens
     ret
 
 
@@ -208,9 +228,7 @@ buffer_numeros: ds 8
 TILE_DOOR equ 55
 TILE_SOLID equ 32
 
-REPLAYER_INIT equ #bf00;inicializa el reproductor
-REPLAYER_STOP equ #BF3B;Parar canción
-REPLAYER_NOT_REPEAT equ #BF4A;    
+
     
 	include "src/vars_msxBios.asm"    
 	include "src/vars_msxSystem.asm"    
@@ -218,6 +236,6 @@ REPLAYER_NOT_REPEAT equ #BF4A;
 	include "src/MSXBasic/player.asm"    
 	include "src/MSXBasic/enemies.asm"    
 
-    ;include "./src/musicint.asm"
+    include "./src/musicint.asm"
 
 FINAL:
