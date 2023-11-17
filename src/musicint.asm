@@ -14,8 +14,20 @@ inicilizar_tracker:
     AND		11111110b
     LD		(PT3_SETUP), A
 
-	ld		hl,SONG-99		; hl vale la direccion donde se encuentra la cancion - 99
-	call	PT3_INIT			; Inicia el reproductor de PT3
+
+    ld a,(musica_activa)
+    cp 1;Si es 1 es la música del menu
+    jr z,.musica_menu
+    cp 2
+    jr z,.musica_ingame
+    jr .inicializa_cancion
+.musica_menu
+    ld hl, menu-99
+    jr .inicializa_cancion
+.musica_ingame
+	ld hl, ingame-99		; hl vale la direccion donde se encuentra la cancion - 99
+.inicializa_cancion
+	call PT3_INIT			; Inicia el reproductor de PT3
     
     ;Salvamos la rutina ISR(Interrupt service routine) si hubiese alguna.Son 5 bytes
     ld hl,HTIMI
@@ -54,22 +66,30 @@ reproducir_bloque_musica:
     ret
 para_cancion:
     ;volvemos a poner los 5 bytes que tenía
-    ;di
+    di
     ld hl,rutina_previa
     ld de,HTIMI
     ld bc,5
     ldir
-    call PT3_MUTE
+    ;call PT3_MUTE
+    xor a
+    ld (musica_activa),a
     ;ei
+    ret
+
+sigue_musica:
+    ld a,1
+    ld (musica_activa),a
     ret
 
 
 
 tracker:
 	include	"./src/PT3_player.asm"					;replayer de PT3
-SONG:
-	incbin "./src/musicdisc.pt3"			;musica de ejemplo
-
+ingame:
+	incbin "./src/musicdisc.pt3"			
+menu:
+	incbin "./src/menu.pt3"			
 
 
 

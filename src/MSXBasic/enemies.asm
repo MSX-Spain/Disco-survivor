@@ -1,57 +1,80 @@
     struct enemy 
 y           db      0
 x           db      0
-sprite      db      0
+pattern_def db      0; los patrones definicidos será el 0 para el player, el 4 para el player 2, el 8 para el enemy 1,etc
 color       db      0
-plane       db      0
-type        db      0
-counter     db      0
-frame    db      0
+plane       db      0; como con 4 bytes se define un plano en la tabla de atributos de sprites, el player tiene el plano 0, el player 2 el plano 4, el enemy 1 el plano 8
+direction   db      0; la dirección puede cambiar su el comportamiento dice que cambie
+type        db      0; según el tipo le aplicaemos un comportamiento u otro
+counter     db      0; nos ayuda con las animaciones
+frame       db      0; nos auyda con las animaciones
     ends
 
-
 template_enemy1:
-    db 130
-    db 220
-    db 32;sprite 8 por 4 sprites, 32 dividido entre 4=8
-    db 4;color azul oscuro
-    db 4; plano 1*4 bytes
-    db 0;move0_enemigo_corre_de_izquierda_a_derecha
+    db 60
+    db 160
+    db ENEMIGO_ROBOT
+    db COLOR_AZUL_MEDIO
+    db 6*4; plano 4*4 bytes
+    db UP;direction
+    db COMPORTAMIENTO_REBOTA_VERTICAL
     db 0
     db 0
+
 template_enemy2:
     db 100
     db 200
-    db 44;44/4=11 sprite
-    db 15;color azul oscuro
-    db 8; plano 2*4 bytes
-    db 1;move1_enemigo_corre_de_derecha_a_izquierda
+    db ENEMIGO_GORDO
+    db COLOR_AZUL_OSCURO;color azul oscuro
+    db 3*4; plano 2*4 bytes
+    db RIGHT;;direction
+    db COMPORTAMIENTO_CORRE_DE_DERECHA_A_IZQUIERDA
     db 0
     db 0
 template_enemy3:
-    db 120
-    db 80
-    db 56;52/4 sprite 12 por 4 sprites
-    db 3;verde claro
-    db 12; plano 3*4 bytes
-    db 3;
+    db 110
+    db 230
+    db ENEMIGO_COLETA
+    db COLOR_ROJO_OSCURO
+    db 4*4; plano 3*4 bytes
+    db RIGHT;;direction
+    db COMPORTAMIENTO_REBOTA_HORIZONTAL
     db 0
     db 0
 template_enemy4:
     db 144
     db 190
-    db 64;52/4=13 sprite 8 por 4 sprites
-    db 15;color azul oscuro
-    db 16; plano 4*4 bytes
-    db 3;move3_enemigo_baila
+    db ENEMIGO_ENANO
+    db COLOR_AMARILLO
+    db 5*4; plano 4*4 bytes
+    db RIGHT;direction
+    db COMPORTAMIENTO_CORRE_DE_IZQUIERDA_A_DERCHA
     db 0
     db 0
-SIZE_OF_ENEMY equ 8
-MAX_ENEMIES equ 4
-enemy_active: db 0
-;los tipos son: 
-;   1.El enemigo va de derecha a izquierda corriendo
-;   2.El enemigo está bailando
+template_enemy5:
+    db 130
+    db 239; en la 1 pantalla empezará en la posición x 230, el límite derecho es 240
+    db ENEMIGO_ENANO
+    db COLOR_VERDE_OSCURO
+    db 2*4; plano 1*4 bytes
+    db RIGHT;direction
+    db COMPORTAMIENTO_BAILA;type
+    db 0
+    db 0
+template_enemy6:
+    db 120
+    db 120
+    db ENEMIGO_ENANO
+    db COLOR_ROJO_MEDIO
+    db 7*4; plano 4*4 bytes
+    db RIGHT;direction
+    db COMPORTAMIENTO_REBOTA_HORIZONTAL
+    db 0
+    db 0
+SIZE_OF_ENEMY equ 9
+MAX_ENEMIES equ 6
+enemy_active: db 0; nos permite hacer el loop y en update_enemies y cuando llegue a MAX_EMIES salimos del update_enemies
+
 
 ;reservamos espacio para 10 enemigos
 ;max_enemies equ 10
@@ -59,11 +82,29 @@ enemy_active: db 0
 counter_enemy: db 0
 ;randData solo es utilizada por la rutina random
 randData: db 0,0
-retardo_dibujo: db 0
-MAX_RETARDO equ 60
+MAX_RETARDO_REDIBUJADO equ 20
+
+ENEMIGO_COLETA:     equ 32;8 y 9*4, el octavo sprite
+ENEMIGO_GORDO:      equ 44;el sprite 10 y 11*4
+ENEMIGO_ROBOT:      equ 52;el sprute 12 y 13*4
+ENEMIGO_ENANO:      equ 60;el sprite 14 y 15*4
+ENEMIGO_MONSTRUO:   equ 68;sprite 17*4
+ENEMIGO_VIRUS1:     equ 72;sprite 18*4
+ENEMIGO_VIRUS2:     equ 76;sprite 19*4
+ENEMIGO_VIRUS3:     equ 80;sprite 20*4
+ENEMIGO_VIRUS4:     equ 84;sprite 21*4
+
+COMPORTAMIENTO_CORRE_DE_IZQUIERDA_A_DERCHA: equ 0
+COMPORTAMIENTO_CORRE_DE_DERECHA_A_IZQUIERDA: equ 1
+COMPORTAMIENTO_REBOTA_HORIZONTAL: equ 3
+COMPORTAMIENTO_REBOTA_VERTICAL: equ 2
+COMPORTAMIENTO_PERSIGUE: equ 5
+COMPORTAMIENTO_STATICO: equ 6
+COMPORTAMIENTO_BAILA: equ 7
 
 
-initialize_enemy:
+
+initialize_enemy: 
     ;ld hl, template_enemy
     ;ld de, array_enimies*counter_enemy
     ;ld bc, (counter_enemy*enemy)
@@ -98,62 +139,91 @@ update_enemies:
     ld a,(iy+enemy.type)
 
     ;Según el tipo le aplicamos un comportamiento
-    cp 0
-        call z, move0_enemigo_corre_de_izquierda_a_derecha
-    cp 1
+    cp COMPORTAMIENTO_CORRE_DE_IZQUIERDA_A_DERCHA
+        call z, move3_enemigo_corre_de_izquierda_a_derecha
+    cp COMPORTAMIENTO_CORRE_DE_DERECHA_A_IZQUIERDA
         call z, move1_enemigo_corre_de_derecha_a_izquierda
-    cp 2
-        call z, move2_enemigo_corre_de_arriba_a_abajo
-    cp 3
-        call z, move3_enemigo_baila
-    cp 4
+    cp COMPORTAMIENTO_REBOTA_VERTICAL
+        call z, move2_enemigo_rebota_vertical
+    cp COMPORTAMIENTO_BAILA
+        call z, move0_enemigo_baila
+    cp COMPORTAMIENTO_PERSIGUE
         call z, move4_enemigo_te_persigue
-
+    cp COMPORTAMIENTO_REBOTA_HORIZONTAL
+        call z, move5_enemigo_rebota_izquierda_derecha
+    cp COMPORTAMIENTO_STATICO
+        call z, move6_enemigo_estatico
+    ;comprobamos las colisiones
     call check_collision_enemy
-;aumentamos en la dirección el tamaña del enemigo, el bloque siguiente hace lo mismo que esto pero según el tamaño del enemigo:
-;inc iy
-;inc iy
-;inc iy
-;inc iy
-;inc iy
-;inc iy
+    ;aumentamos en la dirección el tamaña del enemigo, el bloque siguiente hace lo mismo que esto pero según el tamaño del enemigo:
     xor a
 .loop_iy:
     inc iy
-    cp SIZE_OF_ENEMY-1
-    jr z,.loop
     inc a
+    cp SIZE_OF_ENEMY
+    jr z,.loop
     jr .loop_iy
-
-
 
     jr .loop
 .update_enemies_end:
     ret
 
+move0_enemigo_baila:
+    ld a,(iy+enemy.counter)
+    add 1
+    ld (iy+enemy.counter),a
+    cp MAX_RETARDO_REDIBUJADO
+    jp nz,.move0_end
 
-
-move0_enemigo_corre_de_izquierda_a_derecha:
-    ;chequeo límite izquiedo
-        ;obtenemos la posición x
-        ld a,(iy+enemy.x)
-        ;si la posición x es 8
-        cp 8
-        ;si al restar entre 8 no es igual a cero saltamos
-        jp nz, .end_move0_llega_al_borde_izquierdo
-        ;recolocar_enemy:
-        call random
-        ld a,(randData)
-        ld (iy+enemy.y),a
-        ld a,250
-        ld (iy+enemy.x),a
-.end_move0_llega_al_borde_izquierdo:
-    call move_enemy_left
+    ld a,(iy+enemy.frame); 
+    and 1;si el frame es 1
+         ;al hacer 0000 0000 (0) and 0000 0001 da 0 y se activa el flag Z. 
+         ;al hacer 0000 0001 (1) and 0000 0001 da 1 y no se activa el flag Z. 
+    jp z, .move0_change_sprite
+    jr .move0_dibujar
+.move0_dibujar:
+    ld a, (iy+enemy.pattern_def)
+    sub 4;hay que multiplicar por 4 ya que son sprites de 16x16 pixeles, es decir 4 sprites realmente
+    ld (iy+enemy.pattern_def),a 
+    ld a,0
+    ld (iy+enemy.frame),a;le ponemos el frame 0
+    jr .reseteo
+.move0_change_sprite:
+    ld a, (iy+enemy.pattern_def);
+    add 4;hay que multiplicar por 4 ya que son sprites de 16x16 pixeles, es decir 4 sprites realmente
+    ld (iy+enemy.pattern_def),a ;será el byte 13*4=52-48=4
+    ld a,1;le ponemos el frame 1
+    ld (iy+enemy.frame),1
+.reseteo:
+    ld a,0
+    ld (iy+enemy.counter),a
+.move0_end:
     ret
+
+
+move3_enemigo_corre_de_izquierda_a_derecha:
+    call move_enemy_left
+    ;chequeo límite izquiedo
+    ;obtenemos la posición x
+    ld a,(iy+enemy.x)
+    ;si la posición x es 8
+    cp 8
+    ;si al restar entre 8 no es igual a cero saltamos
+    jp nz, .end_move3_llega_al_borde_izquierdo
+    ;recolocar_enemy:
+    call random
+    ld a,(randData)
+    ld (iy+enemy.y),a
+    ld a,250
+    ld (iy+enemy.x),a
+
+.end_move3_llega_al_borde_izquierdo:
+    ret
+
+
 
 move1_enemigo_corre_de_derecha_a_izquierda:
     call move_enemy_right
-    ;---------------------
     ;Chekeo de límite derecho
     ;obtenemos la posición x
     ld a,(iy+enemy.x)
@@ -167,46 +237,37 @@ move1_enemigo_corre_de_derecha_a_izquierda:
     ld (iy+enemy.y),a
     ld a,8
     ld (iy+enemy.x),a
+
 .end_move1:
+
     ret
 
-move2_enemigo_corre_de_arriba_a_abajo:
 
+
+move2_enemigo_rebota_vertical:
+    ld a, (iy+enemy.direction)
+    cp 1
+    call z, move_enemy_up
+    cp 5
+    call z, move_enemy_down
+    ld a,(iy+enemy.y)
+    cp 160
+    jp z, .es_1
+    cp 0     
+    jp z, .es_5
+    jp .end_move2
+.es_1:
+    ld a,1
+    ld (iy+enemy.direction),a
+    ;call BEEP
+    jr .end_move2
+.es_5:
+    ld a,5
+    ld (iy+enemy.direction),a
+    ;call BEEP
 .end_move2:
     ret
 
-move3_enemigo_baila:
-    ld a,(iy+enemy.counter)
-    add 1
-    ld (iy+enemy.counter),a
-    cp MAX_RETARDO
-    ;solo dibujaremos cuando la Z esté actiavda, es decir cuando se MAX_RETARDO
-    jr z,.move3_dibujar
-    jr .move3_end
-
-.move3_dibujar:
-    ld a,(iy+enemy.frame); comprobamos el frame para cambiarle sprite
-    and 1;al hacer 0000 0000 (0) and 0000 0001 da 0 y se activa el flag Z. 
-         ;al hacer 0000 0001 (1) and 0000 0001 da 1 y no se activa el flag Z. 
-    jp z, .move3_change_sprite
-    ld a, (iy+enemy.sprite)
-    sub 4;hay que multiplicar por 4 ya que son sprites de 16x16 pixeles, es decir 4 sprites realmente
-    ld (iy+enemy.sprite),a 
-    ld a,0
-    ld (iy+enemy.frame),a;le ponemos el frame 0
-    jr .move3_reset_counter
-.move3_change_sprite:
-    ld a, (iy+enemy.sprite);
-    add 4;hay que multiplicar por 4 ya que son sprites de 16x16 pixeles, es decir 4 sprites realmente
-    ld (iy+enemy.sprite),a ;será el byte 13*4=52-48=4
-    ld a,1;le ponemos el frame 1
-    ld (iy+enemy.frame),1
-
-.move3_reset_counter:;cada vez que se dibuja e cntador se resetea
-    ld a,0
-    ld (iy+enemy.counter),a
-.move3_end;
-    ret
 
 
 
@@ -214,7 +275,32 @@ move4_enemigo_te_persigue:
 
     ret
 
+move5_enemigo_rebota_izquierda_derecha:
+    ld a, (iy+enemy.direction)
+    cp 3
+    call z, move_enemy_right
+    cp 7
+    call z, move_enemy_left
+    ld a,(iy+enemy.x)
+    cp 240
+    jp z, .es_3
+    cp 0     
+    jp z, .es_7
+    jp .end_move5
+.es_7:
+    ld a,3
+    ld (iy+enemy.direction),a
+    ;call BEEP
+    jr .end_move5
+.es_3:
+    ld a,7
+    ld (iy+enemy.direction),a
+    ;call BEEP
+.end_move5:
+    ret
 
+move6_enemigo_estatico:
+    ret
 
 
 
@@ -224,31 +310,66 @@ move_enemy_right:
     ld (iy+enemy.x), a 
     and 1
     jp z, enemy_right_es_impar
-    ld a, (iy+enemy.sprite);
+    ld a, (iy+enemy.pattern_def);
     sub 4
-    ld (iy+enemy.sprite),a 
+    ld (iy+enemy.pattern_def),a 
     ret
 enemy_right_es_impar:
-    ld a, (iy+enemy.sprite);el aprite 12*4=es el byte 48 
+    ld a, (iy+enemy.pattern_def);el aprite 12*4=es el byte 48 
     add 4;hay que multiplicar por 4 ya que son sprites de 16x16 pixeles, es decir 4 sprites realmente
-    ld (iy+enemy.sprite),a 
+    ld (iy+enemy.pattern_def),a 
     ret
+
+
 move_enemy_left:
     ld a,(iy+enemy.x); 
     sub 1  
     ld (iy+enemy.x), a 
     and 1
     jp z, enemy_left_es_impar
-    ld a, (iy+enemy.sprite);
+    ld a, (iy+enemy.pattern_def);
     sub 4
-    ld (iy+enemy.sprite),a 
+    ld (iy+enemy.pattern_def),a 
     ret
 enemy_left_es_impar:
-    ld a, (iy+enemy.sprite);el aprite 12*4=es el byte 48 
+    ld a, (iy+enemy.pattern_def);el aprite 12*4=es el byte 48 
     add 4;hay que multiplicar por 4 ya que son sprites de 16x16 pixeles, es decir 4 sprites realmente
-    ld (iy+enemy.sprite),a 
+    ld (iy+enemy.pattern_def),a 
     ret
 
+
+move_enemy_up:
+    ld a,(iy+enemy.y); 
+    sub 1  
+    ld (iy+enemy.y), a 
+    and 1
+    jp z, enemy_up_es_impar
+    ld a, (iy+enemy.pattern_def);
+    sub 4
+    ld (iy+enemy.pattern_def),a 
+    ret
+enemy_up_es_impar:
+    ld a, (iy+enemy.pattern_def);el aprite 12*4=es el byte 48 
+    add 4;hay que multiplicar por 4 ya que son sprites de 16x16 pixeles, es decir 4 sprites realmente
+    ld (iy+enemy.pattern_def),a 
+    ret
+
+
+move_enemy_down:
+    ld a,(iy+enemy.y); 
+    add 1  
+    ld (iy+enemy.y), a 
+    and 1
+    jp z, enemy_down_es_impar
+    ld a, (iy+enemy.pattern_def);
+    sub 4
+    ld (iy+enemy.pattern_def),a 
+    ret
+enemy_down_es_impar:
+    ld a, (iy+enemy.pattern_def);el aprite 12*4=es el byte 48 
+    add 4;hay que multiplicar por 4 ya que son sprites de 16x16 pixeles, es decir 4 sprites realmente
+    ld (iy+enemy.pattern_def),a 
+    ret
 
 
 
@@ -260,25 +381,88 @@ enemy_left_es_impar:
 ;;                  call check_collision_enemy
 
 check_collision_enemy:
-    ;push hl
     ld a,(iy+enemy.y)
     ld e,a;y
-    ;inc hl
     ld a,(iy+enemy.x)
     ld d,a;x
+
+    ld a,(iy+enemy.direction)
+    cp RIGHT
+    jr z,.get_block_right
+    cp LEFT
+    jr z,.get_block_left
+    cp UP
+    jr z,.get_block_up
+    cp DOWN
+    jr z,.get_block_down
+
+    jr .next
+.get_block_right:
+    ld a,d
+    add 4
+    ld d,a
+    jp .next
+.get_block_left:
+    ld a,d
+    sub 4
+    ld d,a
+    jp .next
+.get_block_up:
+    ld a,e
+    sub 8
+    ld e,a
+    jp .next
+.get_block_down:
+    ld a,e
+    add 1
+    ld e,a
+
+
+.next:
     ;get_block necesita en el registro e la posición x y en d la posición y, devuelve el resultado en b
     call get_block
     ld a,b
-    cp 32 ;Si al restalo entre 32 da negatico se activará el flag de carry
+    cp TILE_SOLID ;Si al restalo entre 32 da negatico se activará el flag de carry
     jr nc, colision_enemy 
-    ;pop hl
     ret
+
 colision_enemy:
-    ;call BEEP
+    ld a,(iy+enemy.direction)
+    cp LEFT
+    jr z, .is_LEFT
+    cp RIGHT
+    jr z, .is_RIGHT
+    cp UP
+    jr z, .is_UP
+    cp DOWN
+    jr z, .is_DOWN
+.is_LEFT:
+    ld a,3
+    jr .next
+.is_RIGHT:
+    ld a,7
+    jr .next
+.is_UP:
+    ld a,5
+    jr .next
+.is_DOWN:
+    ld a,1
+    jr .next
+
+
+.next:
+    ld (iy+enemy.direction),a
+    ld a,(iy+enemy.type)
+    cp COMPORTAMIENTO_CORRE_DE_IZQUIERDA_A_DERCHA
+    jr z,.add_8_to_y
+    cp COMPORTAMIENTO_CORRE_DE_DERECHA_A_IZQUIERDA
+    jr z,.add_8_to_y
+    jr .end_colision_enemy
+.add_8_to_y:
     ld a,(iy+enemy.y)
     add 8
     ld (iy+enemy.y),a
-    ;pop hl
+.end_colision_enemy:
     ret
 
 
@@ -286,54 +470,7 @@ colision_enemy:
 
 
 
-
-
-;draw_enemies:
-;    ld iy,template_enemy1
-;    ld hl, 6912
-;    xor a
-;    ld (enemy_active),a
-;;blucle FOR:recorre las entidades desde 0 a MAX_ENTITIES-1
-;.loop_draw_enemies:
-;    ;Obtenemos la entidad activa
-;    ld a,(enemy_active)
-;    ;si ha llegado al final salimos
-;    cp MAX_ENEMIES
-;    jr z,.draw_enemies_end
-;    ;Si no ha llegado al final incrementamos el contador de la entidad activa
-;    inc a
-;    ld (enemy_active),a
-;
-;
-;    ;1.6916,2.6920,3.6924,4.6928
-;    ;ld hl, 6912
-;    ld l,(iy+enemy.plane)
-;    ;intercambiamos los valores para que tengamos en el registro "de" la dirección de la memoria que necesita LDIRVM
-;    ex hl,de
-;    ld bc, 4; 4 bytes para copiar, cada plano son 4 bytes
-;    call  LDIRVM; ldirvm necesita en hl la dirección de memoria a copiar, en de la dirección de destino y en bc la cantidad ed bytes a copiar
-;
-;  xor a
-;.loop_iy_draw_enemy:
-;    inc iy
-;    inc hl
-;    cp SIZE_OF_ENEMY-1
-;    jr z,.loop_draw_enemies
-;    inc a
-;    jr .loop_iy_draw_enemy
-;
-;
-;
-;    jr .loop_draw_enemies
-;.draw_enemies_end:
-;    ret
-
-
 draw_enemies:
-    ;6912 o #1b00 dirección tabla de atributos en VRAM donde están los atributos de y,x,sprite_definition, color
-    ;el patron 0 es el del player, el enemigo 1 tendrá el 1 plano y como son 4 bytes cada plano(así está configurado el MSX)=6912+4
-    ;como no podemos sumarle a de el patrón, lo hacemos a través de hl,
-    
     ld iy, template_enemy1
     ld hl, 6912; aquí se podría poner la variable del sistema GRPATR
     ld l,(iy+enemy.plane)
@@ -341,79 +478,42 @@ draw_enemies:
     ex hl,de
     ld hl, template_enemy1
     ld bc, 4; 4 bytes para copiar
+    push de
+    push hl
     call  LDIRVM; ldirvm necesita en hl la dirección de memoria a copiar, en de la dirección de destino y en bc la cantidad ed bytes a copiar
-
-
-    ld iy, template_enemy1+(SIZE_OF_ENEMY*1)
-    ld hl, 6912
-    ;ld l(ix+enemy.plane) hace la suma
-    ld l,(iy+enemy.plane)
-    ;intercambiamos los valores para que tengamos en el registro "de" la dirección de la memoria que necesita LDIRVM
-    ex hl,de
-    ld hl, template_enemy1+(SIZE_OF_ENEMY*1)
+    pop hl
+    pop de
+    ld a, MAX_ENEMIES
+.loop:
+    sub 1
+    cp 0
+    jr z, .end_draw_enemies
+    inc de
+    inc de
+    inc de
+    inc de;6924,6928,etc
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl;8b3c
     ld bc, 4; 4 bytes para copiar
-    call  LDIRVM 
-
-
-    ld iy, template_enemy1+(SIZE_OF_ENEMY*2)
-    ld hl, 6912
-    ;ld l(ix+enemy.plane) hace la suma
-    ld l,(iy+enemy.plane)
-    ;intercambiamos los valores para que tengamos en el registro "de" la dirección de la memoria que necesita LDIRVM
-    ex hl,de
-    ld hl, template_enemy1+(SIZE_OF_ENEMY*2)
-    ld bc, 4; 4 bytes para copiar
-    call  LDIRVM 
-
-
-
-    ld iy, template_enemy1+(SIZE_OF_ENEMY*3)
-    ld hl, 6912
-    ;ld l(ix+enemy.plane) hace la suma
-    ld l,(iy+enemy.plane)
-    ;intercambiamos los valores para que tengamos en el registro "de" la dirección de la memoria que necesita LDIRVM
-    ex hl,de
-    ld hl, template_enemy1+(SIZE_OF_ENEMY*3)
-    ld bc, 4; 4 bytes para copiar
-    call  LDIRVM 
-
+    push af
+    push de
+    push hl
+    call  LDIRVM; ldirvm necesita en hl la dirección de memoria a copiar, en de la dirección de destino y en bc la cantidad ed bytes a copiar
+    pop hl
+    pop de
+    pop af
+    jr .loop
+.end_draw_enemies
     ret
 
-recolocate_enemies_screen_2:
-    ;y       db      0
-    ;x       db      0
-    ;sprite  db      0
-    ;color   db      0
-    ;plane   db      0
-    ;type    db      0
 
-    ld iy, template_enemy1
-    ld a,100;y
-    ld (iy+enemy.y),a
-    ld a,8;x
-    ld (iy+enemy.x),a
-
-    ld iy, template_enemy1+(SIZE_OF_ENEMY*1)
-    ld a,100;y
-    ld (iy+enemy.y),a
-    ld a,40;x
-    ld (iy+enemy.x),a
-
-    ld iy, template_enemy1+(SIZE_OF_ENEMY*2)
-    ld a,110;y
-    ld (iy+enemy.y),a
-    ld a,200;x
-    ld (iy+enemy.x),a
-
-    
-    ld iy, template_enemy1+(SIZE_OF_ENEMY*3)
-    ld a,100;y
-    ld (iy+enemy.y),a
-    ld a,0;x
-    ld (iy+enemy.x),a
-    ld a,2;x
-    ld (iy+enemy.type),a
-    ret
 
 
 
@@ -437,5 +537,163 @@ random:
     ld (randData),a
     ret
 
+sacar_sprites_de_pantalla:
+    ld iy, template_enemy1
+    xor a
+    ld (enemy_active),a
+.loop:
+    ld a,(enemy_active)
+    cp MAX_ENEMIES
+    jr z,.end_sacar_sprites_de_pantalla
+    inc a
+    ld (enemy_active),a
+    ld a,212;y
+    ld (iy+enemy.y),a
+    ld a,0;x
+    ld (iy+enemy.x),a
+    ld a, COMPORTAMIENTO_STATICO
+    ld (iy+enemy.type),a
+    xor a
+
+.loop_iy:
+    inc iy
+    inc a
+    cp SIZE_OF_ENEMY
+    jr z,.loop
+    jr .loop_iy
+
+    jr .loop
+.end_sacar_sprites_de_pantalla:
+    ret
+
+
+;en la pantalla 2 pondremos 2 que reboten horizonales junto a la puerta y otros 2 que eboten en el pasillo grande
+recolocate_enemies_screen_2:
+    ld iy, template_enemy1
+    ld a,18*8;y
+    ld (iy+enemy.y),a
+    ld a,11*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_COLETA
+    ld (iy+enemy.pattern_def),a
+    ld a, COMPORTAMIENTO_REBOTA_VERTICAL
+    ld (iy+enemy.type),a
+
+    ld iy, template_enemy2
+    ld a,18*8;y
+    ld (iy+enemy.y),a
+    ld a,20*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_GORDO
+    ld (iy+enemy.pattern_def),a
+    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
+    ld (iy+enemy.type),a
+
+    ld iy, template_enemy3
+    ld a,10*8;y
+    ld (iy+enemy.y),a
+    ld a,14*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_GORDO
+    ld (iy+enemy.pattern_def),a
+    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
+    ld (iy+enemy.type),a
+    
+    ld iy, template_enemy4
+    ld a,12*8;y
+    ld (iy+enemy.y),a
+    ld a,16*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_GORDO
+    ld (iy+enemy.pattern_def),a
+    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
+    ld (iy+enemy.type),a
+
+    ret
+recolocate_enemies_screen_3:
+    ld iy, template_enemy1
+    ld a,18*8;y
+    ld (iy+enemy.y),a
+    ld a,11*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_COLETA
+    ld (iy+enemy.pattern_def),a
+    ld a, COMPORTAMIENTO_REBOTA_VERTICAL
+    ld (iy+enemy.type),a
+
+    ld iy, template_enemy2
+    ld a,9*8;y
+    ld (iy+enemy.y),a
+    ld a,14*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_ENANO
+    ld (iy+enemy.pattern_def),a
+    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
+    ld (iy+enemy.type),a
+
+    ld iy, template_enemy3
+    ld a,7*8;y
+    ld (iy+enemy.y),a
+    ld a,14*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_MONSTRUO
+    ld (iy+enemy.pattern_def),a
+    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
+    ld (iy+enemy.type),a
+    
+    ld iy, template_enemy4
+    ld a,13*8;y
+    ld (iy+enemy.y),a
+    ld a,16*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_GORDO
+    ld (iy+enemy.pattern_def),a
+    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
+    ld (iy+enemy.type),a
+
+    ret
+
+recolocate_enemies_screen_4:
+    ld iy, template_enemy1
+    ld a,18*8;y
+    ld (iy+enemy.y),a
+    ld a,11*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_COLETA
+    ld (iy+enemy.pattern_def),a
+    ld a, COMPORTAMIENTO_REBOTA_VERTICAL
+    ld (iy+enemy.type),a
+
+    ld iy, template_enemy2
+    ld a,9*8;y
+    ld (iy+enemy.y),a
+    ld a,14*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_ENANO
+    ld (iy+enemy.pattern_def),a
+    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
+    ld (iy+enemy.type),a
+
+    ld iy, template_enemy3
+    ld a,7*8;y
+    ld (iy+enemy.y),a
+    ld a,14*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_MONSTRUO
+    ld (iy+enemy.pattern_def),a
+    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
+    ld (iy+enemy.type),a
+    
+    ld iy, template_enemy4
+    ld a,13*8;y
+    ld (iy+enemy.y),a
+    ld a,16*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_GORDO
+    ld (iy+enemy.pattern_def),a
+    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
+    ld (iy+enemy.type),a
+
+    ret
 
 

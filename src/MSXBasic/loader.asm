@@ -17,6 +17,9 @@ score: db 1,0
 
 ;esta es la entrada principal
 MAIN:
+    ;ld a,1 ; le ponemos la música ingame
+    ;ld (musica_activa),a
+    ;call inicilizar_tracker
  	call KILBUF ; limpiamos el buffer, por si vlvemos a empezar
  	call ERAFNK ; kitamos las letras de las teclas función
     ld a,1
@@ -28,7 +31,7 @@ MAIN:
     call show_menu ; mostramos el menu
     ld a,1
     ld (in_game),a ; ponemos la variable que le dice al juego que está en marcha a 1
-	;CALL inicilizar_tracker
+	;CALL para_cancion
 loop:	
 	xor a
 	call GTTRIG
@@ -173,6 +176,6 @@ message_msx_spain: db "MSX spain",0
 	include "src/tileset-color.asm"
 	include "src/spriteset.asm"
 
-
+    include "./src/musicint.asm"
  
 FINAL:

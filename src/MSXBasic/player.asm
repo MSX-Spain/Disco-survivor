@@ -3,7 +3,7 @@ player_atributes:
     struct player 
 y           db    0
 x           db    0
-plane       db    0
+pattern_def db    0; el player tendrá el patrón 0, el player 2*4=8, el enemy 1 el 3*12=12, estos patrones deben de coincidi con los dibujos de sprites que hemos dibujado
 color       db    0
 direction   db    0
 collision   db    0
@@ -18,7 +18,7 @@ create_player:
     ld a,8
     ld (ix+player.x),a ;le ponemos a la posición x 120
     ld a,0
-    ld (ix+player.plane),a ;Le ponemos el patrón 0
+    ld (ix+player.pattern_def),a ;Le ponemos el patrón 0
     ld a,11 ; el 11 es el color amarillo
     ld (ix+player.color),a 
     ret
@@ -54,7 +54,7 @@ update_player:
 
 move_player_right:
     ;Le metemos la dirección al player
-    ld a,3
+    ld a,RIGHT
     ld (ix+player.direction),a
 
     ;comprobamos los límites de la pantalla
@@ -74,19 +74,19 @@ move_player_right:
     and 1
     jp z, right_es_impar
     ld a, 0
-    ld (ix+player.plane),a ;le metemos el sprite que mira hacia la derecha 2
+    ld (ix+player.pattern_def),a ;le metemos el sprite que mira hacia la derecha 2
 .move_player_right_end:
     ld a,0
     ld (ix+player.collision),a
     ret
 right_es_impar:
     ld a, 1*4
-    ld (ix+player.plane),a ;le metemos el sprite que mira hacia la derecha 2
+    ld (ix+player.pattern_def),a ;le metemos el sprite que mira hacia la derecha 2
 
     ret
 move_player_left:
     ;le ponemos la dirección
-    ld a,7
+    ld a,LEFT
     ld (ix+player.direction),a
 
     ;comprobamos los límites de la pantalla
@@ -100,26 +100,24 @@ move_player_left:
     ld a,(ix+player.collision)
     cp 1
     jr z, .move_player_left_end
-
-    ;cp 1
     ld a,(ix+player.x)
     sub 1  
     ld (ix+player.x), a 
     and 1
     jp z, left_es_impar
     ld a, 2*4 
-    ld (ix+player.plane),a
+    ld (ix+player.pattern_def),a
 .move_player_left_end:
     ld a,0
     ld (ix+player.collision),a
     ret
 left_es_impar:
     ld a, 3*4
-    ld (ix+player.plane),a 
+    ld (ix+player.pattern_def),a 
     ret
 move_player_up:
     ;le ponemos la dirección
-    ld a,1
+    ld a,UP
     ld (ix+player.direction),a
 
     ;comprobamos los límites de la pantalla
@@ -142,18 +140,18 @@ move_player_up:
     and 1
     jp z, up_es_impar
     ld a, 4*4
-    ld (ix+player.plane),a
+    ld (ix+player.pattern_def),a
 .move_player_up_end:
     ld a,0
     ld (ix+player.collision),a
     ret
 up_es_impar:
     ld a, 5*4
-    ld (ix+player.plane),a 
+    ld (ix+player.pattern_def),a 
     ret
 move_player_down:
     ;le ponemos la dirección
-    ld a,5
+    ld a,DOWN
     ld (ix+player.direction),a
 
     ;comprobamos los límites de la pantalla
@@ -174,14 +172,14 @@ move_player_down:
     and 1
     jp z, down_es_impar
     ld a, 6*4
-    ld (ix+player.plane),a
+    ld (ix+player.pattern_def),a
 .move_player_down_end:
     ld a,0
     ld (ix+player.collision),a
     ret
 down_es_impar:
     ld a, 7*4
-    ld (ix+player.plane),a 
+    ld (ix+player.pattern_def),a 
     ret
 
 
@@ -197,24 +195,24 @@ check_collision_player:
     ld d,a;x
 
     ld a,(ix+player.direction)
-    cp 3
+    cp RIGHT
     jr z,.get_block_right
-    cp 7
+    cp LEFT
     jr z,.get_block_left
-    cp 1
+    cp UP
     jr z,.get_block_up
-    cp 5
+    cp DOWN
     jr z,.get_block_down
 
     jr .not_direction_found
 .get_block_right:
     ld a,d
-    add 8
+    add 4
     ld d,a
     jp .not_direction_found
 .get_block_left:
     ld a,d
-    sub 8
+    sub 4
     ld d,a
     jp .not_direction_found
 .get_block_up:
@@ -247,6 +245,6 @@ colision_player:
 recolocate_player:
     ld a,150
     ld (ix+player.y),a
-    ld a,0
+    ld a,8
     ld (ix+player.x),a
     ret

@@ -18,10 +18,16 @@ score: equ #8503
 
 
 MAIN:   
-    call inicilizar_tracker
-    ld a,1
+    ld a,2 ; le ponemos la música ingame
     ld (musica_activa),a
+    call inicilizar_tracker
 
+    ;-------------------------
+    ;-------debug-------------
+    ;ld a,2
+    ;ld (screen),a
+    ;-------Fin debug--------
+    ;-------------------------
     ld a,1
     ld (in_game),a;ponemos el valor de ingame a 1 para que no se salga a la siguiente pantalla
 
@@ -32,7 +38,6 @@ MAIN:
     call ENASCR; encendemos la pantalla
 	call main_loop
     
-
 	ret
 
 main_loop:
@@ -175,20 +180,33 @@ graphics_print:
 
 
 increase_screen:
-    call recolocate_player
-    ;call BCLS   ;Apagamos la pantalla
+    call sacar_sprites_de_pantalla
+    call recolocate_player 
+    call DISSCR ;Apagamos la pantalla
     ld a,(screen)
-    cp 3
-    jr z, is_final_screen
     add 1
     ld (screen),a ; aumentamos en contador de pantallas
-    ld a,0
-    ld (in_game),a ; ponemos para que finalice la pantalla y carguemos con el basic la siguiente
+    ;ld a,0
+    ;ld (in_game),a ; ponemos para que finalice la pantalla y carguemos con el basic la siguiente
     call load_screens
+    call hud
+    call ENASCR
+
+    ;posicinamos los enemigos
+    ld a,(screen)
+    cp 2
+    jp z, recolocate_enemies_screen_2
+    cp 3
+    jp z, recolocate_enemies_screen_3
+    cp 4
+    jp z, recolocate_enemies_screen_4
+    cp 5
+    jr z, is_final_screen
+
     ret
 load_screens:
-    ld hl, #d101
-    ld bc, 704
+    ld hl, MAPS_DIRECTION
+    ld bc, MAP_SIZE
     ld a,(screen)
 .loop_load_screens:
     cp 1
@@ -198,15 +216,14 @@ load_screens:
     jr .loop_load_screens
 .es_cero:
     ld de, map_buffer 
-    ld bc, 768-64
+    ld bc, MAP_SIZE
     LDIR
     ;ponemos el mapa en la VRAM
     ld hl, map_buffer
     ld de, 6144 
 	;Le quitamos 64 ya que keremos pintar el HUD en las últimas 2 líneas de la pantalla
-    ld bc, 768-64
+    ld bc, MAP_SIZE
     call  LDIRVM
-    call hud
     ret
 is_final_screen:
     ld a,1
@@ -222,11 +239,35 @@ message_lives: db "Lives",0
 message_score: db "Score",0
 
 map_buffer: ds 704 ;768-64 es el mapa o tabla de nombres de VRAM copiada aquí
+MAPS_DIRECTION: equ #c001
+MAP_SIZE: equ 704 ;son 22 líneas de 32 bytes cada línea
 Store_Sprite_Collision: db 0
-COMIENZO_TILE_NUMEROS equ 86
+COMIENZO_TILE_NUMEROS: equ 86
 buffer_numeros: ds 8
-TILE_DOOR equ 55
-TILE_SOLID equ 32
+TILE_DOOR: equ 55
+TILE_SOLID: equ 32
+
+UP: equ 1
+DOWN: equ 5
+LEFT: equ 7
+RIGHT: equ 3 
+
+COLOR_TRASPARENTE: equ 0
+COLOR_NEGRO: equ 1
+COLOR_VERDE_MEDIO: equ 2
+COLOR_VERDE_CLARO: equ 3
+COLOR_AZUL_OSCURO: equ 4
+COLOR_AZUL_MEDIO: equ 5
+COLOR_ROJO_OSCURO: equ 6
+COLOR_AZUL_CLARO:equ 7
+COLOR_ROJO_MEDIO: equ 8
+COLOR_ROSA: equ 9
+COLOR_AMARILLO: equ 10
+COLOR_AMBAR: equ 11
+COLOR_VERDE_OSCURO: equ 12
+COLOR_LILA: equ 13
+COLOR_GRIS: equ 14
+COLOR_BLANCO: equ 15
 
 
     
