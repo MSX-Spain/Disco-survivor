@@ -28,7 +28,7 @@ template_enemy2:
     db COLOR_AZUL_OSCURO;color azul oscuro
     db 3*4; plano 2*4 bytes
     db RIGHT;;direction
-    db COMPORTAMIENTO_CORRE_DE_DERECHA_A_IZQUIERDA
+    db COMPORTAMIENTO_REBOTA_HORIZONTAL
     db 0
     db 0
 template_enemy3:
@@ -58,7 +58,7 @@ template_enemy5:
     db COLOR_VERDE_OSCURO
     db 2*4; plano 1*4 bytes
     db RIGHT;direction
-    db COMPORTAMIENTO_BAILA;type
+    db COMPORTAMIENTO_REBOTA_HORIZONTAL;type
     db 0
     db 0
 template_enemy6:
@@ -155,6 +155,7 @@ update_enemies:
         call z, move6_enemigo_estatico
     ;comprobamos las colisiones
     call check_collision_enemy
+    ;call check_colision_with_player
     ;aumentamos en la dirección el tamaña del enemigo, el bloque siguiente hace lo mismo que esto pero según el tamaño del enemigo:
     xor a
 .loop_iy:
@@ -272,7 +273,42 @@ move2_enemigo_rebota_vertical:
 
 
 move4_enemigo_te_persigue:
+    ld a,(iy+enemy.counter)
+    add 1
+    ld (iy+enemy.counter),a
+    cp MAX_RETARDO_REDIBUJADO
+    jp nc,.end_move4_enemigo_te_persigue
 
+    ld a,(ix+player.x)
+    ld b,(iy+enemy.x)
+    sub b
+    jr c, .el_player_esta_a_la_izquierda
+    ld a, (iy+enemy.x)
+    add 1
+    ld (iy+enemy.x),a
+    jr .next
+.el_player_esta_a_la_izquierda:
+    ld a, (iy+enemy.x)
+    sub 1
+    ld (iy+enemy.x),a
+.next
+    ld a, (ix+player.y)
+    ld b, (iy+enemy.y)
+    sub b
+    jr c, .el_player_esta_encima
+    ld a, (iy+enemy.y)
+    add 1
+    ld (iy+enemy.y),a
+    jr .reseteo
+.el_player_esta_encima:
+    ld a, (iy+enemy.y)
+    sub 1
+    ld (iy+enemy.y),a
+
+.reseteo:
+    ;ld a,0
+    ;ld (iy+enemy.counter),a
+.end_move4_enemigo_te_persigue:
     ret
 
 move5_enemigo_rebota_izquierda_derecha:
@@ -386,6 +422,7 @@ check_collision_enemy:
     ld a,(iy+enemy.x)
     ld d,a;x
 
+
     ld a,(iy+enemy.direction)
     cp RIGHT
     jr z,.get_block_right
@@ -395,6 +432,8 @@ check_collision_enemy:
     jr z,.get_block_up
     cp DOWN
     jr z,.get_block_down
+
+
 
     jr .next
 .get_block_right:
@@ -457,6 +496,10 @@ colision_enemy:
     jr z,.add_8_to_y
     cp COMPORTAMIENTO_CORRE_DE_DERECHA_A_IZQUIERDA
     jr z,.add_8_to_y
+    cp COMPORTAMIENTO_PERSIGUE
+    
+    
+    jr z,.add_8_to_y
     jr .end_colision_enemy
 .add_8_to_y:
     ld a,(iy+enemy.y)
@@ -513,7 +556,40 @@ draw_enemies:
 .end_draw_enemies
     ret
 
+check_colision_with_player:
+    ;if (enemy->x < player->x + player->w &&
+    ;enemy->x + enemy->w > player->x && 
+    ;enemy->y < player->y + player->h && 
+    ;enemy->h + enemy->y > player->y
 
+    ld a,(ix+player.x)
+    ld b, 16
+    add b
+    ld b, (iy+enemy.x)
+    cp b ; le restamos la posición del enemigo en x al player para saber si el enemigo está denro del cuadrado del player
+    jr nc, .end_check_colision_with_player; el_enemigo_no esta_dentro_del_ cuadrodpplayer
+    ld a,(iy+enemy.x)
+    ld b,16
+    ld b,(ix+player.x)
+    cp b
+    jr c, .end_check_colision_with_player; el enemigo no está en el cuadrado del player
+
+
+    ld a,(ix+player.y)
+    ld b, 16
+    add b
+    ld b, (iy+enemy.y)
+    cp b ; le restamos la posición del enemigo en x al player para saber si el enemigo está denro del cuadrado del player
+    jr nc, .end_check_colision_with_player; el_enemigo_no esta_dentro_del_ cuadrodpplayer
+    ld a,(iy+enemy.y)
+    ld b,16
+    ld b,(ix+player.y)
+    cp b
+    jr c, .end_check_colision_with_player; el enemigo no está en el cuadrado del player
+
+    ;call beep
+.end_check_colision_with_player:
+    ret
 
 
 

@@ -48,6 +48,9 @@ update_player:
     jp z, move_player_left
     ;cp 8
     ;jp z, move_player_up_left
+    ;ld a,(player.collision)
+    ;cp 1
+    ;jp z,HUD
 .update_player_end:
     ret
 
@@ -232,13 +235,17 @@ check_collision_player:
     ld a,b
     cp TILE_DOOR
     jp z,increase_screen
+    cp TILE_BOTTLE1 ;Si al restalo entre 32 da negatico se activará el flag de carry
+    jr Z, botella_cogida ; si al restarlo  es negativo y dará carry, si no hay está bien
+    cp TILE_BOTTLE2 ;Si al restalo entre 32 da negatico se activará el flag de carry
+    jr Z, botella_cogida ; si al restarlo  es negativo y dará carry, si no hay está bien
     cp TILE_SOLID ;Si al restalo entre 32 da negatico se activará el flag de carry
     jr nc, colision_player ; si al restarlo  es negativo y dará carry, si no hay está bien
 
     ret
 
 colision_player:
-    ;call BEEP
+    call efecto_golpe
     ld a,1
     ld (ix+player.collision),a
     ret
@@ -247,4 +254,60 @@ recolocate_player:
     ld (ix+player.y),a
     ld a,8
     ld (ix+player.x),a
+    ret
+botella_cogida:
+    call efecto_coge_botella
+    ;ponemos en ese tile un tile negro
+    ld a,(ix+player.y) ;a=posicion y en pixeles
+    add 16
+    ;con srl estas dividiendo entre 2,ya que corre a la derecha los bits. 
+    ;al hacerlo 3 veces es como dividir entre 8,a=y/8: 1.01001100, 2.00100110, 3.00010011
+    srl a  
+    srl a  
+    srl a  
+    ld h,0 ; en h le ponemos un 0 
+    ld l,a ;y en los 8 bytes de "l" le ponemos el valor que contiene a
+    ;;-----------------
+    ;Buscando la fila
+    add hl, hl ;x32, sumar algo por si mismo es como multiplizarlo por 2, si lo repetivos 5 es como si o multiplixaramos por 32
+    add hl, hl 
+    add hl, hl 
+    add hl, hl 
+    add hl, hl 
+
+
+    ld a,(ix+player.x)
+    add 8
+    srl a 
+    srl a 
+    srl a 
+    ld d,0
+    ld e,a ;e=x
+    add hl,de ;hl=(y/8)*32+(x/8)
+
+    ;actualizamos el buffer
+    push hl
+    ld de, map_buffer
+    add hl,de
+    ex hl,de
+    ld hl, tile_negro
+    ld bc, 1
+    ldir
+    pop hl
+
+    ld de, 6144
+    add hl, de
+    ex hl, de
+    
+
+    ld hl, tile_negro
+    ld bc, 1
+    call LDIRVM
+
+    ;actualizamos el score
+    ld a,(score)
+    add 1
+    ld (score),a
+    call hud
+
     ret

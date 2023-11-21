@@ -13,7 +13,7 @@ INICIO:
 screen: db 1
 in_game: db 0
 lives: db 8
-score: db 1,0
+score: db 0,0
 
 ;esta es la entrada principal
 MAIN:

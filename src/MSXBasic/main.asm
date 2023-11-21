@@ -129,32 +129,54 @@ hud:
     ld a,(screen)
     ld b, COMIENZO_TILE_NUMEROS
     add b
-    ld hl, 6885 ;aki va la dirección de la tabla de nombres que keremos cambiar;6912(final de la tabla de nombres)-32(-1 fila)=6880+7
+    ld hl, 6886 ;aki va la dirección de la tabla de nombres que keremos cambiar;6912(final de la tabla de nombres)-32(-1 fila)=6880+7
     call WRTVRM
    ;---------------------Fin Level--------------------------
 
 
     ;------------------------Score--------------------------
-    ld a,58; posicionamos el cursor en la posición x 58
+    ld a,90; posicionamos el cursor en la posición x ..
     ld (GRPACX),a
     ld hl, message_score
     call graphics_print
-    ld a,100; posicionamos el cursor en la posición x 58
-    ld (GRPACX),a
-    ;metemos en b el valor correspondiente al 0 en la tabla ascii
-    ld b,47
-    ;para sumar a y b tendremos que echar mano de ld a
+    
+    ;*******CON EL GRPPT SLAEN LOS NÚMERO MACHADOS***/
+    ;ld a,140; posicionamos el cursor en la posición x ..
+    ;ld (GRPACX),a
+    ;ld b,48;metemos en b el valor correspondiente al 0 en la tabla ascii
+    ;ld a,(score)
+    ;add b
+    ;cp 56
+    ;jr nc, .a_es_mayor_de_56
+    ;call GRPPRT 
+;.a_es_mayor_de_56:
+;    ld a,48
+;    call GRPPRT
+    ;**************************************************
+    ld hl, 6898
     ld a,(score)
+    ld b, COMIENZO_TILE_NUMEROS
     add b
-    call GRPPRT 
+.repetir_por_ser_mayor_que_9:
+    cp COMIENZO_TILE_NUMEROS+9
+    jr z,.es_mayor_que_COMIEZO_TILES_NUMEROS_mas_9
+    jr .next
+.es_mayor_que_COMIEZO_TILES_NUMEROS_mas_9:
+    inc hl
+    ld a,COMIENZO_TILE_NUMEROS
+    call WRTVRM ;ponemos un 0
+    jr .repetir_por_ser_mayor_que_9
+
+.next:
+    call WRTVRM
     ;---------------------Fin score--------------------------
 
     ;------------------------Lives--------------------------
-    ld a,150
+    ld a,190
     ld (GRPACX),a
     ld hl, message_lives
     call graphics_print
-    ld a,200
+    ld a,240
     ld (GRPACX),a
     ;metemos en b el valor correspondiente al 0 en la tabla ascii
     ld b,47
@@ -191,7 +213,6 @@ increase_screen:
     call load_screens
     call hud
     call ENASCR
-
     ;posicinamos los enemigos
     ld a,(screen)
     cp 2
@@ -241,11 +262,14 @@ message_score: db "Score",0
 map_buffer: ds 704 ;768-64 es el mapa o tabla de nombres de VRAM copiada aquí
 MAPS_DIRECTION: equ #c001
 MAP_SIZE: equ 704 ;son 22 líneas de 32 bytes cada línea
-Store_Sprite_Collision: db 0
+;Store_Sprite_Collision: db 0
 COMIENZO_TILE_NUMEROS: equ 86
 buffer_numeros: ds 8
 TILE_DOOR: equ 55
 TILE_SOLID: equ 32
+TILE_BOTTLE1: equ 56
+TILE_BOTTLE2: equ 57
+tile_negro: db 0
 
 UP: equ 1
 DOWN: equ 5

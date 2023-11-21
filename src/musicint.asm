@@ -5,14 +5,14 @@ MAX_CONTADOR equ 50
 rutina_previa equ #f202      
 ;rutina_previa: ds 5      
 musica_activa: equ #8504
-
+efecto_activo: equ #8505
 inicilizar_tracker:
     ;Deactivamos las interrupciones
     di	
-
-    LD		 A, (PT3_SETUP)
-    AND		11111110b
-    LD		(PT3_SETUP), A
+    ; hemos puesto a mano a 1 para que siempre se repita la canción en la variable PT3_SETUP
+    ;LD		 A, (PT3_SETUP)
+    ;AND		11111110b
+    ;LD		(PT3_SETUP), A
 
 
     ld a,(musica_activa)
@@ -43,6 +43,15 @@ inicilizar_tracker:
     ld (HTIMI+1), hl
     ;Activamos las interrupciones
 	ei 
+
+
+
+    ;inicializacion del reproductor de efectos sonoros
+    ;ld a,(efecto_activo)
+    ;or a ; si el efecto está activo nos activará el flag z
+    ;jp z, reproducir_bloque_musica
+    LD		HL, sfx_bank
+    CALL	ayFX_SETUP
     ;Volvemos al basic
     ret
 
@@ -50,11 +59,17 @@ reproducir_bloque_musica:
     ;------------------Reproducir Bloque de múscia--------
     ;halt						;sincronizacion
 	;di
+
     ld a,(musica_activa)
     or a
     jp z,.end_reproducir_bloque_musica
 	call	PT3_ROUT			;Borrar el valor anterior
 	call	PT3_PLAY			;Reproduce el siguiente trozo de canción
+
+    ld a,(efecto_activo)
+    or a  ; si el efecto está activo nos activará el flag z
+    jp z,.end_reproducir_bloque_musica
+    JP		ayFX_PLAY	
     ;ei
     ;--------------Fin de reproducir bloque de música-----
     ;lanzamos la rutina que había
@@ -62,7 +77,9 @@ reproducir_bloque_musica:
     ;Volvemos al basic
     ret
 .end_reproducir_bloque_musica:
-    call PT3_MUTE
+    ;call PT3_MUTE
+    ld a ,1
+    ld (efecto_activo),a
     ret
 para_cancion:
     ;volvemos a poner los 5 bytes que tenía
@@ -81,6 +98,29 @@ sigue_musica:
     ld a,1
     ld (musica_activa),a
     ret
+efecto_toque:
+    LD			A, 0; 
+    LD			C, 0
+    CALL		ayFX_INIT
+    ret
+efecto_golpe:
+    ld a,0
+    ld (efecto_activo),a
+    LD			A, 1; 
+    LD			C, 0
+    CALL		ayFX_INIT
+    ret
+efecto_romper:
+    LD			A, 6; 
+    LD			C, 1
+    CALL		ayFX_INIT
+    ret
+
+efecto_coge_botella:
+    LD			A, 10; 
+    LD			C, 1
+    CALL		ayFX_INIT
+    ret
 
 
 
@@ -91,5 +131,10 @@ ingame:
 menu:
 	incbin "./src/menu.pt3"			
 
+;efectos de https://github.com/Threetwosevensixseven/ayfxedit-improved
+fx_player:
+    include	"./src/ayFX_player.asm"	
+sfx_bank:
+	incbin "./src/sfx.afb"
 
 
