@@ -50,5 +50,96 @@ draw_enemies:
 
     ret
     ;----------------------------------------------------------------------------------------------
+recolocate_enemies:
+    ld iy, template_enemy1
+    ld a,7*8;y
+    ld (iy+enemy.y),a
+    ld a,20*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_ROBOT
+    ld (iy+enemy.pattern_def),a
+    ld a,COLOR_AZUL_MEDIO
+    ld (iy+enemmy.color),a
+    ld a, UP
+    ld (iy+enemy.direction),a
+    ld a, COMPORTAMIENTO_REBOTA_VERTICAL
+    ld (iy+enemy.type),a
 
+
+    ld iy, template_enemy2
+    ld a,12*8;y
+    ld (iy+enemy.y),a
+    ld a,25*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_GORDO
+    ld (iy+enemy.pattern_def),a
+    ld a,COLOR_AZUL_OSCURO
+    ld (iy+enemmy.color),a
+    ld a, RIGHT
+    ld (iy+enemy.direction),a
+    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
+    ld (iy+enemy.type),a
+    
+
+    ld iy, template_enemy3
+    ld a,13*8;y
+    ld (iy+enemy.y),a
+    ld a,28*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_COLETA
+    ld (iy+enemy.pattern_def),a
+    ld a,COLOR_ROJO_OSCURO
+    ld (iy+enemmy.color),a
+    ld a, RIGHT
+    ld (iy+enemy.direction),a
+    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
+    ld (iy+enemy.type),a
+
+
+    ld iy, template_enemy4
+    ld a,18*8;y
+    ld (iy+enemy.y),a
+    ld a,23*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_ENANO
+    ld (iy+enemy.pattern_def),a
+    ld a,COLOR_AMARILLO
+    ld (iy+enemmy.color),a
+    ld a, RIGHT
+    ld (iy+enemy.direction),a
+    ld a, COMPORTAMIENTO_CORRE_DE_IZQUIERDA_A_DERCHA
+    ld (iy+enemy.type),a
+
+
+
+    ld iy, template_enemy5
+    ld a,16*8;y
+    ld (iy+enemy.y),a
+    ld a,30*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_GORDO
+    ld (iy+enemy.pattern_def),a
+    ld a,COLOR_VERDE_OSCURO
+    ld (iy+enemmy.color),a
+    ld a, RIGHT
+    ld (iy+enemy.direction),a
+    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
+    ld (iy+enemy.type),a
+
+
+    ld iy, template_enemy6
+    ld a,15*8;y
+    ld (iy+enemy.y),a
+    ld a,15*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_ENANO
+    ld (iy+enemy.pattern_def),a
+    ld a,COLOR_ROJO_MEDIO
+    ld (iy+enemmy.color),a
+    ld a, RIGHT
+    ld (iy+enemy.direction),a
+    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
+    ld (iy+enemy.type),a
+    
+    ret
     

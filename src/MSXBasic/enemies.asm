@@ -32,7 +32,7 @@ template_enemy2:
     db 0
     db 0
 template_enemy3:
-    db 110
+    db 144
     db 230
     db ENEMIGO_COLETA
     db COLOR_ROJO_OSCURO
@@ -42,7 +42,7 @@ template_enemy3:
     db 0
     db 0
 template_enemy4:
-    db 144
+    db 152
     db 190
     db ENEMIGO_ENANO
     db COLOR_AMARILLO
@@ -155,7 +155,7 @@ update_enemies:
         call z, move6_enemigo_estatico
     ;comprobamos las colisiones
     call check_collision_enemy
-    ;call check_colision_with_player
+    call check_colision_with_player
     ;aumentamos en la dirección el tamaña del enemigo, el bloque siguiente hace lo mismo que esto pero según el tamaño del enemigo:
     xor a
 .loop_iy:
@@ -200,6 +200,9 @@ move0_enemigo_baila:
     ld (iy+enemy.counter),a
 .move0_end:
     ret
+
+
+
 
 
 move3_enemigo_corre_de_izquierda_a_derecha:
@@ -508,12 +511,47 @@ colision_enemy:
 .end_colision_enemy:
     ret
 
+check_colision_with_player:
+    ;if (enemy->x < player->x + player->w &&
+    ;enemy->x + enemy->w > player->x && 
+    ;enemy->y < player->y + player->h && 
+    ;enemy->h + enemy->y > player->y
+
+    ld a,(ix+player.x)
+    ld b, 16
+    add b
+    ld b, (iy+enemy.x)
+    cp b ; le restamos la posición del enemigo en x al player para saber si el enemigo está denro del cuadrado del player
+    jr c, .end_check_colision_with_player; el_enemigo_no esta_dentro_del_ cuadrodpplayer
+    ld a,(iy+enemy.x)
+    ld b,16
+    ld b,(ix+player.x)
+    cp b
+    jr c, .end_check_colision_with_player; el enemigo no está en el cuadrado del player
+
+
+    ld a,(ix+player.y)
+    ld b, 16
+    add b
+    ld b, (iy+enemy.y)
+    cp b ; le restamos la posición del enemigo en x al player para saber si el enemigo está denro del cuadrado del player
+    jr c, .end_check_colision_with_player; el_enemigo_no esta_dentro_del_ cuadrodpplayer
+    ld a,(iy+enemy.y)
+    ld b,16
+    ld b,(ix+player.y)
+    cp b
+    jr c, .end_check_colision_with_player; el enemigo no está en el cuadrado del player
+
+    call kill_player;matamos al player
+    call kill_enemy;recolocamos a los enemigos
+
+.end_check_colision_with_player:
+    ret
 
 
 
 
-
-draw_enemies:
+render_enemies:
     ld iy, template_enemy1
     ld hl, 6912; aquí se podría poner la variable del sistema GRPATR
     ld l,(iy+enemy.plane)
@@ -530,7 +568,7 @@ draw_enemies:
 .loop:
     sub 1
     cp 0
-    jr z, .end_draw_enemies
+    jr z, .end_render_enemies
     inc de
     inc de
     inc de
@@ -553,43 +591,10 @@ draw_enemies:
     pop de
     pop af
     jr .loop
-.end_draw_enemies
+.end_render_enemies
     ret
 
-check_colision_with_player:
-    ;if (enemy->x < player->x + player->w &&
-    ;enemy->x + enemy->w > player->x && 
-    ;enemy->y < player->y + player->h && 
-    ;enemy->h + enemy->y > player->y
 
-    ld a,(ix+player.x)
-    ld b, 16
-    add b
-    ld b, (iy+enemy.x)
-    cp b ; le restamos la posición del enemigo en x al player para saber si el enemigo está denro del cuadrado del player
-    jr nc, .end_check_colision_with_player; el_enemigo_no esta_dentro_del_ cuadrodpplayer
-    ld a,(iy+enemy.x)
-    ld b,16
-    ld b,(ix+player.x)
-    cp b
-    jr c, .end_check_colision_with_player; el enemigo no está en el cuadrado del player
-
-
-    ld a,(ix+player.y)
-    ld b, 16
-    add b
-    ld b, (iy+enemy.y)
-    cp b ; le restamos la posición del enemigo en x al player para saber si el enemigo está denro del cuadrado del player
-    jr nc, .end_check_colision_with_player; el_enemigo_no esta_dentro_del_ cuadrodpplayer
-    ld a,(iy+enemy.y)
-    ld b,16
-    ld b,(ix+player.y)
-    cp b
-    jr c, .end_check_colision_with_player; el enemigo no está en el cuadrado del player
-
-    ;call beep
-.end_check_colision_with_player:
-    ret
 
 
 
@@ -617,6 +622,7 @@ sacar_sprites_de_pantalla:
     ld iy, template_enemy1
     xor a
     ld (enemy_active),a
+
 .loop:
     ld a,(enemy_active)
     cp MAX_ENEMIES
@@ -627,10 +633,10 @@ sacar_sprites_de_pantalla:
     ld (iy+enemy.y),a
     ld a,0;x
     ld (iy+enemy.x),a
-    ld a, COMPORTAMIENTO_STATICO
-    ld (iy+enemy.type),a
+    ;ld a, COMPORTAMIENTO_STATICO
+    ;ld (iy+enemy.type),a
     xor a
-
+    ;call update_enemies
 .loop_iy:
     inc iy
     inc a
@@ -640,9 +646,63 @@ sacar_sprites_de_pantalla:
 
     jr .loop
 .end_sacar_sprites_de_pantalla:
+
     ret
 
 
+
+kill_enemy:
+    ld a,24*8
+    ld (iy+enemy.y),a
+    ld a,0
+    ld (iy+enemy.x),a
+
+    ret
+recolocate_enemies_screen_1:
+    ld iy, template_enemy1
+    ld a,7*8;y
+    ld (iy+enemy.y),a
+    ld a,20*8;x
+    ld (iy+enemy.x),a
+
+    ld a,COMPORTAMIENTO_REBOTA_VERTICAL
+    ld (iy+enemy.type),a
+
+    ld iy, template_enemy2
+    ld a,12*8;y
+    ld (iy+enemy.y),a
+    ld a,25*8;x
+    ld (iy+enemy.x),a
+    ld a,COMPORTAMIENTO_REBOTA_HORIZONTAL
+    ld (iy+enemy.type),a
+
+    ld iy, template_enemy3
+    ld a,18*8;y
+    ld (iy+enemy.y),a
+    ld a,28*8;x
+    ld (iy+enemy.x),a
+    ld a,COMPORTAMIENTO_REBOTA_HORIZONTAL
+    ld (iy+enemy.type),a
+
+    ld iy, template_enemy4
+    ld a,20*8;y
+    ld (iy+enemy.y),a
+    ld a,23*8;x
+    ld (iy+enemy.x),a
+
+    ld iy, template_enemy5
+    ld a,16*8;y
+    ld (iy+enemy.y),a
+    ld a,25*8;x
+    ld (iy+enemy.x),a
+
+    ld iy, template_enemy6
+    ld a,15*8;y
+    ld (iy+enemy.y),a
+    ld a,15*8;x
+    ld (iy+enemy.x),a
+
+    ret
 ;en la pantalla 2 pondremos 2 que reboten horizonales junto a la puerta y otros 2 que eboten en el pasillo grande
 recolocate_enemies_screen_2:
     ld iy, template_enemy1

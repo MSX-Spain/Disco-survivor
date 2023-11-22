@@ -12,52 +12,86 @@
 INICIO:
 
 screen: equ #8500
-in_game: equ #8501
+game_over: equ #8501
 lives: equ #8502
 score: equ #8503
+in_game: equ #8504
 
 
 MAIN:   
-    ld a,2 ; le ponemos la música ingame
-    ld (musica_activa),a
-    call inicilizar_tracker
-
-    ;-------------------------
-    ;-------debug-------------
-    ;ld a,2
-    ;ld (screen),a
-    ;-------Fin debug--------
-    ;-------------------------
-    ld a,1
-    ld (in_game),a;ponemos el valor de ingame a 1 para que no se salga a la siguiente pantalla
 
 	call create_player
 	call create_enemy
-    call hud
-    call load_screens ; cargamos las 5 pantallas
     call ENASCR; encendemos la pantalla
-	call main_loop
+ 
+.in_game:
+    call para_cancion
+    ld a,1; le ponemos la música del menú
+    ld (musica_activa),a
+    call inicilizar_tracker
     
+    call clear_screen
+    call show_menu
+    call KILBUF
+    ;call CHGET
+.repetir_menu:
+    ld a,0
+    call GTTRIG
+    cp 0
+    jr z,.repetir_menu
+
+
+    call para_cancion
+    ld a,2; le ponemos la música ingame
+    ld (musica_activa),a
+    call inicilizar_tracker
+
+    ld a,0
+    ld (screen),a
+    ld a,2
+    ld (lives),a
+    ld a,0
+    ld (game_over),a
+    call increase_screen
+
+    call main_loop
+    jp .in_game
 	ret
 
 main_loop:
     halt
- 
+   
 	call update_player
     call update_enemies
     call render_player
-    call draw_enemies
-    ;ld a, (in_game)
-    ;cp 0
-    ;jp z, .end_game
+    call render_enemies
+    ld a, (game_over)
+    cp 1
+    jr z,.end_main_loop
 	jr main_loop
-.end_game:
-    ;call para_cancion
+.end_main_loop:
+    call sacar_sprites_de_pantalla
+    ld a,212
+    ld (ix+player.y),a
+    call render_player
+    call render_enemies
     ret
+  
 
 
 kill_player
-    call BEEP
+    ld a,(lives)
+    sub 1
+    ld (lives),a
+    cp 0
+    jr z,.end_kill_player
+    call recolocate_player
+    call efecto_mata_player
+    call hud
+    ret
+.end_kill_player
+    ld a,1
+    ld (game_over),a
     ret
 
 
@@ -178,12 +212,17 @@ hud:
     call graphics_print
     ld a,240
     ld (GRPACX),a
-    ;metemos en b el valor correspondiente al 0 en la tabla ascii
-    ld b,47
-    ;para sumar a y b tendremos que echar mano de ld a
+
+    ;ld b,47    ;metemos en b el valor correspondiente al 0 en la tabla ascii
+    ;ld a,(lives)    ;para sumar a y b tendremos que echar mano de ld a
+    ;add b
+    ;call GRPPRT 
+
     ld a,(lives)
+    ld b, COMIENZO_TILE_NUMEROS
     add b
-    call GRPPRT 
+    ld hl, 6910 
+    call WRTVRM
     ;----------------------Fin lives-------------------------
     ret
 
@@ -193,28 +232,106 @@ graphics_print:
     ret z               
     call GRPPRT         
     inc hl              
-    jr graphics_print      
+    jr graphics_print 
+    ret     
+graphics_print_sc2:
+    ;ld de, message_msx_spain ; la dirección donde empiezan los bytes del texto
+    ;ld b, 1;    posicón y
+    ;ld c, 5;    posicón x
+    ld hl, 6144 +256
+    sla b           ;b x2
+    sla b           ;b x4
+    sla b           ;b x8
+    sla b           ;b x16
+    sla b           ;b x32
+    ld a,b
+    ld b,0
+    add hl, bc; c ya lo teníamos, se lo sumamos a hl
+    ld c,a
+    add hl, bc
+    call print_cs2
+    ret
+
+print_cs2:
+    ld a,(de)          
+    and a               
+    ret z  ;si ha llegado a 0 salimos    
+    add 31
+    call WRTVRM;en hl la dirección y en a el valor
+    ;call GRPPRT         
+    inc de    
+    inc hl          
+    jr print_cs2   
+    ret
+
+show_menu:
+    ;pintamos la imagen de arriba
+    ld b,20
+    ld a, 39
+    ld hl, 6188
+.repeat1:
+    call WRTVRM;en hl la dirección y en a el valor
+    dec b
+    inc a
+    inc hl
+    djnz .repeat1
+
+    ld b,20
+    ld a, 71
+    ld hl, 6220
+.repeat2:
+    call WRTVRM;en hl la dirección y en a el valor
+    dec b
+    inc a
+    inc hl
+    djnz .repeat2
+
+    ld de, message_msx_spain_presents ; la dirección donde empiezan los bytes del texto
+    ld b, 1;    posicón y
+    ld c, 8;    posicón x
+    call graphics_print_sc2
+
+    ld de, message_disco 
+    ld b, 4;    posicón y
+    ld c, 13;    posicón x
+    call graphics_print_sc2
+
+    ld de, message_press_any_key_to_start 
+    ld b, 7;    posicón y
+    ld c, 5;    posicón x
+    call graphics_print_sc2
+    ret
 
 
-
+clear_screen:
+    ld a,0
+    ld bc, MAP_SIZE+64
+    ld hl, 6144
+    call FILVRM
+    ret
 
 
 
 
 increase_screen:
+    call para_cancion
+    ld a,2; le ponemos la música ingame
+    ld (musica_activa),a
+    call inicilizar_tracker
+
     call sacar_sprites_de_pantalla
     call recolocate_player 
-    call DISSCR ;Apagamos la pantalla
+    ;call DISSCR ;Apagamos la pantalla
     ld a,(screen)
     add 1
     ld (screen),a ; aumentamos en contador de pantallas
-    ;ld a,0
-    ;ld (in_game),a ; ponemos para que finalice la pantalla y carguemos con el basic la siguiente
     call load_screens
     call hud
     call ENASCR
     ;posicinamos los enemigos
     ld a,(screen)
+    cp 1
+    jp z, recolocate_enemies_screen_1
     cp 2
     jp z, recolocate_enemies_screen_2
     cp 3
@@ -258,12 +375,18 @@ is_final_screen:
 message_level: db "Level",0
 message_lives: db "Lives",0
 message_score: db "Score",0
+message_msx_spain_presents: db "MSXzSPAINzPRESENTS",0
+message_disco: db "DISCO",0
+message_start_game: db "1.start game",0
+message_press_any_key_to_start: db "PRESSzSPACEzKEYzTOzSTART",0
+
 
 map_buffer: ds 704 ;768-64 es el mapa o tabla de nombres de VRAM copiada aquí
 MAPS_DIRECTION: equ #c001
 MAP_SIZE: equ 704 ;son 22 líneas de 32 bytes cada línea
 ;Store_Sprite_Collision: db 0
 COMIENZO_TILE_NUMEROS: equ 86
+
 buffer_numeros: ds 8
 TILE_DOOR: equ 55
 TILE_SOLID: equ 32

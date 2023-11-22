@@ -82,6 +82,8 @@ move_player_right:
     ld a,0
     ld (ix+player.collision),a
     ret
+
+    
 right_es_impar:
     ld a, 1*4
     ld (ix+player.pattern_def),a ;le metemos el sprite que mira hacia la derecha 2
@@ -249,11 +251,13 @@ colision_player:
     ld a,1
     ld (ix+player.collision),a
     ret
+    
 recolocate_player:
     ld a,150
     ld (ix+player.y),a
     ld a,8
     ld (ix+player.x),a
+    ;call update_player
     ret
 botella_cogida:
     call efecto_coge_botella

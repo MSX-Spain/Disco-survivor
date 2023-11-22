@@ -10,11 +10,11 @@
     org #8500              ; org se utiliza para decirle al z80 en que posición de memoria empieza nuestro programa (es la 33280 en decimal), en hezadecimal sería #8200
         
 INICIO:
-screen: db 1
-in_game: db 0
-lives: db 8
+screen: db 0
+game_over: db 0
+lives: db 0
 score: db 0,0
-
+in_game: db 0
 ;esta es la entrada principal
 MAIN:
     ;ld a,1 ; le ponemos la música ingame
@@ -29,8 +29,8 @@ MAIN:
     call CHGMOD
 
     call show_menu ; mostramos el menu
-    ld a,1
-    ld (in_game),a ; ponemos la variable que le dice al juego que está en marcha a 1
+    ;ld a,1
+    ;ld (in_game),a ; ponemos la variable que le dice al juego que está en marcha a 1
 	;CALL para_cancion
 loop:	
 	xor a
@@ -127,10 +127,10 @@ load_sprites:
 	ret
 
 show_menu:
-    ld h,10 ;x coordinate
+    ld h,5 ;x coordinate
     ld l,2  ;y coordinate
     call POSIT
-    ld hl, message_msx_spain
+    ld hl, message_msx_spain_presents
     call text_mode_print
 
     ld h,12 ;x coordinate
@@ -139,10 +139,16 @@ show_menu:
     ld hl, message_disco
     call text_mode_print
 
-    ld h,8  ;x coordinate
+    ld h,1  ;x coordinate
+    ld l,7  ;y coordinate
+    call POSIT
+    ld hl, message_description
+    call text_mode_print
+
+    ld h,1  ;x coordinate
     ld l,12  ;y coordinate
     call POSIT
-    ld hl, message_start_game
+    ld hl, message_description_english
     call text_mode_print
 
     ld h,3  ;x coordinate
@@ -163,9 +169,10 @@ text_mode_print:
 
 message_msx_spain_presents: db "MSX spain presents",0
 message_disco: db "Disco",0
-message_start_game: db "1.Start game",0
+message_description: db "Deberas de recoger todas las botellas y ligarte a las chicas que veas, despues escapa por la salida",0
+message_description_english: db "You must collect all the bottles and flirt with the girls you see, then escape through the exit",0
 message_press_any_key_to_start: db "Press any key to start",0
-message_msx_spain: db "MSX spain",0 
+
 
 
     

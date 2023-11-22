@@ -7,6 +7,7 @@ rutina_previa equ #f202
 musica_activa: equ #8504
 efecto_activo: equ #8505
 inicilizar_tracker:
+    push ix
     ;Deactivamos las interrupciones
     di	
     ; hemos puesto a mano a 1 para que siempre se repita la canción en la variable PT3_SETUP
@@ -14,14 +15,13 @@ inicilizar_tracker:
     ;AND		11111110b
     ;LD		(PT3_SETUP), A
 
-
     ld a,(musica_activa)
     cp 1;Si es 1 es la música del menu
     jr z,.musica_menu
     cp 2
     jr z,.musica_ingame
     jr .inicializa_cancion
-.musica_menu
+.musica_menu;https://zxart.ee/spa/autores/c/cj-echo/wild-quaker3/
     ld hl, menu-99
     jr .inicializa_cancion
 .musica_ingame
@@ -35,7 +35,6 @@ inicilizar_tracker:
     ld bc,5
     ldir
 
-
     ;instalamos nuestra rutina
     ld a,#c3
     ld (HTIMI),a
@@ -43,9 +42,7 @@ inicilizar_tracker:
     ld (HTIMI+1), hl
     ;Activamos las interrupciones
 	ei 
-
-
-
+    
     ;inicializacion del reproductor de efectos sonoros
     ;ld a,(efecto_activo)
     ;or a ; si el efecto está activo nos activará el flag z
@@ -53,6 +50,7 @@ inicilizar_tracker:
     LD		HL, sfx_bank
     CALL	ayFX_SETUP
     ;Volvemos al basic
+    pop ix
     ret
 
 reproducir_bloque_musica:
@@ -84,14 +82,14 @@ reproducir_bloque_musica:
 para_cancion:
     ;volvemos a poner los 5 bytes que tenía
     di
-    ld hl,rutina_previa
-    ld de,HTIMI
-    ld bc,5
-    ldir
-    ;call PT3_MUTE
-    xor a
-    ld (musica_activa),a
-    ;ei
+    ;ld hl,rutina_previa
+    ;ld de,HTIMI
+    ;ld bc,5
+    ;ldir
+    call PT3_MUTE
+    ;xor a
+    ;ld (musica_activa),a
+    ei
     ret
 
 sigue_musica:
@@ -121,7 +119,11 @@ efecto_coge_botella:
     LD			C, 1
     CALL		ayFX_INIT
     ret
-
+efecto_mata_player:
+    LD			A, 13; 
+    LD			C, 1
+    CALL		ayFX_INIT
+    ret
 
 
 tracker:
