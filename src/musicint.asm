@@ -98,14 +98,14 @@ sigue_musica:
     ret
 efecto_toque:
     LD			A, 0; 
-    LD			C, 0
+    LD			C, 1
     CALL		ayFX_INIT
     ret
 efecto_golpe:
     ld a,0
     ld (efecto_activo),a
     LD			A, 1; 
-    LD			C, 0
+    LD			C, 1
     CALL		ayFX_INIT
     ret
 efecto_romper:
@@ -129,9 +129,9 @@ efecto_mata_player:
 tracker:
 	include	"./src/PT3_player.asm"					;replayer de PT3
 ingame:
-	incbin "./src/musicdisc.pt3"			
+	incbin "./src/dd.pt3"	
 menu:
-	incbin "./src/menu.pt3"			
+    incbin "./src/musicdisc.pt3"		
 
 ;efectos de https://github.com/Threetwosevensixseven/ayfxedit-improved
 fx_player:

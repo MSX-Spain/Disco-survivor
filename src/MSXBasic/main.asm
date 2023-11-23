@@ -48,7 +48,7 @@ MAIN:
 
     ld a,0
     ld (screen),a
-    ld a,2
+    ld a,7
     ld (lives),a
     ld a,0
     ld (game_over),a
