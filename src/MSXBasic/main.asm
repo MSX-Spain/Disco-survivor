@@ -22,7 +22,7 @@ MAIN:
 
 	call create_player
 	call create_enemy
-    call ENASCR; encendemos la pantalla
+    
  
 .in_game:
     call para_cancion
@@ -31,6 +31,7 @@ MAIN:
     call inicilizar_tracker
     
     call clear_screen
+    call ENASCR; encendemos la pantalla
     call show_menu
     call KILBUF
     ;call CHGET
