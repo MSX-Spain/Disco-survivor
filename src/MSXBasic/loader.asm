@@ -17,9 +17,23 @@ score: db 0,0
 in_game: db 0
 ;esta es la entrada principal
 MAIN:
+
     ;ld a,1 ; le ponemos la música ingame
     ;ld (musica_activa),a
     ;call inicilizar_tracker
+    call load_screen_loader_full
+    ;call load_screen_loader
+    ; le ponemos un pequeño retraso
+    ld de,#70
+wait:    
+    halt
+    dec de
+    ld a,d
+    or e
+    jp nz,wait
+
+
+
  	call KILBUF ; limpiamos el buffer, por si vlvemos a empezar
  	call ERAFNK ; kitamos las letras de las teclas función
     ld a,1
@@ -29,29 +43,47 @@ MAIN:
     call CHGMOD
 
     call show_menu ; mostramos el menu
-    ;ld a,1
-    ;ld (in_game),a ; ponemos la variable que le dice al juego que está en marcha a 1
 	;CALL para_cancion
-loop:	
+loop_menu:	
 	xor a
 	call GTTRIG
 	;GTTRIG devuelve 255 si está presionada y 0 sino lo está
 	cp 0
-	jp z, loop
-	
-		
+	jp z, loop_menu
 	call set_screen2_16x16
     call DISSCR ;apagamos la pantalla, la encendermos en el main.asm
 	call load_sprites
 	call load_tileset
-
-
-	;call para_cancion
-
-
 	ret
 
-
+load_screen_loader_full:
+    ;ld hl,loader_screen+7;sumamos +7 sin comprensión
+    ld hl,loader_screen;saltamos los 7 primeros bytes de la cabecera del bin
+    ld de,0
+    ld bc, #3807
+    call depack_VRAM
+    ;call LDIRVM
+    ret
+load_screen_loader:
+    ;Tileset
+    ld hl, loader_screen_BANK_PATTERN_0 
+    ld de, #0000     
+    ld bc, #1800
+    ;call  LDIRVM 
+    call depack_VRAM   
+    ;Colores
+    ld hl, loader_screen_BANK_COLOR_0
+    ld de, #2000 
+    ld bc, #1800 
+    ;call  LDIRVM
+    call depack_VRAM
+    ;-Mapa o tabla de nombres
+    ld hl, loader_screen_SCREEN_0_0
+    ld de, #1800 
+    ld bc, #300
+    ;call  LDIRVM
+    call depack_VRAM 
+    ret
 
 
 
@@ -175,14 +207,36 @@ message_press_any_key_to_start: db "Press any key to start",0
 
 
 
-    
-	include "src/vars_msxBios.asm"    
-	include "src/vars_msxSystem.asm"    
+    ;includes para sjasmplus
+	;include "src/vars_msxBios.asm"    
+	;include "src/vars_msxSystem.asm"    
+	;include "src/tileset-definition.asm"
+	;include "src/tileset-color.asm"
+	;include "src/spriteset.asm"
+    ;include "./src/musicint.asm"
 
-	include "src/tileset-definition.asm"
-	include "src/tileset-color.asm"
-	include "src/spriteset.asm"
+    include "../vars_msxBios.asm"    
+	include "../vars_msxSystem.asm"    
+	include "../tileset-definition.asm"
+	include "../tileset-color.asm"
+	include "../spriteset.asm"
+    include "../musicint.asm"
+depack_VRAM:
+    include "../PL_VRAM_Depack.asm"
+loader_screen:
+    incbin "../../assets/DISCOIM.S02.plet5";creado con pletter5b.exe
+;    incbin "../../assets/DISCOIM.S02";creado con msxviewer
 
-    include "./src/musicint.asm"
- 
+
+loader_screen_BANK_PATTERN_0:
+    ;include "../../assets/nMSXTiles/loader-screen/tiles.asm"
+    ;incbin "../../assets/nMSXTiles/loader-screen/tiles.out.plet5";creado con pletter5b
+
+loader_screen_BANK_COLOR_0:
+    ;include "../../assets/nMSXTiles/loader-screen/tiles-color.asm"
+    ;incbin "../../assets/nMSXTiles/loader-screen/tiles-color.out.plet5";creado con pletter5be
+
+loader_screen_SCREEN_0_0:
+    ;include "../../assets/nMSXTiles/loader-screen/mapa.asm"
+    ;incbin "../../assets/nMSXTiles/loader-screen/mapa.out.plet5" ;creado con pletter5b
 FINAL:

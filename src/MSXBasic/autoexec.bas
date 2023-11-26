@@ -3,15 +3,15 @@
 1 'De la dirección #c000 en adelante keremos meter los mapas'
 1 '15 clear 200, &hc000
 1 'primero cargamos la pantalla de carga'
-20 bload "discoim.s02",s
+1 '20 bload "discoim.s02",s
 1 'hacemos una pekeña àusa'
-30 for i=0 to 1000:next
+1 '30 for i=0 to 1000:next
 1 'ponemos el reproductor de música en bf00
 1 '35 bload"musicint.bin"
 1 '2. Cargamos el lodaer en la dirección #8000 el cual tendrá las variables de screen (#8001), ingame(#8002), vidas(#8003) y puntuación(#8004-#8005)'
 40 bload"loader.bin",r
 1 'La dirección don se almacenan los mapas es a partir de #c000'
-50 bload "screen1.bin",r
+1 '50 bload "screen1.bin",r
 60 bload "main.bin",r 
 1 '100 bload "screen2.bin",r
 1 '110 bload "main.bin",r 

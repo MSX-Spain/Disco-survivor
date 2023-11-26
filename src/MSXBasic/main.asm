@@ -344,7 +344,8 @@ increase_screen:
 
     ret
 load_screens:
-    ld hl, MAPS_DIRECTION
+    ;ld hl, MAPS_DIRECTION
+    ld hl, maps_tiled
     ld bc, MAP_SIZE
     ld a,(screen)
 .loop_load_screens:
@@ -418,13 +419,25 @@ COLOR_GRIS: equ 14
 COLOR_BLANCO: equ 15
 
 
-    
-	include "src/vars_msxBios.asm"    
-	include "src/vars_msxSystem.asm"    
+    ;Includes para sjasmplus
+	;include "src/vars_msxBios.asm"    
+	;include "src/vars_msxSystem.asm"    
+	;include "src/MSXBasic/player.asm"    
+	;include "src/MSXBasic/enemies.asm"    
+    ;include "./src/musicint.asm"
 
-	include "src/MSXBasic/player.asm"    
-	include "src/MSXBasic/enemies.asm"    
 
-    include "./src/musicint.asm"
+    include "../vars_msxBios.asm"    
+	include "../vars_msxSystem.asm"    
+	include "player.asm"    
+	include "enemies.asm"    
+    include "../musicint.asm"
+depack_VRAM:
+    include "../PL_VRAM_Depack.asm"   
+maps_tiled:
+    ;incbin "../../assets/maps-tiled-data/map-screen1.out.plet5"
+    include "../../assets/tiled/data/map-screen1.asm"
+
+
 
 FINAL:

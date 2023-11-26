@@ -141,30 +141,34 @@ goto:eof
         rem sjasmplus: https://github.com/z00m128/sjasmplus
         rem Documentation: https://z00m128.github.io/sjasmplus/documentation.html
         if not exist obj mkdir obj
-        tools\assemblers\sjasmplus\windows\sjasmplus.exe --sym=obj\loader.sym --lst=obj\loader.lst src\MSXBasic\loader.asm 
-        tools\assemblers\sjasmplus\windows\sjasmplus.exe --sym=obj\main.sym --lst=obj\main.lst src\MSXBasic\main.asm 
-        tools\assemblers\sjasmplus\windows\sjasmplus.exe --sym=obj\musicint.sym --lst=obj\musicint.lst src\musicint.asm 
+        rem tools\assemblers\sjasmplus\windows\sjasmplus.exe --sym=obj\loader.sym --lst=obj\loader.lst src\MSXBasic\loader.asm 
+        rem tools\assemblers\sjasmplus\windows\sjasmplus.exe --sym=obj\main.sym --lst=obj\main.lst src\MSXBasic\main.asm 
+        rem tools\assemblers\sjasmplus\windows\sjasmplus.exe --sym=obj\musicint.sym --lst=obj\musicint.lst src\musicint.asm 
 
 
-        tools\assemblers\sjasmplus\windows\sjasmplus.exe .\assets\maps-tiled\map-screen1.asm 
-        tools\assemblers\sjasmplus\windows\sjasmplus.exe .\assets\maps-tiled\map-screen2.asm 
-        tools\assemblers\sjasmplus\windows\sjasmplus.exe .\assets\maps-tiled\map-screen3.asm 
-        tools\assemblers\sjasmplus\windows\sjasmplus.exe .\assets\maps-tiled\map-screen4.asm 
+        rem tools\assemblers\sjasmplus\windows\sjasmplus.exe .\assets\maps-tiled\map-screen1.asm 
+        rem tools\assemblers\sjasmplus\windows\sjasmplus.exe .\assets\maps-tiled\map-screen2.asm 
+        rem tools\assemblers\sjasmplus\windows\sjasmplus.exe .\assets\maps-tiled\map-screen3.asm 
+        rem tools\assemblers\sjasmplus\windows\sjasmplus.exe .\assets\maps-tiled\map-screen4.asm 
          
         rem sjasm
-        rem tools\assemblers\sjasm\sjasm.exe MSXBasic\src\main.asm 
-
+        tools\assemblers\sjasm\sjasm.exe src\MSXBasic\loader.asm 
+        tools\assemblers\sjasm\sjasm.exe src\MSXBasic\main.asm 
+       
         rem asMSX: https://github.com/Fubukimaru/asMSX
         rem tools\assemblers\asMSX\win32\asmsx.exe MSXBasic\src\main.asm
 
         rem /************Preparando archivos******************/
         move /Y main.bin .\obj
         move /Y loader.bin .\obj
-        move /Y screen1.bin .\obj
-        move /Y screen2.bin .\obj
-        move /Y screen3.bin .\obj
-        move /Y screen4.bin .\obj
-        move /Y musicint.bin .\obj
+        move /Y src\MSXBasic\loader.lst .\obj
+        move /Y src\MSXBasic\main.lst .\obj
+      
+        rem move /Y screen1.bin .\obj
+        rem move /Y screen2.bin .\obj
+        rem move /Y screen3.bin .\obj
+        rem move /Y screen4.bin .\obj
+        rem move /Y musicint.bin .\obj
         rem /************creando carpeta dsk******************/
         if not exist dsk mkdir dsk
         for /R .\obj %%a in (*.bin) do (

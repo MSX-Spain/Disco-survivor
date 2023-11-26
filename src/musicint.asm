@@ -125,18 +125,25 @@ efecto_mata_player:
     CALL		ayFX_INIT
     ret
 
+;includes para sjasmplus
+;tracker:
+;	include	"./src/PT3_player.asm"					
+;ingame:
+;	incbin "./src/dd.pt3"	
+;menu:
+;    incbin "./src/musicdisc.pt3"		
+;fx_player:
+;    include	"./src/ayFX_player.asm"	
+;sfx_bank:
+;	incbin "./src/sfx.afb"
 
 tracker:
-	include	"./src/PT3_player.asm"					;replayer de PT3
+	include	"PT3_player.asm"			
 ingame:
-	incbin "./src/dd.pt3"	
+	incbin "dd.pt3"	
 menu:
-    incbin "./src/musicdisc.pt3"		
-
-;efectos de https://github.com/Threetwosevensixseven/ayfxedit-improved
+    incbin "musicdisc.pt3"		
 fx_player:
-    include	"./src/ayFX_player.asm"	
+    include	"ayFX_player.asm"	;efectos de https://github.com/Threetwosevensixseven/ayfxedit-improved
 sfx_bank:
-	incbin "./src/sfx.afb"
-
-
+	incbin "sfx.afb"

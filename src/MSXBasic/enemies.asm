@@ -556,7 +556,7 @@ render_enemies:
     ld hl, 6912; aquí se podría poner la variable del sistema GRPATR
     ld l,(iy+enemy.plane)
     ;intercambiamos los valores para que tengamos en el registro "de" la dirección de la memoria que necesita LDIRVM
-    ex hl,de
+    ex de,hl
     ld hl, template_enemy1
     ld bc, 4; 4 bytes para copiar
     push de

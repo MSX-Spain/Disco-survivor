@@ -293,7 +293,7 @@ botella_cogida:
     push hl
     ld de, map_buffer
     add hl,de
-    ex hl,de
+    ex de,hl
     ld hl, tile_negro
     ld bc, 1
     ldir
@@ -301,7 +301,7 @@ botella_cogida:
 
     ld de, 6144
     add hl, de
-    ex hl, de
+    ex de,hl
     
 
     ld hl, tile_negro
