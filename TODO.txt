@@ -1,4 +1,3 @@
--Sistema de colisiones con sprites no funciona
--Crear sistema para ralentizar sprites
+-Sistema de colisiones con sprites no funciona bien
 -Crear 12 pantallas
--En cada pantalla saca a algun sprite, cambialo de color, cambia sus coordenadas
+-El golpe se escucha depues de soltar la tecla

@@ -142,4 +142,61 @@ recolocate_enemies:
     ld (iy+enemy.type),a
     
     ret
+
     
+;lEYENDO MAPAS
+;------------------------  
+load_screens:
+    ld hl, MAPS_DIRECTION
+    ld bc, MAP_SIZE
+    ld a,(screen)
+.loop_load_screens:
+    cp 1
+    jr z, .es_cero
+    sub 1
+    add hl, bc
+    jr .loop_load_screens
+.es_cero:
+    ld de, map_buffer 
+    ld bc, MAP_SIZE
+    LDIR
+    ;ponemos el mapa en la VRAM
+    ld hl, map_buffer
+    ld de, 6144 
+	;Le quitamos 64 ya que keremos pintar el HUD en las últimas 2 líneas de la pantalla
+    ld bc, MAP_SIZE
+    call  LDIRVM
+    ret
+is_final_screen:
+    ld a,1
+    ld (screen),a
+    call load_screens
+    ret
+
+
+;COMPRIMIENDO PANTALLAS
+;------------------------
+load_screen_loader:
+    ;Tileset
+    ld hl, loader_screen_BANK_PATTERN_0 
+    ld de, #0000     
+    ld bc, #1800
+    ;call  LDIRVM 
+    call depack_VRAM   
+    ;Colores
+    ld hl, loader_screen_BANK_COLOR_0
+    ld de, #2000 
+    ld bc, #1800 
+    ;call  LDIRVM
+    call depack_VRAM
+    ;-Mapa o tabla de nombres
+    ld hl, loader_screen_SCREEN_0_0
+    ld de, #1800 
+    ld bc, #300
+    ;call  LDIRVM
+    call depack_VRAM 
+    ret
+depack_VRAM:
+    include "src/PL_VRAM_Depack.asm"
+loader_screen:
+    incbin "./assets/DISCOIM.S02.plet5";creado con pletter5b.exe

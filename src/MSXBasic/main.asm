@@ -340,24 +340,94 @@ increase_screen:
     cp 4
     jp z, recolocate_enemies_screen_4
     cp 5
-    jr z, is_final_screen
+    jp z, recolocate_enemies_screen_4
+    cp 6
+    jp z, recolocate_enemies_screen_4
+    cp 7
+    jp z, recolocate_enemies_screen_4
+    cp 8
+    jp z, recolocate_enemies_screen_4
+    cp 9
+    jp z, recolocate_enemies_screen_4
+    cp 10
+    jp z, recolocate_enemies_screen_4
+    cp 11
+    jp z, recolocate_enemies_screen_4
+    cp 12
+    jp z, is_final_screen
 
     ret
 load_screens:
-    ;ld hl, MAPS_DIRECTION
-    ld hl, maps_tiled
-    ld bc, MAP_SIZE
     ld a,(screen)
-.loop_load_screens:
     cp 1
-    jr z, .es_cero
-    sub 1
-    add hl, bc
-    jr .loop_load_screens
-.es_cero:
+    jr z, .load_screen1
+    cp 2
+    jr z, .load_screen2
+    cp 3
+    jr z, .load_screen3
+    cp 4
+    jr z, .load_screen4
+    cp 5
+    jr z, .load_screen5
+    cp 6
+    jr z, .load_screen6
+    cp 7
+    jr z, .load_screen7
+    cp 8
+    jr z, .load_screen8
+    cp 9
+    jr z, .load_screen9
+    cp 10
+    jr z, .load_screen10
+    cp 11
+    jr z, .load_screen11
+    cp 12
+    jr z, .load_screen12
+    jr .next
+.load_screen1:
+    ld hl, maps_tiled1
+    jr .next
+.load_screen2:
+    ld hl, maps_tiled2
+    jr .next
+.load_screen3:
+    ld hl, maps_tiled3
+    jr .next
+.load_screen4:
+    ld hl, maps_tiled4
+    jr .next
+.load_screen5:
+    ld hl, maps_tiled5
+    jr .next
+.load_screen6:
+    ld hl, maps_tiled6
+    jr .next
+.load_screen7:
+    ld hl, maps_tiled7
+    jr .next
+.load_screen8:
+    ld hl, maps_tiled8
+    jr .next
+.load_screen9:
+    ld hl, maps_tiled9
+    jr .next
+.load_screen10:
+    ld hl, maps_tiled10
+    jr .next
+.load_screen11:
+    ld hl, maps_tiled11
+    jr .next
+.load_screen12:
+    ld hl, maps_tiled12
+
+.next:
     ld de, map_buffer 
     ld bc, MAP_SIZE
-    LDIR
+    push ix
+    push hl
+    call depack_RAM
+    pop hl
+    pop ix  
     ;ponemos el mapa en la VRAM
     ld hl, map_buffer
     ld de, 6144 
@@ -419,24 +489,39 @@ COLOR_GRIS: equ 14
 COLOR_BLANCO: equ 15
 
 
-    ;Includes para sjasmplus
-	;include "src/vars_msxBios.asm"    
-	;include "src/vars_msxSystem.asm"    
-	;include "src/MSXBasic/player.asm"    
-	;include "src/MSXBasic/enemies.asm"    
-    ;include "./src/musicint.asm"
+;Includes para sjasmplus
+	include "src/vars_msxBios.asm"    
+	include "src/vars_msxSystem.asm"    
+	include "src/MSXBasic/player.asm"    
+	include "src/MSXBasic/enemies.asm"    
+    include "src/musicint.asm"
+depack_RAM:
+    include "src/dzx0_fast.asm" ;cuando crees los archivos ponle que salte 8 bits (la cabcerea + el ret): zx0.exe +8  map-screen1.bin 
+maps_tiled1:
+    incbin "./assets/tiled/map-screen1.bin.zx0"
+maps_tiled2:
+    incbin "./assets/tiled/map-screen2.bin.zx0"
+maps_tiled3:
+    incbin "./assets/tiled/map-screen3.bin.zx0"
+maps_tiled4:
+    incbin "./assets/tiled/map-screen4.bin.zx0"
+maps_tiled5:
+    incbin "./assets/tiled/map-screen5.bin.zx0"
+maps_tiled6:
+    incbin "./assets/tiled/map-screen6.bin.zx0"
+maps_tiled7:
+    incbin "./assets/tiled/map-screen7.bin.zx0"
+maps_tiled8:
+    incbin "./assets/tiled/map-screen8.bin.zx0"
+maps_tiled9:
+    incbin "./assets/tiled/map-screen9.bin.zx0"
+maps_tiled10:
+    incbin "./assets/tiled/map-screen10.bin.zx0"
+maps_tiled11:
+    incbin "./assets/tiled/map-screen11.bin.zx0"
+maps_tiled12:
+    incbin "./assets/tiled/map-screen12.bin.zx0"
 
-
-    include "../vars_msxBios.asm"    
-	include "../vars_msxSystem.asm"    
-	include "player.asm"    
-	include "enemies.asm"    
-    include "../musicint.asm"
-depack_VRAM:
-    include "../PL_VRAM_Depack.asm"   
-maps_tiled:
-    ;incbin "../../assets/maps-tiled-data/map-screen1.out.plet5"
-    include "../../assets/tiled/data/map-screen1.asm"
 
 
 

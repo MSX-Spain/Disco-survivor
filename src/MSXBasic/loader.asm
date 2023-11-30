@@ -17,13 +17,8 @@ score: db 0,0
 in_game: db 0
 ;esta es la entrada principal
 MAIN:
-
-    ;ld a,1 ; le ponemos la música ingame
-    ;ld (musica_activa),a
-    ;call inicilizar_tracker
     call load_screen_loader_full
-    ;call load_screen_loader
-    ; le ponemos un pequeño retraso
+    ;le ponemos un pequeño retraso
     ld de,#70
 wait:    
     halt
@@ -64,29 +59,6 @@ load_screen_loader_full:
     call depack_VRAM
     ;call LDIRVM
     ret
-load_screen_loader:
-    ;Tileset
-    ld hl, loader_screen_BANK_PATTERN_0 
-    ld de, #0000     
-    ld bc, #1800
-    ;call  LDIRVM 
-    call depack_VRAM   
-    ;Colores
-    ld hl, loader_screen_BANK_COLOR_0
-    ld de, #2000 
-    ld bc, #1800 
-    ;call  LDIRVM
-    call depack_VRAM
-    ;-Mapa o tabla de nombres
-    ld hl, loader_screen_SCREEN_0_0
-    ld de, #1800 
-    ld bc, #300
-    ;call  LDIRVM
-    call depack_VRAM 
-    ret
-
-
-
 	
 load_tileset:
 	;banco 0
@@ -207,36 +179,17 @@ message_press_any_key_to_start: db "Press any key to start",0
 
 
 
-    ;includes para sjasmplus
-	;include "src/vars_msxBios.asm"    
-	;include "src/vars_msxSystem.asm"    
-	;include "src/tileset-definition.asm"
-	;include "src/tileset-color.asm"
-	;include "src/spriteset.asm"
-    ;include "./src/musicint.asm"
-
-    include "../vars_msxBios.asm"    
-	include "../vars_msxSystem.asm"    
-	include "../tileset-definition.asm"
-	include "../tileset-color.asm"
-	include "../spriteset.asm"
-    include "../musicint.asm"
+;includes para sjasmplus
+	include "src/vars_msxBios.asm"    
+	include "src/vars_msxSystem.asm"    
+	include "src/tileset-definition.asm"
+	include "src/tileset-color.asm"
+	include "src/spriteset.asm"
+    include "./src/musicint.asm"
 depack_VRAM:
-    include "../PL_VRAM_Depack.asm"
+    include "src/PL_VRAM_Depack.asm"
 loader_screen:
-    incbin "../../assets/DISCOIM.S02.plet5";creado con pletter5b.exe
-;    incbin "../../assets/DISCOIM.S02";creado con msxviewer
+    incbin "./assets/DISCOIM.S02.plet5";creado con pletter5b.exe
 
 
-loader_screen_BANK_PATTERN_0:
-    ;include "../../assets/nMSXTiles/loader-screen/tiles.asm"
-    ;incbin "../../assets/nMSXTiles/loader-screen/tiles.out.plet5";creado con pletter5b
-
-loader_screen_BANK_COLOR_0:
-    ;include "../../assets/nMSXTiles/loader-screen/tiles-color.asm"
-    ;incbin "../../assets/nMSXTiles/loader-screen/tiles-color.out.plet5";creado con pletter5be
-
-loader_screen_SCREEN_0_0:
-    ;include "../../assets/nMSXTiles/loader-screen/mapa.asm"
-    ;incbin "../../assets/nMSXTiles/loader-screen/mapa.out.plet5" ;creado con pletter5b
 FINAL:

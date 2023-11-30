@@ -127,8 +127,8 @@ goto:eof
         rem echo 50 bload "main.bin",r >> dsk/autoexec.bas
         rem echo 60 a=usr(0):print #1 "Loading level..."a >> dsk/autoexec.bas
         rem echo 100 goto 100  >> dsk/autoexec.bas
-        copy .\src\MSXBasic\autoexec.bas .\dsk
-        copy /Y .\src\discoim.s02 .\dsk
+        copy /Y .\src\MSXBasic\autoexec.bas .\dsk
+        copy /Y .\assets\discoim.s02 .\dsk
 
         rem /************Pantallas******************/
         rem java -jar -m=a -o=assets\maps-tiled\screen0.tmx
@@ -141,19 +141,12 @@ goto:eof
         rem sjasmplus: https://github.com/z00m128/sjasmplus
         rem Documentation: https://z00m128.github.io/sjasmplus/documentation.html
         if not exist obj mkdir obj
-        rem tools\assemblers\sjasmplus\windows\sjasmplus.exe --sym=obj\loader.sym --lst=obj\loader.lst src\MSXBasic\loader.asm 
-        rem tools\assemblers\sjasmplus\windows\sjasmplus.exe --sym=obj\main.sym --lst=obj\main.lst src\MSXBasic\main.asm 
-        rem tools\assemblers\sjasmplus\windows\sjasmplus.exe --sym=obj\musicint.sym --lst=obj\musicint.lst src\musicint.asm 
-
-
-        rem tools\assemblers\sjasmplus\windows\sjasmplus.exe .\assets\maps-tiled\map-screen1.asm 
-        rem tools\assemblers\sjasmplus\windows\sjasmplus.exe .\assets\maps-tiled\map-screen2.asm 
-        rem tools\assemblers\sjasmplus\windows\sjasmplus.exe .\assets\maps-tiled\map-screen3.asm 
-        rem tools\assemblers\sjasmplus\windows\sjasmplus.exe .\assets\maps-tiled\map-screen4.asm 
-         
+        tools\assemblers\sjasmplus\windows\sjasmplus.exe --sym=obj\loader.sym --lst=obj\loader.lst src\MSXBasic\loader.asm 
+        tools\assemblers\sjasmplus\windows\sjasmplus.exe --sym=obj\main.sym --lst=obj\main.lst src\MSXBasic\main.asm 
+   
         rem sjasm
-        tools\assemblers\sjasm\sjasm.exe src\MSXBasic\loader.asm 
-        tools\assemblers\sjasm\sjasm.exe src\MSXBasic\main.asm 
+        rem tools\assemblers\sjasm\sjasm.exe src\MSXBasic\loader.asm 
+        rem tools\assemblers\sjasm\sjasm.exe src\MSXBasic\main.asm 
        
         rem asMSX: https://github.com/Fubukimaru/asMSX
         rem tools\assemblers\asMSX\win32\asmsx.exe MSXBasic\src\main.asm
@@ -161,8 +154,8 @@ goto:eof
         rem /************Preparando archivos******************/
         move /Y main.bin .\obj
         move /Y loader.bin .\obj
-        move /Y src\MSXBasic\loader.lst .\obj
-        move /Y src\MSXBasic\main.lst .\obj
+        rem move /Y src\MSXBasic\loader.lst .\obj
+        rem move /Y src\MSXBasic\main.lst .\obj
       
         rem move /Y screen1.bin .\obj
         rem move /Y screen2.bin .\obj
