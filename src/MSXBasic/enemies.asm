@@ -23,12 +23,12 @@ template_enemy1:
 
 template_enemy2:
     db 100
-    db 200
-    db ENEMIGO_GORDO
+    db 140
+    db ENEMIGO_ENANO_DERECHA
     db COLOR_AZUL_OSCURO;color azul oscuro
     db 3*4; plano 2*4 bytes
     db RIGHT;;direction
-    db COMPORTAMIENTO_PERSIGUE
+    db COMPORTAMIENTO_REBOTA_HORIZONTAL
     db 0
     db 0
 template_enemy3:
@@ -44,7 +44,7 @@ template_enemy3:
 template_enemy4:
     db 152
     db 190
-    db ENEMIGO_PANZON
+    db ENEMIGO_PANZON+8
     db COLOR_AMARILLO
     db 5*4; plano 4*4 bytes
     db RIGHT;direction
@@ -91,7 +91,8 @@ ENEMIGO_GORDO:      equ 48;el sprute 12, 13,14 y 15*4
 ENEMIGO_CABEZON:    equ 64;sprite 16*4
 ENEMIGO_PANZON:     equ 80;sprite 20*4
 ENEMIGO_GORRA:      equ 96;sprite 24*4
-ENEMIGO_ENANO:      equ 112;sprite 28*4
+ENEMIGO_ENANO_DERECHA:      equ 112;sprite 28*4
+ENEMIGO_ENANO_DIZQUIERDA:      equ 120;sprite 28*4
 ENEMIGO_VIRUS1:     equ 128;sprite 32*4
 ENEMIGO_VIRUS2:     equ 144;sprite 36*4
 ENEMIGO_VIRUS3:     equ 160;sprite 40*4
@@ -211,7 +212,6 @@ move0_enemigo_baila:
 move3_enemigo_corre_de_izquierda_a_derecha:
     call move_enemy_left
     ;chequeo límite izquiedo
-    ;obtenemos la posición x
     ld a,(iy+enemy.x)
     ;si la posición x es 8
     cp 8
@@ -285,6 +285,18 @@ move4_enemigo_te_persigue:
     cp MAX_RETARDO_REDIBUJADO
     jp nc,.end_move4_enemigo_te_persigue
 
+    ;actuializamos el sprite según la dirección
+    ld a,(iy+enemy.direction)
+    cp LEFT
+    jr z,.asignar_sprite_mirando_izquierda
+    ld a,ENEMIGO_ENANO_DERECHA
+    ld (iy+enemy.pattern_def),a
+    jr .next
+.asignar_sprite_mirando_izquierda:
+    ld a,ENEMIGO_ENANO_DIZQUIERDA
+    ld (iy+enemy.pattern_def),a
+.next:
+
     ld a,(ix+player.x)
     ld b,(iy+enemy.x)
     sub b
@@ -292,12 +304,12 @@ move4_enemigo_te_persigue:
     ld a, (iy+enemy.x)
     add 1
     ld (iy+enemy.x),a
-    jr .next
+    jr .next2
 .el_player_esta_a_la_izquierda:
     ld a, (iy+enemy.x)
     sub 1
     ld (iy+enemy.x),a
-.next
+.next2
     ld a, (ix+player.y)
     ld b, (iy+enemy.y)
     sub b
@@ -332,12 +344,12 @@ move5_enemigo_rebota_izquierda_derecha:
 .es_7:
     ld a,3
     ld (iy+enemy.direction),a
-    ;call BEEP
+    call change_sprite
     jr .end_move5
 .es_3:
     ld a,7
     ld (iy+enemy.direction),a
-    ;call BEEP
+    call change_sprite
 .end_move5:
     ret
 
@@ -413,7 +425,20 @@ enemy_down_es_impar:
     ld (iy+enemy.pattern_def),a 
     ret
 
-
+change_sprite:
+    ld a,(iy+enemy.direction)
+    cp LEFT
+    jr z,.change_to_left
+    ld a, (iy+enemy.pattern_def)
+    sub 4
+    ld (iy+enemy.pattern_def),a 
+    jr .end_change_sprite
+.change_to_left:
+    ld a, (iy+enemy.pattern_def)
+    add 4
+    ld (iy+enemy.pattern_def),a 
+.end_change_sprite:
+    ret
 
 ;;--------------------------------------
 ;;  CHECKCOLISION
@@ -482,16 +507,9 @@ colision_enemy:
     cp DOWN
     jr z, .is_DOWN
 .is_LEFT:
-
-    ld a, (iy+enemy.pattern_def)
-    add 8
-    ld (iy+enemy.pattern_def),a 
     ld a,RIGHT
     jr .next
 .is_RIGHT:
-    ld a, (iy+enemy.pattern_def)
-    sub 8
-    ld (iy+enemy.pattern_def),a 
     ld a,LEFT
     jr .next
 .is_UP:
@@ -511,6 +529,10 @@ colision_enemy:
     jr z,.add_8_to_y
     cp COMPORTAMIENTO_PERSIGUE
     jr z,.add_8_to_y
+    cp COMPORTAMIENTO_REBOTA_VERTICAL
+    jr z, .end_colision_enemy
+    jr z,.add_8_to_y
+    call change_sprite
     jr .end_colision_enemy
 .add_8_to_y:
     ld a,(iy+enemy.y)

@@ -48,13 +48,20 @@ Pincha aquí para ver como depurar en ensamblador:
 
 ## Spriteset
 
-<img src="docs/spritesheet2.PNG" width="400px">
+
+<img src="docs/spritesheet1.PNG" width="400px">
 
 <img src="docs/spritesheet2.PNG" width="400px">
 
 <img src="docs/spritesheet3.PNG" width="400px">
 
-<img src="docs/spritesheet4.PNG" width="100px">
+<img src="docs/spritesheet4.PNG" width="400px">
+
+<img src="docs/spritesheet5.PNG" width="400px">
+
+<img src="docs/spritesheet6.PNG" width="400px">
+
+<img src="docs/spritesheet7.PNG" width="400px">
 
 ## Tileset
 

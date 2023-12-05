@@ -29,12 +29,11 @@ recolocate_and_level_screen_1:
     ld (iy+enemy.y),a
     ld a,20*8;x
     ld (iy+enemy.x),a
-
     ld a,COMPORTAMIENTO_REBOTA_VERTICAL
     ld (iy+enemy.type),a
 
     ld iy, template_enemy2
-    ld a,12*8;y
+    ld a,16*8;y
     ld (iy+enemy.y),a
     ld a,25*8;x
     ld (iy+enemy.x),a
@@ -143,7 +142,7 @@ recolocate_and_level_screen_3:
     ld (iy+enemy.y),a
     ld a,14*8;x
     ld (iy+enemy.x),a
-    ld a,ENEMIGO_ENANO
+    ld a,ENEMIGO_ENANO_DERECHA
     ld (iy+enemy.pattern_def),a
     ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
     ld (iy+enemy.type),a
@@ -189,7 +188,7 @@ recolocate_and_level_screen_4:
     ld (iy+enemy.y),a
     ld a,14*8;x
     ld (iy+enemy.x),a
-    ld a,ENEMIGO_ENANO
+    ld a,ENEMIGO_ENANO_DERECHA
     ld (iy+enemy.pattern_def),a
     ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
     ld (iy+enemy.type),a
