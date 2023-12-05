@@ -1,39 +1,12 @@
-
-; For details see the WEB document at:  http://map.grauw.nl/resources/dos2_functioncalls.php
-
-
-TRANSPARENT  equ  0
-BLACK        equ  1
-GREEN        equ  2
-LIGHT_GREEN  equ  3
-DARK_BLUE    equ  4
-LIGHT_BLUE   equ  5
-DARK_RED     equ  6
-CYAN         equ  7
-RED          equ  8
-LIGHT_RED    equ  9
-DARK_YELLOW  equ 10
-LIGHT_YELLOW equ 11
-DARK_GREEN   equ 12
-MAGENTA      equ 13
-GRAY         equ 14
-GREY         equ 14
-WHITE        equ 15
-
-
-
 ; MSX System Variables v0.9 17/05/2018
 ; definitions & texts by MSX Assembly Page
 ; http://map.grauw.nl/resources/msxsystemvars.php
 
 
 
-// Z80 Wait for interrupt or reset
-//#define  HALT __asm halt __endasm
-
-// MSX System Variables
-#define VDPDR  0x0006 // Base port address for VDP data read
-#define VDPDW  0x0007 // Base port address for VDP data write
+/; MSX System Variables localizadas en main ROM
+VDP.DR: equ 0x0006 ; Base port address for VDP data read
+VDP.DW: equ  0x0007 ; Base port address for VDP data write
 
 //0x002B	//1	Basic ROM version
 /*

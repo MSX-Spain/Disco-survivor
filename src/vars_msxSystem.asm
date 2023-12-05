@@ -3,7 +3,40 @@
 ;variables del sistema
 ;https://www.msx.org/wiki/System_variables_and_work_area
 
+;TRANSPARENT  equ  0
+;BLACK        equ  1
+;GREEN        equ  2
+;LIGHT_GREEN  equ  3
+;DARK_BLUE    equ  4
+;LIGHT_BLUE   equ  5
+;DARK_RED     equ  6
+;CYAN         equ  7
+;RED          equ  8
+;LIGHT_RED    equ  9
+;DARK_YELLOW  equ 10
+;LIGHT_YELLOW equ 11
+;DARK_GREEN   equ 12
+;MAGENTA      equ 13
+;GRAY         equ 14
+;GREY         equ 14
+;WHITE        equ 15
 
+COLOR_TRASPARENTE: equ 0
+COLOR_NEGRO: equ 1
+COLOR_VERDE_MEDIO: equ 2
+COLOR_VERDE_CLARO: equ 3
+COLOR_AZUL_OSCURO: equ 4
+COLOR_AZUL_MEDIO: equ 5
+COLOR_ROJO_OSCURO: equ 6
+COLOR_AZUL_CLARO:equ 7
+COLOR_ROJO_MEDIO: equ 8
+COLOR_ROSA: equ 9
+COLOR_AMARILLO: equ 10
+COLOR_AMBAR: equ 11
+COLOR_VERDE_OSCURO: equ 12
+COLOR_LILA: equ 13
+COLOR_GRIS: equ 14
+COLOR_BLANCO: equ 15
 
 ;Slots
 ;---------

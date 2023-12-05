@@ -153,12 +153,24 @@ get_block:
 
 hud:
     ;------------------------Level--------------------------
-    ld a,0
-    ld (GRPACX),a ;GRPACX contiene la posición X del cursor en modo gráfico
-    ld a,184
-    ld (GRPACY),a
-    ld hl, message_level
-    call graphics_print
+    ;ld a,0
+    ;ld (GRPACX),a ;GRPACX contiene la posición X del cursor en modo gráfico
+    ;ld a,184
+    ;ld (GRPACY),a
+    ;ld hl, message_level
+    ;call graphics_print
+    ld a, 122
+    ld hl,6851
+    call WRTVRM
+    ld a, 123
+    ld hl,6852
+    call WRTVRM
+    ld a, 154
+    ld hl,6883
+    call WRTVRM
+    ld a, 155
+    ld hl,6884
+    call WRTVRM
     ;1 nos estudiamos donde está la dirección de la tabla de nombres en VRAM
     ;2.obtenemos el número de tile que keremos poner
     ld a,(screen)
@@ -170,10 +182,10 @@ hud:
 
 
     ;------------------------Score--------------------------
-    ld a,90; posicionamos el cursor en la posición x ..
-    ld (GRPACX),a
-    ld hl, message_score
-    call graphics_print
+    ;ld a,90; posicionamos el cursor en la posición x ..
+    ;ld (GRPACX),a
+    ;ld hl, message_score
+    ;call graphics_print
     
     ;*******CON EL GRPPT SLAEN LOS NÚMERO MACHADOS***/
     ;ld a,140; posicionamos el cursor en la posición x ..
@@ -188,6 +200,20 @@ hud:
 ;    ld a,48
 ;    call GRPPRT
     ;**************************************************
+    ld a, 124
+    ld hl,6862
+    call WRTVRM
+    ld a, 125
+    ld hl,6863
+    call WRTVRM
+    ld a, 156
+    ld hl,6894
+    call WRTVRM
+    ld a, 157
+    ld hl,6895
+    call WRTVRM
+
+
     ld hl, 6898
     ld a,(score)
     ld b, COMIENZO_TILE_NUMEROS
@@ -207,17 +233,31 @@ hud:
     ;---------------------Fin score--------------------------
 
     ;------------------------Lives--------------------------
-    ld a,190
-    ld (GRPACX),a
-    ld hl, message_lives
-    call graphics_print
-    ld a,240
-    ld (GRPACX),a
+    ;ld a,190
+    ;ld (GRPACX),a
+    ;ld hl, message_lives
+    ;call graphics_print
+    ;ld a,240
+    ;ld (GRPACX),a
 
     ;ld b,47    ;metemos en b el valor correspondiente al 0 en la tabla ascii
     ;ld a,(lives)    ;para sumar a y b tendremos que echar mano de ld a
     ;add b
     ;call GRPPRT 
+
+    ld a, 126
+    ld hl,6873
+    call WRTVRM
+    ld a, 127
+    ld hl,6874
+    call WRTVRM
+    ld a, 158
+    ld hl,6905
+    call WRTVRM
+    ld a, 159
+    ld hl,6906
+    call WRTVRM
+
 
     ld a,(lives)
     ld b, COMIENZO_TILE_NUMEROS
@@ -326,115 +366,38 @@ increase_screen:
     ld a,(screen)
     add 1
     ld (screen),a ; aumentamos en contador de pantallas
-    call load_screens
     call hud
-    call ENASCR
+    ;call ENASCR
     ;posicinamos los enemigos
     ld a,(screen)
     cp 1
-    jp z, recolocate_enemies_screen_1
+    jp z, recolocate_and_level_screen_1
     cp 2
-    jp z, recolocate_enemies_screen_2
+    jp z, recolocate_and_level_screen_2
     cp 3
-    jp z, recolocate_enemies_screen_3
+    jp z, recolocate_and_level_screen_3
     cp 4
-    jp z, recolocate_enemies_screen_4
+    jp z, recolocate_and_level_screen_4
     cp 5
-    jp z, recolocate_enemies_screen_4
+    jp z, recolocate_and_level_screen_5
     cp 6
-    jp z, recolocate_enemies_screen_4
+    jp z, recolocate_and_level_screen_6
     cp 7
-    jp z, recolocate_enemies_screen_4
+    jp z, recolocate_and_level_screen_7
     cp 8
-    jp z, recolocate_enemies_screen_4
+    jp z, recolocate_and_level_screen_8
     cp 9
-    jp z, recolocate_enemies_screen_4
+    jp z, recolocate_and_level_screen_9
     cp 10
-    jp z, recolocate_enemies_screen_4
+    jp z, recolocate_and_level_screen_10
     cp 11
-    jp z, recolocate_enemies_screen_4
+    jp z, recolocate_and_level_screen_11
     cp 12
     jp z, is_final_screen
 
-    ret
-load_screens:
-    ld a,(screen)
-    cp 1
-    jr z, .load_screen1
-    cp 2
-    jr z, .load_screen2
-    cp 3
-    jr z, .load_screen3
-    cp 4
-    jr z, .load_screen4
-    cp 5
-    jr z, .load_screen5
-    cp 6
-    jr z, .load_screen6
-    cp 7
-    jr z, .load_screen7
-    cp 8
-    jr z, .load_screen8
-    cp 9
-    jr z, .load_screen9
-    cp 10
-    jr z, .load_screen10
-    cp 11
-    jr z, .load_screen11
-    cp 12
-    jr z, .load_screen12
-    jr .next
-.load_screen1:
-    ld hl, maps_tiled1
-    jr .next
-.load_screen2:
-    ld hl, maps_tiled2
-    jr .next
-.load_screen3:
-    ld hl, maps_tiled3
-    jr .next
-.load_screen4:
-    ld hl, maps_tiled4
-    jr .next
-.load_screen5:
-    ld hl, maps_tiled5
-    jr .next
-.load_screen6:
-    ld hl, maps_tiled6
-    jr .next
-.load_screen7:
-    ld hl, maps_tiled7
-    jr .next
-.load_screen8:
-    ld hl, maps_tiled8
-    jr .next
-.load_screen9:
-    ld hl, maps_tiled9
-    jr .next
-.load_screen10:
-    ld hl, maps_tiled10
-    jr .next
-.load_screen11:
-    ld hl, maps_tiled11
-    jr .next
-.load_screen12:
-    ld hl, maps_tiled12
 
-.next:
-    ld de, map_buffer 
-    ld bc, MAP_SIZE
-    push ix
-    push hl
-    call depack_RAM
-    pop hl
-    pop ix  
-    ;ponemos el mapa en la VRAM
-    ld hl, map_buffer
-    ld de, 6144 
-	;Le quitamos 64 ya que keremos pintar el HUD en las últimas 2 líneas de la pantalla
-    ld bc, MAP_SIZE
-    call  LDIRVM
     ret
+
 is_final_screen:
     ld a,1
     ld (screen),a
@@ -471,22 +434,7 @@ DOWN: equ 5
 LEFT: equ 7
 RIGHT: equ 3 
 
-COLOR_TRASPARENTE: equ 0
-COLOR_NEGRO: equ 1
-COLOR_VERDE_MEDIO: equ 2
-COLOR_VERDE_CLARO: equ 3
-COLOR_AZUL_OSCURO: equ 4
-COLOR_AZUL_MEDIO: equ 5
-COLOR_ROJO_OSCURO: equ 6
-COLOR_AZUL_CLARO:equ 7
-COLOR_ROJO_MEDIO: equ 8
-COLOR_ROSA: equ 9
-COLOR_AMARILLO: equ 10
-COLOR_AMBAR: equ 11
-COLOR_VERDE_OSCURO: equ 12
-COLOR_LILA: equ 13
-COLOR_GRIS: equ 14
-COLOR_BLANCO: equ 15
+
 
 
 ;Includes para sjasmplus
@@ -494,6 +442,7 @@ COLOR_BLANCO: equ 15
 	include "src/vars_msxSystem.asm"    
 	include "src/MSXBasic/player.asm"    
 	include "src/MSXBasic/enemies.asm"    
+	include "src/MSXBasic/recolocate_and_level.asm"    
     include "src/musicint.asm"
 depack_RAM:
     include "src/dzx0_fast.asm" ;cuando crees los archivos ponle que salte 8 bits (la cabcerea + el ret): zx0.exe +8  map-screen1.bin 

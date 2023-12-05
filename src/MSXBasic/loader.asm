@@ -65,33 +65,33 @@ load_tileset:
 	;la rutina LDIRVM necesita haber cargado previamente con de la dirección de inicio de la VRAM.https://sites.google.com/site/multivac7/files-images/TMS9918_VRAMmap_G2_300dpi.png,así es como está formado el VDP en screen 2          
 	ld hl, tileset_definition
 	ld de, 0 ; aquí es posible utilizar la variable del sistema GRPCGP
-	ld bc, 1024  ; son los 8 bytes por 128 tiles que hemos dibujado=1024 bytes
+	ld bc, 1280  ; son los 8 bytes por 160 tiles que hemos dibujado=1280 bytes
 	call  LDIRVM 
 	;banco 1
 	ld hl, tileset_definition
 	ld de, 2048
-	ld bc, 1024 
+	ld bc, 1280 
 	call  LDIRVM 
 	;banco 2
 	ld hl, tileset_definition
 	ld de, 4096
-	ld bc, 1024  
+	ld bc, 1280  
 	call  LDIRVM 
 
 	;banco 0
 	ld hl, tileset_color
     ld de, 8192 ; aquí es posible utilizar la variable del sistema GRPCOL
-    ld bc, 1024  
+    ld bc, 1280  
     call  LDIRVM 
 	;banco 1
 	ld hl, tileset_color
     ld de, 10240  
-    ld bc, 1024  
+    ld bc, 1280  
     call  LDIRVM 
 	;banco 2
 	ld hl, tileset_color
     ld de, 12288  
-    ld bc, 1024  
+    ld bc, 1280  
     call  LDIRVM 
 	ret
 
@@ -126,7 +126,7 @@ load_sprites:
     ;hemos dibujado 20 sprites
     ld hl, sprites_definition
     ld de, 14336; #3800, aquí es posible utilizar la variable del sistema GRPPAT
-    ld bc, 32*22; 32 bytes por 22 sprites dibujados
+    ld bc, 32*47; 32 bytes por 47 sprites dibujados
     call  LDIRVM 
 	ret
 

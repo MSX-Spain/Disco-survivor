@@ -13,7 +13,7 @@ frame       db      0; nos auyda con las animaciones
 template_enemy1:
     db 60
     db 160
-    db ENEMIGO_ROBOT
+    db ENEMIGO_COLETA
     db COLOR_AZUL_MEDIO
     db 6*4; plano 4*4 bytes
     db UP;direction
@@ -28,13 +28,13 @@ template_enemy2:
     db COLOR_AZUL_OSCURO;color azul oscuro
     db 3*4; plano 2*4 bytes
     db RIGHT;;direction
-    db COMPORTAMIENTO_REBOTA_HORIZONTAL
+    db COMPORTAMIENTO_PERSIGUE
     db 0
     db 0
 template_enemy3:
     db 144
     db 230
-    db ENEMIGO_COLETA
+    db ENEMIGO_CABEZON
     db COLOR_ROJO_OSCURO
     db 4*4; plano 3*4 bytes
     db RIGHT;;direction
@@ -44,7 +44,7 @@ template_enemy3:
 template_enemy4:
     db 152
     db 190
-    db ENEMIGO_ENANO
+    db ENEMIGO_PANZON
     db COLOR_AMARILLO
     db 5*4; plano 4*4 bytes
     db RIGHT;direction
@@ -54,7 +54,7 @@ template_enemy4:
 template_enemy5:
     db 130
     db 239; en la 1 pantalla empezará en la posición x 230, el límite derecho es 240
-    db ENEMIGO_ENANO
+    db ENEMIGO_PANZON
     db COLOR_VERDE_OSCURO
     db 2*4; plano 1*4 bytes
     db RIGHT;direction
@@ -64,7 +64,7 @@ template_enemy5:
 template_enemy6:
     db 120
     db 120
-    db ENEMIGO_ENANO
+    db ENEMIGO_GORDO
     db COLOR_ROJO_MEDIO
     db 7*4; plano 4*4 bytes
     db RIGHT;direction
@@ -82,17 +82,20 @@ enemy_active: db 0; nos permite hacer el loop y en update_enemies y cuando llegu
 counter_enemy: db 0
 ;randData solo es utilizada por la rutina random
 randData: db 0,0
-MAX_RETARDO_REDIBUJADO equ 20
+MAX_RETARDO_REDIBUJADO equ 30
 
-ENEMIGO_COLETA:     equ 32;8 y 9*4, el octavo sprite
-ENEMIGO_GORDO:      equ 44;el sprite 10 y 11*4
-ENEMIGO_ROBOT:      equ 52;el sprute 12 y 13*4
-ENEMIGO_ENANO:      equ 60;el sprite 14 y 15*4
-ENEMIGO_MONSTRUO:   equ 68;sprite 17*4
-ENEMIGO_VIRUS1:     equ 72;sprite 18*4
-ENEMIGO_VIRUS2:     equ 76;sprite 19*4
-ENEMIGO_VIRUS3:     equ 80;sprite 20*4
-ENEMIGO_VIRUS4:     equ 84;sprite 21*4
+
+
+ENEMIGO_COLETA:     equ 32;8 ,9,10 y 11*4 el octavo sprite
+ENEMIGO_GORDO:      equ 48;el sprute 12, 13,14 y 15*4
+ENEMIGO_CABEZON:    equ 64;sprite 16*4
+ENEMIGO_PANZON:     equ 80;sprite 20*4
+ENEMIGO_GORRA:      equ 96;sprite 24*4
+ENEMIGO_ENANO:      equ 112;sprite 28*4
+ENEMIGO_VIRUS1:     equ 128;sprite 32*4
+ENEMIGO_VIRUS2:     equ 144;sprite 36*4
+ENEMIGO_VIRUS3:     equ 160;sprite 40*4
+ENEMIGO_VIRUS4:     equ 176;sprite 44*4
 
 COMPORTAMIENTO_CORRE_DE_IZQUIERDA_A_DERCHA: equ 0
 COMPORTAMIENTO_CORRE_DE_DERECHA_A_IZQUIERDA: equ 1
@@ -350,12 +353,12 @@ move_enemy_right:
     and 1
     jp z, enemy_right_es_impar
     ld a, (iy+enemy.pattern_def);
-    sub 4
+    add 4
     ld (iy+enemy.pattern_def),a 
     ret
 enemy_right_es_impar:
     ld a, (iy+enemy.pattern_def);el aprite 12*4=es el byte 48 
-    add 4;hay que multiplicar por 4 ya que son sprites de 16x16 pixeles, es decir 4 sprites realmente
+    sub 4;hay que multiplicar por 4 ya que son sprites de 16x16 pixeles, es decir 4 sprites realmente
     ld (iy+enemy.pattern_def),a 
     ret
 
@@ -367,12 +370,12 @@ move_enemy_left:
     and 1
     jp z, enemy_left_es_impar
     ld a, (iy+enemy.pattern_def);
-    sub 4
+    add 4
     ld (iy+enemy.pattern_def),a 
     ret
 enemy_left_es_impar:
     ld a, (iy+enemy.pattern_def);el aprite 12*4=es el byte 48 
-    add 4;hay que multiplicar por 4 ya que son sprites de 16x16 pixeles, es decir 4 sprites realmente
+    sub 4;hay que multiplicar por 4 ya que son sprites de 16x16 pixeles, es decir 4 sprites realmente
     ld (iy+enemy.pattern_def),a 
     ret
 
@@ -384,12 +387,12 @@ move_enemy_up:
     and 1
     jp z, enemy_up_es_impar
     ld a, (iy+enemy.pattern_def);
-    sub 4
+    add 4
     ld (iy+enemy.pattern_def),a 
     ret
 enemy_up_es_impar:
     ld a, (iy+enemy.pattern_def);el aprite 12*4=es el byte 48 
-    add 4;hay que multiplicar por 4 ya que son sprites de 16x16 pixeles, es decir 4 sprites realmente
+    sub 4;hay que multiplicar por 4 ya que son sprites de 16x16 pixeles, es decir 4 sprites realmente
     ld (iy+enemy.pattern_def),a 
     ret
 
@@ -401,12 +404,12 @@ move_enemy_down:
     and 1
     jp z, enemy_down_es_impar
     ld a, (iy+enemy.pattern_def);
-    sub 4
+    add 4
     ld (iy+enemy.pattern_def),a 
     ret
 enemy_down_es_impar:
     ld a, (iy+enemy.pattern_def);el aprite 12*4=es el byte 48 
-    add 4;hay que multiplicar por 4 ya que son sprites de 16x16 pixeles, es decir 4 sprites realmente
+    sub 4;hay que multiplicar por 4 ya que son sprites de 16x16 pixeles, es decir 4 sprites realmente
     ld (iy+enemy.pattern_def),a 
     ret
 
@@ -479,16 +482,23 @@ colision_enemy:
     cp DOWN
     jr z, .is_DOWN
 .is_LEFT:
-    ld a,3
+
+    ld a, (iy+enemy.pattern_def)
+    add 8
+    ld (iy+enemy.pattern_def),a 
+    ld a,RIGHT
     jr .next
 .is_RIGHT:
-    ld a,7
+    ld a, (iy+enemy.pattern_def)
+    sub 8
+    ld (iy+enemy.pattern_def),a 
+    ld a,LEFT
     jr .next
 .is_UP:
-    ld a,5
+    ld a,DOWN
     jr .next
 .is_DOWN:
-    ld a,1
+    ld a,UP
     jr .next
 
 
@@ -500,8 +510,6 @@ colision_enemy:
     cp COMPORTAMIENTO_CORRE_DE_DERECHA_A_IZQUIERDA
     jr z,.add_8_to_y
     cp COMPORTAMIENTO_PERSIGUE
-    
-    
     jr z,.add_8_to_y
     jr .end_colision_enemy
 .add_8_to_y:
@@ -658,178 +666,6 @@ kill_enemy:
     ld (iy+enemy.x),a
 
     ret
-recolocate_enemies_screen_1:
-    ld iy, template_enemy1
-    ld a,7*8;y
-    ld (iy+enemy.y),a
-    ld a,20*8;x
-    ld (iy+enemy.x),a
 
-    ld a,COMPORTAMIENTO_REBOTA_VERTICAL
-    ld (iy+enemy.type),a
-
-    ld iy, template_enemy2
-    ld a,12*8;y
-    ld (iy+enemy.y),a
-    ld a,25*8;x
-    ld (iy+enemy.x),a
-    ld a,COMPORTAMIENTO_REBOTA_HORIZONTAL
-    ld (iy+enemy.type),a
-
-    ld iy, template_enemy3
-    ld a,18*8;y
-    ld (iy+enemy.y),a
-    ld a,28*8;x
-    ld (iy+enemy.x),a
-    ld a,COMPORTAMIENTO_REBOTA_HORIZONTAL
-    ld (iy+enemy.type),a
-
-    ld iy, template_enemy4
-    ld a,20*8;y
-    ld (iy+enemy.y),a
-    ld a,23*8;x
-    ld (iy+enemy.x),a
-
-    ld iy, template_enemy5
-    ld a,16*8;y
-    ld (iy+enemy.y),a
-    ld a,25*8;x
-    ld (iy+enemy.x),a
-
-    ld iy, template_enemy6
-    ld a,15*8;y
-    ld (iy+enemy.y),a
-    ld a,15*8;x
-    ld (iy+enemy.x),a
-
-    ret
-;en la pantalla 2 pondremos 2 que reboten horizonales junto a la puerta y otros 2 que eboten en el pasillo grande
-recolocate_enemies_screen_2:
-    ld iy, template_enemy1
-    ld a,18*8;y
-    ld (iy+enemy.y),a
-    ld a,11*8;x
-    ld (iy+enemy.x),a
-    ld a,ENEMIGO_COLETA
-    ld (iy+enemy.pattern_def),a
-    ld a, COMPORTAMIENTO_REBOTA_VERTICAL
-    ld (iy+enemy.type),a
-
-    ld iy, template_enemy2
-    ld a,18*8;y
-    ld (iy+enemy.y),a
-    ld a,20*8;x
-    ld (iy+enemy.x),a
-    ld a,ENEMIGO_GORDO
-    ld (iy+enemy.pattern_def),a
-    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
-    ld (iy+enemy.type),a
-
-    ld iy, template_enemy3
-    ld a,10*8;y
-    ld (iy+enemy.y),a
-    ld a,14*8;x
-    ld (iy+enemy.x),a
-    ld a,ENEMIGO_GORDO
-    ld (iy+enemy.pattern_def),a
-    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
-    ld (iy+enemy.type),a
-    
-    ld iy, template_enemy4
-    ld a,12*8;y
-    ld (iy+enemy.y),a
-    ld a,16*8;x
-    ld (iy+enemy.x),a
-    ld a,ENEMIGO_GORDO
-    ld (iy+enemy.pattern_def),a
-    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
-    ld (iy+enemy.type),a
-
-    ret
-recolocate_enemies_screen_3:
-    ld iy, template_enemy1
-    ld a,18*8;y
-    ld (iy+enemy.y),a
-    ld a,11*8;x
-    ld (iy+enemy.x),a
-    ld a,ENEMIGO_COLETA
-    ld (iy+enemy.pattern_def),a
-    ld a, COMPORTAMIENTO_REBOTA_VERTICAL
-    ld (iy+enemy.type),a
-
-    ld iy, template_enemy2
-    ld a,9*8;y
-    ld (iy+enemy.y),a
-    ld a,14*8;x
-    ld (iy+enemy.x),a
-    ld a,ENEMIGO_ENANO
-    ld (iy+enemy.pattern_def),a
-    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
-    ld (iy+enemy.type),a
-
-    ld iy, template_enemy3
-    ld a,7*8;y
-    ld (iy+enemy.y),a
-    ld a,14*8;x
-    ld (iy+enemy.x),a
-    ld a,ENEMIGO_MONSTRUO
-    ld (iy+enemy.pattern_def),a
-    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
-    ld (iy+enemy.type),a
-    
-    ld iy, template_enemy4
-    ld a,13*8;y
-    ld (iy+enemy.y),a
-    ld a,16*8;x
-    ld (iy+enemy.x),a
-    ld a,ENEMIGO_GORDO
-    ld (iy+enemy.pattern_def),a
-    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
-    ld (iy+enemy.type),a
-
-    ret
-
-recolocate_enemies_screen_4:
-    ld iy, template_enemy1
-    ld a,18*8;y
-    ld (iy+enemy.y),a
-    ld a,11*8;x
-    ld (iy+enemy.x),a
-    ld a,ENEMIGO_COLETA
-    ld (iy+enemy.pattern_def),a
-    ld a, COMPORTAMIENTO_REBOTA_VERTICAL
-    ld (iy+enemy.type),a
-
-    ld iy, template_enemy2
-    ld a,9*8;y
-    ld (iy+enemy.y),a
-    ld a,14*8;x
-    ld (iy+enemy.x),a
-    ld a,ENEMIGO_ENANO
-    ld (iy+enemy.pattern_def),a
-    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
-    ld (iy+enemy.type),a
-
-    ld iy, template_enemy3
-    ld a,7*8;y
-    ld (iy+enemy.y),a
-    ld a,14*8;x
-    ld (iy+enemy.x),a
-    ld a,ENEMIGO_MONSTRUO
-    ld (iy+enemy.pattern_def),a
-    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
-    ld (iy+enemy.type),a
-    
-    ld iy, template_enemy4
-    ld a,13*8;y
-    ld (iy+enemy.y),a
-    ld a,16*8;x
-    ld (iy+enemy.x),a
-    ld a,ENEMIGO_GORDO
-    ld (iy+enemy.pattern_def),a
-    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
-    ld (iy+enemy.type),a
-
-    ret
 
 
