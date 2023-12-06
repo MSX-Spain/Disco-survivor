@@ -34,7 +34,7 @@ MAIN:
     call ENASCR; encendemos la pantalla
     call show_menu
     call KILBUF
-    ;call CHGET
+
 .repetir_menu:
     ld a,0
     call GTTRIG
@@ -49,10 +49,10 @@ MAIN:
 
     ld a,0
     ld (screen),a
+    ld (game_over),a
+    ld (score),a
     ld a,7
     ld (lives),a
-    ld a,0
-    ld (game_over),a
     call increase_screen
 
     call main_loop
@@ -200,6 +200,7 @@ hud:
 ;    ld a,48
 ;    call GRPPRT
     ;**************************************************
+    ;pintamos los 4 tiles del score (el dibujo)
     ld a, 124
     ld hl,6862
     call WRTVRM
@@ -214,22 +215,40 @@ hud:
     call WRTVRM
 
 
-    ld hl, 6898
+
     ld a,(score)
     ld b, COMIENZO_TILE_NUMEROS
     add b
-.repetir_por_ser_mayor_que_9:
-    cp COMIENZO_TILE_NUMEROS+9
-    jr z,.es_mayor_que_COMIEZO_TILES_NUMEROS_mas_9
-    jr .next
-.es_mayor_que_COMIEZO_TILES_NUMEROS_mas_9:
-    inc hl
-    ld a,COMIENZO_TILE_NUMEROS
-    call WRTVRM ;ponemos un 0
-    jr .repetir_por_ser_mayor_que_9
-
-.next:
+    ld b,0; Ponemos b a 0 ya que será nuestro contador de decenas
+.repetir:
+    ;si score es mayor que 10
+    cp COMIENZO_TILE_NUMEROS+10 ;no dará carry si score es mayor que 10
+    jr nc, .es_mayor_que_10
+    ld hl, 6898
     call WRTVRM
+    jr .next
+.es_mayor_que_10:
+    inc b ; aumentamos el contador de decenas
+    sub 10
+    jr .repetir
+.next:
+    ;aki imprimimos las decenas almacenadas en b
+    ld hl, 6897
+    ld a,b
+    cp #a ;si el valor de b es 10 sumamos una vida y ponemos el score a 0
+    jr z, .sumar_vida_y_reiniciar_score
+    ld b, COMIENZO_TILE_NUMEROS
+    add b
+    call WRTVRM
+    jr .fin
+.sumar_vida_y_reiniciar_score:
+    xor a
+    ld (score),a
+    ld a,(lives)
+    inc a
+    ld (lives),a
+    call efecto_toque
+.fin:    
     ;---------------------Fin score--------------------------
 
     ;------------------------Lives--------------------------
@@ -329,7 +348,7 @@ show_menu:
 
     ld de, message_msx_spain_presents ; la dirección donde empiezan los bytes del texto
     ld b, 1;    posicón y
-    ld c, 8;    posicón x
+    ld c, 7;    posicón x
     call graphics_print_sc2
 
     ld de, message_disco 
@@ -339,7 +358,18 @@ show_menu:
 
     ld de, message_press_any_key_to_start 
     ld b, 7;    posicón y
-    ld c, 5;    posicón x
+    ld c, 2;    posicón x
+    call graphics_print_sc2
+    ret
+show_final:
+    ld de, message_congratulations 
+    ld b, 4;    posicón y
+    ld c, 13;    posicón x
+    call graphics_print_sc2
+
+    ld de, message_press_any_key_to_start 
+    ld b, 7;    posicón y
+    ld c, 2;    posicón x
     call graphics_print_sc2
     ret
 
@@ -389,10 +419,10 @@ increase_screen:
     cp 9
     jp z, recolocate_and_level_screen_9
     cp 10
-    jp z, recolocate_and_level_screen_10
-    cp 11
-    jp z, recolocate_and_level_screen_11
-    cp 12
+    ;jp z, recolocate_and_level_screen_10
+    ;cp 11
+    ;jp z, recolocate_and_level_screen_11
+    ;cp 12
     jp z, is_final_screen
 
 
@@ -400,8 +430,20 @@ increase_screen:
 
 is_final_screen:
     ld a,1
-    ld (screen),a
-    call load_screens
+    ld (game_over),a
+    call clear_screen
+    call show_final
+    call KILBUF
+
+.repetir_menu:
+    ld a,0
+    call GTTRIG
+    cp 0
+    jr z,.repetir_menu
+    ;ld a,1
+    ;ld (screen),a
+    ;call load_screens
+
     ret
 
 
@@ -410,11 +452,11 @@ is_final_screen:
 message_level: db "Level",0
 message_lives: db "Lives",0
 message_score: db "Score",0
-message_msx_spain_presents: db "MSXzSPAINzPRESENTS",0
+message_msx_spain_presents: db "MSXñSPAINñPRESENTS",0
 message_disco: db "DISCO",0
 message_start_game: db "1.start game",0
-message_press_any_key_to_start: db "PRESSzSPACEzKEYzTOzSTART",0
-
+message_press_any_key_to_start: db "PRESSñSPACEñKEYñTOñSTART",0
+message_congratulations: db "Congratulationsñyouñfinishedñtheñgame"
 
 map_buffer: ds 704 ;768-64 es el mapa o tabla de nombres de VRAM copiada aquí
 MAPS_DIRECTION: equ #c001

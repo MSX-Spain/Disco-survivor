@@ -150,13 +150,13 @@ show_menu:
     call text_mode_print
 
     ld h,1  ;x coordinate
-    ld l,12  ;y coordinate
+    ld l,13  ;y coordinate
     call POSIT
     ld hl, message_description_english
     call text_mode_print
 
     ld h,3  ;x coordinate
-    ld l,19 ;y coordinate
+    ld l,20 ;y coordinate
     call POSIT
     ld hl, message_press_any_key_to_start
     call text_mode_print
@@ -173,8 +173,8 @@ text_mode_print:
 
 message_msx_spain_presents: db "MSX spain presents",0
 message_disco: db "Disco",0
-message_description: db "Deberas de recoger todas las botellas y ligarte a las chicas que veas, despues escapa por la salida",0
-message_description_english: db "You must collect all the bottles and flirt with the girls you see, then escape through the exit",0
+message_description: db "Deberas de recoger todas las botellas, 100 botellas suman 1 vida y ligarte a las chicas que veas, despues escapa por la salida",0
+message_description_english: db "You must collect all the bottles, 100 bottles add up to 1 life and flirt with the girls you see, then escape through the exit",0
 message_press_any_key_to_start: db "Press any key to start",0
 
 
