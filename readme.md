@@ -44,7 +44,7 @@ Pincha aquí para ver como depurar en ensamblador:
 [Menu](docs/music-menu.mp3)
 
 
-<video controls="" autoplay="" name="media" width="200px" height="50px"><source src="docs/music-menu.mp3" type="audio/mpeg"  ></video>
+<a href="docs/music-menu.mp3"><video controls="" autoplay="" name="media" width="200px" height="50px"><source src="docs/music-menu.mp3" type="audio/mpeg"  ></video></a>
 
 
 [Ingame](docs/music-ingame.mp3)
