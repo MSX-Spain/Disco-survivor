@@ -43,14 +43,12 @@ Pincha aquí para ver como depurar en ensamblador:
 
 [Menu](docs/music-menu.mp3)
 
-[[{docs/music-menu.mp3}-{music-menu}]]
 
 <video controls="" autoplay="" name="media" width="200px" height="50px"><source src="docs/music-menu.mp3" type="audio/mpeg"  ></video>
 
 
 [Ingame](docs/music-ingame.mp3)
 
-[[{docs/music-ingame.mp3}-{music-ingame}]]
 
 <video controls="" autoplay="" name="media" width="200px" height="50px"><source src="docs/music-ingame.mp3" type="audio/mpeg" ></video>
 
@@ -58,7 +56,6 @@ Pincha aquí para ver como depurar en ensamblador:
 
 [Final](docs/music-final.mp3)
 
-[[{docs/music-final.mp3}-{music-final}]]
 
 <video controls="" autoplay="" name="media" width="200px" height="50px"><source src="docs/music-final.mp3" type="audio/mpeg"></video>
 
