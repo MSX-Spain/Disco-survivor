@@ -41,17 +41,17 @@ Pincha aquí para ver como depurar en ensamblador:
 
 
 
-~[Menu](docs/music-menu.mp3)
+[Menu](docs/music-menu.mp3)
 <video controls="" autoplay="" name="media" width="200px" height="50px"><source src="docs/music-menu.mp3" type="audio/mpeg"  ></video>
 
 
 
-~[Ingame](docs/music-ingame.mp3)
+[Ingame](docs/music-ingame.mp3)
 <video controls="" autoplay="" name="media" width="200px" height="50px"><source src="docs/music-ingame.mp3" type="audio/mpeg" ></video>
 
 
 
-~[Final](docs/music-final.mp3)
+[Final](docs/music-final.mp3)
 <video controls="" autoplay="" name="media" width="200px" height="50px"><source src="docs/music-final.mp3" type="audio/mpeg"></video>
 
 
