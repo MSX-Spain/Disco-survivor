@@ -39,20 +39,20 @@ Pincha aquí para ver como depurar en ensamblador:
 
 ## Audios
 
-### Menu:
+
 
 ~[Menu](docs/music-menu.mp3)
-<!--<video controls="" autoplay="" name="media" width="200px" height="50px"><source src="docs/music-menu.mp3" type="audio/mpeg"  ></video>-->
+<video controls="" autoplay="" name="media" width="200px" height="50px"><source src="docs/music-menu.mp3" type="audio/mpeg"  ></video>
 
-### Ingame:
+
 
 ~[Ingame](docs/music-ingame.mp3)
-<!--<video controls="" autoplay="" name="media" width="200px" height="50px"><source src="docs/music-ingame.mp3" type="audio/mpeg" ></video>-->
+<video controls="" autoplay="" name="media" width="200px" height="50px"><source src="docs/music-ingame.mp3" type="audio/mpeg" ></video>
 
-### Final:
+
 
 ~[Final](docs/music-final.mp3)
-<!--<video controls="" autoplay="" name="media" width="200px" height="50px"><source src="docs/music-final.mp3" type="audio/mpeg"></video>-->
+<video controls="" autoplay="" name="media" width="200px" height="50px"><source src="docs/music-final.mp3" type="audio/mpeg"></video>
 
 
 
