@@ -527,14 +527,22 @@ recolocate_and_level_screen_8:
     ld a, COMPORTAMIENTO_PERSIGUE
     ld (iy+enemy.type),a
     ret
+
+
+;-------------------------------------------------------------------------
+;-------------------------------------------------------------------------
+;------------------------- Screen 9 --------------------------------------
+;-------------------------------------------------------------------------
+;-------------------------------------------------------------------------   
+
 recolocate_and_level_screen_9:
     ld hl, maps_tiled9
     call load_screens
 
-        ld iy, template_enemy1
+    ld iy, template_enemy1
     ld a,14*8;y
     ld (iy+enemy.y),a
-    ld a,20*8;x
+    ld a,23*8;x
     ld (iy+enemy.x),a
     ld a,ENEMIGO_COLETA
     ld (iy+enemy.pattern_def),a
@@ -542,7 +550,7 @@ recolocate_and_level_screen_9:
     ld (iy+enemy.type),a
 
     ld iy, template_enemy2
-    ld a,9*8;y
+    ld a,1*8;y
     ld (iy+enemy.y),a
     ld a,14*8;x
     ld (iy+enemy.x),a
@@ -552,9 +560,9 @@ recolocate_and_level_screen_9:
     ld (iy+enemy.type),a
 
     ld iy, template_enemy3
-    ld a,7*8;y
+    ld a,5*8;y
     ld (iy+enemy.y),a
-    ld a,14*8;x
+    ld a,18*8;x
     ld (iy+enemy.x),a
     ld a,ENEMIGO_GORRA
     ld (iy+enemy.pattern_def),a
@@ -562,9 +570,9 @@ recolocate_and_level_screen_9:
     ld (iy+enemy.type),a
     
     ld iy, template_enemy4
-    ld a,13*8;y
+    ld a,11*8;y
     ld (iy+enemy.y),a
-    ld a,16*8;x
+    ld a,20*8;x
     ld (iy+enemy.x),a
     ld a,ENEMIGO_GORDO
     ld (iy+enemy.pattern_def),a
@@ -573,7 +581,7 @@ recolocate_and_level_screen_9:
 
 
     ld iy, template_enemy5
-    ld a,16*8;y
+    ld a,17*8;y
     ld (iy+enemy.y),a
     ld a,16*8;x
     ld (iy+enemy.x),a
@@ -583,7 +591,7 @@ recolocate_and_level_screen_9:
     ld (iy+enemy.type),a
 
     ld iy, template_enemy6
-    ld a,16*8;y
+    ld a,2*8;y
     ld (iy+enemy.y),a
     ld a,14*8;x
     ld (iy+enemy.x),a
@@ -592,102 +600,21 @@ recolocate_and_level_screen_9:
     ld a, COMPORTAMIENTO_PERSIGUE
     ld (iy+enemy.type),a
     ret
+
+;-------------------------------------------------------------------------
+;-------------------------------------------------------------------------
+;------------------------- Screen 10 --------------------------------------
+;-------------------------------------------------------------------------
+;-------------------------------------------------------------------------   
+
 recolocate_and_level_screen_10:
     ld hl, maps_tiled10
-    call load_screens
-
-        ld iy, template_enemy1
-    ld a,14*8;y
-    ld (iy+enemy.y),a
-    ld a,20*8;x
-    ld (iy+enemy.x),a
-    ld a,ENEMIGO_COLETA
-    ld (iy+enemy.pattern_def),a
-    ld a, COMPORTAMIENTO_REBOTA_VERTICAL
-    ld (iy+enemy.type),a
-
-    ld iy, template_enemy2
-    ld a,9*8;y
-    ld (iy+enemy.y),a
-    ld a,14*8;x
-    ld (iy+enemy.x),a
-    ld a,ENEMIGO_ENANO_DERECHA
-    ld (iy+enemy.pattern_def),a
-    ld a, COMPORTAMIENTO_PERSIGUE
-    ld (iy+enemy.type),a
-
-    ld iy, template_enemy3
-    ld a,7*8;y
-    ld (iy+enemy.y),a
-    ld a,14*8;x
-    ld (iy+enemy.x),a
-    ld a,ENEMIGO_GORRA
-    ld (iy+enemy.pattern_def),a
-    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
-    ld (iy+enemy.type),a
-    
-    ld iy, template_enemy4
-    ld a,13*8;y
-    ld (iy+enemy.y),a
-    ld a,16*8;x
-    ld (iy+enemy.x),a
-    ld a,ENEMIGO_GORDO
-    ld (iy+enemy.pattern_def),a
-    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
-    ld (iy+enemy.type),a
-    ret
-recolocate_and_level_screen_11:
-    ld hl, maps_tiled10
-    call load_screens
-
-        ld iy, template_enemy1
-    ld a,14*8;y
-    ld (iy+enemy.y),a
-    ld a,20*8;x
-    ld (iy+enemy.x),a
-    ld a,ENEMIGO_COLETA
-    ld (iy+enemy.pattern_def),a
-    ld a, COMPORTAMIENTO_REBOTA_VERTICAL
-    ld (iy+enemy.type),a
-
-    ld iy, template_enemy2
-    ld a,9*8;y
-    ld (iy+enemy.y),a
-    ld a,14*8;x
-    ld (iy+enemy.x),a
-    ld a,ENEMIGO_ENANO_DERECHA
-    ld (iy+enemy.pattern_def),a
-    ld a, COMPORTAMIENTO_PERSIGUE
-    ld (iy+enemy.type),a
-
-    ld iy, template_enemy3
-    ld a,7*8;y
-    ld (iy+enemy.y),a
-    ld a,14*8;x
-    ld (iy+enemy.x),a
-    ld a,ENEMIGO_GORRA
-    ld (iy+enemy.pattern_def),a
-    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
-    ld (iy+enemy.type),a
-    
-    ld iy, template_enemy4
-    ld a,13*8;y
-    ld (iy+enemy.y),a
-    ld a,16*8;x
-    ld (iy+enemy.x),a
-    ld a,ENEMIGO_GORDO
-    ld (iy+enemy.pattern_def),a
-    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
-    ld (iy+enemy.type),a
-    ret
-recolocate_and_level_screen_12:
-    ld hl, maps_tiled11
     call load_screens
 
     ld iy, template_enemy1
     ld a,14*8;y
     ld (iy+enemy.y),a
-    ld a,14*8;x
+    ld a,20*8;x
     ld (iy+enemy.x),a
     ld a,ENEMIGO_COLETA
     ld (iy+enemy.pattern_def),a
@@ -697,6 +624,73 @@ recolocate_and_level_screen_12:
     ld iy, template_enemy2
     ld a,9*8;y
     ld (iy+enemy.y),a
+    ld a,11*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_ENANO_DERECHA
+    ld (iy+enemy.pattern_def),a
+    ld a, COMPORTAMIENTO_PERSIGUE
+    ld (iy+enemy.type),a
+
+    ld iy, template_enemy3
+    ld a,11*8;y
+    ld (iy+enemy.y),a
+    ld a,9*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_GORRA
+    ld (iy+enemy.pattern_def),a
+    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
+    ld (iy+enemy.type),a
+    
+    ld iy, template_enemy4
+    ld a,5*8;y
+    ld (iy+enemy.y),a
+    ld a,13*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_GORDO
+    ld (iy+enemy.pattern_def),a
+    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
+    ld (iy+enemy.type),a
+
+    ld iy, template_enemy5
+    ld a,6*8;y
+    ld (iy+enemy.y),a
+    ld a,24*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_VIRUS2
+    ld (iy+enemy.pattern_def),a
+    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
+    ld (iy+enemy.type),a
+
+    ld iy, template_enemy6
+    ld a,18*8;y
+    ld (iy+enemy.y),a
+    ld a,15*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_VIRUS3
+    ld (iy+enemy.pattern_def),a
+    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
+    ld (iy+enemy.type),a
+    ret
+
+
+
+recolocate_and_level_screen_11:
+    ld hl, maps_tiled11
+    call load_screens
+
+    ld iy, template_enemy1
+    ld a,6*8;y
+    ld (iy+enemy.y),a
+    ld a,15*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_VIRUS2
+    ld (iy+enemy.pattern_def),a
+    ld a, COMPORTAMIENTO_REBOTA_VERTICAL
+    ld (iy+enemy.type),a
+
+    ld iy, template_enemy2
+    ld a,5*8;y
+    ld (iy+enemy.y),a
     ld a,14*8;x
     ld (iy+enemy.x),a
     ld a,ENEMIGO_ENANO_DERECHA
@@ -705,9 +699,9 @@ recolocate_and_level_screen_12:
     ld (iy+enemy.type),a
 
     ld iy, template_enemy3
-    ld a,7*8;y
+    ld a,3*8;y
     ld (iy+enemy.y),a
-    ld a,14*8;x
+    ld a,16*8;x
     ld (iy+enemy.x),a
     ld a,ENEMIGO_GORRA
     ld (iy+enemy.pattern_def),a
@@ -715,11 +709,100 @@ recolocate_and_level_screen_12:
     ld (iy+enemy.type),a
     
     ld iy, template_enemy4
-    ld a,13*8;y
+    ld a,4*8;y
+    ld (iy+enemy.y),a
+    ld a,12*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_GORDO
+    ld (iy+enemy.pattern_def),a
+    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
+    ld (iy+enemy.type),a
+
+    ld iy, template_enemy5
+    ld a,14*8;y
+    ld (iy+enemy.y),a
+    ld a,21*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_VIRUS4
+    ld (iy+enemy.pattern_def),a
+    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
+    ld (iy+enemy.type),a
+
+
+    ld iy, template_enemy6
+    ld a,17*8;y
     ld (iy+enemy.y),a
     ld a,16*8;x
     ld (iy+enemy.x),a
+    ld a,ENEMIGO_VIRUS2
+    ld (iy+enemy.pattern_def),a
+    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
+    ld (iy+enemy.type),a
+    ret
+recolocate_and_level_screen_12:
+    ld hl, maps_tiled12
+    call load_screens
+
+    ld iy, template_enemy1
+    ld a,14*8;y
+    ld (iy+enemy.y),a
+    ld a,26*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_COLETA
+    ld (iy+enemy.pattern_def),a
+    ld a, COMPORTAMIENTO_REBOTA_VERTICAL
+    ld (iy+enemy.type),a
+
+    ld iy, template_enemy2
+    ld a,5*8;y
+    ld (iy+enemy.y),a
+    ld a,10*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_ENANO_DERECHA
+    ld (iy+enemy.pattern_def),a
+    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
+    ld (iy+enemy.type),a
+
+    ld iy, template_enemy3
+    ld a,2*8;y
+    ld (iy+enemy.y),a
+    ld a,14*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_VIRUS3
+    ld (iy+enemy.pattern_def),a
+    ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
+    ld (iy+enemy.type),a
+    
+    ld iy, template_enemy4
+    ld a,11*8;y
+    ld (iy+enemy.y),a
+    ld a,16*8;x
+    ld (iy+enemy.x),a
+    ld a,UP
+    ld (iy+enemy.direction),a
     ld a,ENEMIGO_GORDO
+    ld (iy+enemy.pattern_def),a
+    ld a, COMPORTAMIENTO_REBOTA_VERTICAL
+    ld (iy+enemy.type),a
+
+    ld iy, template_enemy5
+    ld a,7*8;y
+    ld (iy+enemy.y),a
+    ld a,4*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_VIRUS1
+    ld (iy+enemy.pattern_def),a
+    ld a,UP
+    ld (iy+enemy.direction),a
+    ld a, COMPORTAMIENTO_REBOTA_VERTICAL
+    ld (iy+enemy.type),a
+
+    ld iy, template_enemy6
+    ld a,17*8;y
+    ld (iy+enemy.y),a
+    ld a,19*8;x
+    ld (iy+enemy.x),a
+    ld a,ENEMIGO_VIRUS2
     ld (iy+enemy.pattern_def),a
     ld a, COMPORTAMIENTO_REBOTA_HORIZONTAL
     ld (iy+enemy.type),a

@@ -18,6 +18,7 @@ score: equ #8503
 in_game: equ #8504
 
 
+
 MAIN:   
 
 	call create_player
@@ -32,15 +33,16 @@ MAIN:
     
     call clear_screen
     call ENASCR; encendemos la pantalla
-    call show_menu
     call KILBUF
+    call show_menu
 
-.repetir_menu:
-    ld a,0
-    call GTTRIG
-    cp 0
-    jr z,.repetir_menu
 
+;.repetir_menu:
+;    ld a,0
+;    call GTTRIG
+;    cp 0
+;    jr z,.repetir_menu
+    call CHGET
 
     call para_cancion
     ld a,2; le ponemos la música ingame
@@ -49,7 +51,9 @@ MAIN:
 
     ld a,0
     ld (screen),a
+    xor a
     ld (game_over),a
+    xor a
     ld (score),a
     ld a,7
     ld (lives),a
@@ -61,14 +65,17 @@ MAIN:
 
 main_loop:
     halt
-   
-	call update_player
-    call update_enemies
+    call update_player
     call render_player
-    call render_enemies
     ld a, (game_over)
     cp 1
     jr z,.end_main_loop
+
+    call update_enemies
+    call render_enemies
+
+
+    
 	jr main_loop
 .end_main_loop:
     call sacar_sprites_de_pantalla
@@ -361,22 +368,11 @@ show_menu:
     ld c, 2;    posicón x
     call graphics_print_sc2
     ret
-show_final:
-    ld de, message_congratulations 
-    ld b, 4;    posicón y
-    ld c, 13;    posicón x
-    call graphics_print_sc2
-
-    ld de, message_press_any_key_to_start 
-    ld b, 7;    posicón y
-    ld c, 2;    posicón x
-    call graphics_print_sc2
-    ret
 
 
 clear_screen:
     ld a,0
-    ld bc, MAP_SIZE+64
+    ld bc, 768
     ld hl, 6144
     call FILVRM
     ret
@@ -419,31 +415,78 @@ increase_screen:
     cp 9
     jp z, recolocate_and_level_screen_9
     cp 10
-    ;jp z, recolocate_and_level_screen_10
-    ;cp 11
-    ;jp z, recolocate_and_level_screen_11
-    ;cp 12
+    jp z, recolocate_and_level_screen_10
+    cp 11
+    jp z, recolocate_and_level_screen_11
+    cp 12
+    jp z, recolocate_and_level_screen_12
+    cp 13
     jp z, is_final_screen
 
 
     ret
 
 is_final_screen:
+    ;sacamos de la pantalla al player
+    ld a,212
+    ld (ix+player.y),a
+    call render_player
+    ;Sacamos a los enemigos
+    call sacar_sprites_de_pantalla
+    call render_enemies
+    ;ponemos el juego en game over
     ld a,1
     ld (game_over),a
+
+    call para_cancion
+    ld a,3; le ponemos la música del final
+    ld (musica_activa),a
+    call inicilizar_tracker
     call clear_screen
-    call show_final
+
+    ld de, message_congratulations 
+    ld b, 1;    posicón y
+    ld c, 0;    posicón x
+    call graphics_print_sc2
+
+    ld de, message_developer
+    ld b, 4;    posicón y
+    ld c, 4;    posicón x
+    call graphics_print_sc2
+
+    ld de, message_music
+    ld b, 5;    posicón y
+    ld c, 4;    posicón x
+    call graphics_print_sc2
+
+    ld de, message_graphics
+    ld b, 6;    posicón y
+    ld c, 4;    posicón x
+    call graphics_print_sc2
+
+    ld de, message_press_any_key_to_start 
+    ld b, 15;    posicón y
+    ld c, 2;    posicón x
+    call graphics_print_sc2
+
+
+;.repetir_menu:
+;    ld a,0
+;    call GTTRIG
+;    cp 0
+;    jr z,.repetir_menu
+;hacemos una pekeña pausa
+    ld de,#100
+.wait:    
+    halt
+    dec de
+    ld a,d
+    or e
+    jp nz,.wait
     call KILBUF
-
-.repetir_menu:
-    ld a,0
-    call GTTRIG
-    cp 0
-    jr z,.repetir_menu
-    ;ld a,1
-    ;ld (screen),a
-    ;call load_screens
-
+    ;esperamos a que se pulse una tecla
+    call CHGET
+    call sacar_sprites_de_pantalla
     ret
 
 
@@ -456,7 +499,12 @@ message_msx_spain_presents: db "MSXñSPAINñPRESENTS",0
 message_disco: db "DISCO",0
 message_start_game: db "1.start game",0
 message_press_any_key_to_start: db "PRESSñSPACEñKEYñTOñSTART",0
-message_congratulations: db "Congratulationsñyouñfinishedñtheñgame"
+message_congratulations: db "CONGRATULATIONS¡YOU¡FINISHED¡THE¡GAME",0
+message_music: db "MUSIC¡BY¡CLEMENTE",0
+message_developer: db "DEVELOPER¡MSX¡SPAIN",0
+message_graphics: db "GRAPHICS¡KIKE¡MADRIGAL",0
+
+change_screen: db 0
 
 map_buffer: ds 704 ;768-64 es el mapa o tabla de nombres de VRAM copiada aquí
 MAPS_DIRECTION: equ #c001

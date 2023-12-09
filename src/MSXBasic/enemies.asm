@@ -686,7 +686,8 @@ kill_enemy:
     ld (iy+enemy.y),a
     ld a,0
     ld (iy+enemy.x),a
-
+    ld a,COMPORTAMIENTO_STATICO
+    ld (iy+enemy.type),a
     ret
 
 

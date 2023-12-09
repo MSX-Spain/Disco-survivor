@@ -43,6 +43,20 @@ Pincha aquí para ver como depurar en ensamblador:
 
 <a href="docs/Como-depurar.md">Como depurar</a>
 
+## Audios
+
+### Menu:
+
+<video controls="" autoplay="" name="media" width="200px" height="50px"><source src="docs/music-menu.mp3" type="audio/mpeg"  ></video>
+
+### Ingame:
+
+<video controls="" autoplay="" name="media" width="200px" height="50px"><source src="docs/music-ingame.mp3" type="audio/mpeg" ></video>
+
+### Final:
+
+<video controls="" autoplay="" name="media" width="200px" height="50px"><source src="docs/music-final.mp3" type="audio/mpeg"></video>
+
 
 
 
@@ -123,6 +137,18 @@ Level 9
 
 <img src="docs/screen9.PNG"  width="300px" >
 
+Level 10
+
+<img src="docs/screen10.PNG"  width="300px" >
+
+Level 11
+
+<img src="docs/screen11.PNG"  width="300px" >
+
+Level 12
+
+<img src="docs/screen12.PNG"  width="300px" >
+
 Final
 
-<!--<img src="docs/final.PNG"  width="300px" >-->
+<img src="docs/final.PNG"  width="300px" >

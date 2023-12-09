@@ -20,13 +20,20 @@ inicilizar_tracker:
     jr z,.musica_menu
     cp 2
     jr z,.musica_ingame
+    cp 3
+    jr z,.musica_final
     jr .inicializa_cancion
-.musica_menu;https://zxart.ee/spa/autores/c/cj-echo/wild-quaker3/
+.musica_menu:;https://zxart.ee/spa/autores/c/cj-echo/wild-quaker3/
     ld hl, menu-99
     jr .inicializa_cancion
-.musica_ingame
+.musica_final:
+	ld hl, final-99	
+    jr .inicializa_cancion
+.musica_ingame:
 	ld hl, ingame-99		; hl vale la direccion donde se encuentra la cancion - 99
-.inicializa_cancion
+
+
+.inicializa_cancion:
 	call PT3_INIT			; Inicia el reproductor de PT3
     
     ;Salvamos la rutina ISR(Interrupt service routine) si hubiese alguna.Son 5 bytes
@@ -142,7 +149,9 @@ tracker:
 ingame:
 	incbin "dd.pt3"	
 menu:
-    incbin "musicdisc.pt3"		
+    incbin "musicdisc.pt3"	
+final:
+    incbin "final.pt3"		
 fx_player:
     include	"ayFX_player.asm"	;efectos de https://github.com/Threetwosevensixseven/ayfxedit-improved
 sfx_bank:
